@@ -1,0 +1,11 @@
+#ifndef _NUS_WINDOW_H_
+#define _NUS_WINDOW_H_
+
+typedef struct NUS_window{
+  char *title;
+} NUS_window;
+
+void NUS_create_window();
+void NUS_destroy_window();
+
+#endif /* _NUS_WINDOW_H_ */

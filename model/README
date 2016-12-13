@@ -1,0 +1,4 @@
+lib-models
+
+A c-library for 3d models loaded using assimp.
+
