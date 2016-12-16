@@ -1,0 +1,40 @@
+#include "NUS_system_events.h"
+#include "NUS_window.h"
+#include <stdio.h>
+
+
+void (*quit_function)(void);
+
+void NUS_handle_system_events(NUS_window NUS_window_)
+{
+  #ifdef _WIN32
+
+  #elif __unix__
+
+  XKeyEvent event;
+  while(printf("%p a\n", (void*)NUS_window_.display), XPending(NUS_window_.display) > 0){
+    printf("%p b\n", (void*)NUS_window_.display);
+    XNextEvent(NUS_window_.display, (XEvent *)&event);
+    //TODO fix display being set to nil on an expose event (any expose event? specific expose event?).
+    printf("%p c\n", (void*)NUS_window_.display);
+    printf("event type = (%d)\n",event.type);
+    switch(event.type){
+    case Expose:
+      break;
+    case KeyRelease:
+    case KeyPress:
+      printf("asd\n");
+      //TODO handle user input
+      break;
+    case ClientMessage:
+      printf("exiting\n");
+      quit_function();
+      //TODO run exit function
+      break;
+    default:
+      break;
+    }
+  }
+  
+  #endif
+}

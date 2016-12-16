@@ -3,8 +3,9 @@ CC=gcc
 CFLAGS=-g -Wall -Wextra -Wfloat-equal -Wundef -Wshadow -Wpointer-arith \
 	-Wcast-align -Wstrict-prototypes \
 	-I/home/strings/vulkan/VulkanSDK/1.0.33.0/x86_64/include
-LFLAGS= -L/home/strings/vulkan/VulkanSDK/1.0.33.0/x86_64/lib -lxcb -lvulkan -lio \
-	-L/usr/X11R6/lib -lX11
+LFLAGS= -lNUS_engine -lGLU -lglfw3 -lX11 -lXi -lXrandr -lXxf86vm -lXinerama -lXcursor \
+	-ldl -lm -pthread\
+	-L/home/strings/vulkan/VulkanSDK/1.0.33.0/x86_64/lib -lvulkan
 
 SOURCES::=main.c
 OBJS::=$(SOURCES:.c=.o)
