@@ -3,13 +3,25 @@
 
 struct NUS_window;
 
-extern void (*quit_function)(void);
+#define NUS_NUM_KEYS 348
 
 // setup callbacks
 typedef struct NUS_event_handler{
-  void (*key_press)(void);
+  /* group of callbacks */
+  void (*key_press[NUS_NUM_KEYS])(void);
+  void (*key_release[NUS_NUM_KEYS])(void);
+  struct {
+    void (**functions)(void);
+    unsigned int num_functions;
+  } key_function_group[NUS_NUM_KEYS];
+  void (*close_window)(void);
 } NUS_event_handler;
 
+NUS_event_handler NUS_build_event_handler(void);
+void NUS_set_event_handler(NUS_event_handler *);
+
+void NUS_setup_system_events(struct NUS_window);
 void NUS_handle_system_events(struct NUS_window);
+void NUS_add_key_function(NUS_event_handler *, int, void (*)(void));
 
 #endif /* NUS_SYSTEM_EVENTS_H_ */

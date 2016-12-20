@@ -1,32 +1,27 @@
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <NUS/NUS_window.h>
 #include <NUS/NUS_system_events.h>
 
-#define PROGRAM_NAME "unit_test-display_screen"
+#define PROGRAM_NAME "unit_test-x11_window"
 
 char run;
 
-void close_win(void){
-  run = 0;
-}
+void close_win(void);
 
 int main(int argc, char *argv[])
 {
   printf("starting unit test %s\n", PROGRAM_NAME);
   if(argc){}
   if(argv){}
-  
-  if(!glfwInit()){
-    printf("glfw failed to init\n");
-    return -1;
-  }
 
   
   NUS_window win = NUS_build_window(PROGRAM_NAME, 600, 400);
-  quit_function = close_win;
+  NUS_setup_system_events(win);
+
+  NUS_event_handler eve = NUS_build_event_handler();
+  eve.close_window = close_win;
+  NUS_set_event_handler(&eve);
   run = 1;
   while(run){
     NUS_handle_system_events(win);
@@ -34,8 +29,10 @@ int main(int argc, char *argv[])
   
   NUS_free_window(&win);
   
-  glfwTerminate();
   
   printf("unit test %s completed\n", PROGRAM_NAME);
   return 0;
+}
+void close_win(void){
+  run = 0;
 }

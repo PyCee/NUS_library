@@ -2,7 +2,7 @@
 #define _TIMELINE_H_
 
 typedef struct timeline{
-  unsigned long start_ms, last_update_ms;
+  unsigned long start_s, last_update_s;
 } timeline;
 timeline gen_timeline(void);
 void free_timeline(timeline *);

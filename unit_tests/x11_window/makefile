@@ -1,6 +1,6 @@
 
 CC=gcc
-CFLAGS=-g -Wall -Wextra -Wfloat-equal -Wundef -Wshadow -Wpointer-arith \
+CFLAGS=-g -Wall -Wextra -Wfloat-equal -Wundef \
 	-Wcast-align -Wstrict-prototypes \
 	-I/home/strings/vulkan/VulkanSDK/1.0.33.0/x86_64/include
 LFLAGS= -lNUS_engine -lGLU -lglfw3 -lX11 -lXi -lXrandr -lXxf86vm -lXinerama -lXcursor \

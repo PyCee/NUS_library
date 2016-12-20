@@ -1,11 +1,18 @@
 CC=gcc
-CFLAGS=-c -Wall -g
+CFLAGS=-g -Wall -pedantic \
+	-Wshadow \
+	-Wpointer-arith \
+	-Wcast-qual \
+	-Wcast-align \
+	-Wstrict-prototypes \
+	-Wmissing-prototypes \
+	-Wconversion
 
 IO_SRC_FILES::=NUS_window.c NUS_system_events.c
 IO_DIR::=io/
 
 MATH_SRC_FILES::=vector.c matrix.c quaternion.c pythag.c angle.c cartesian_system.c \
-	frustum.c
+	frustum.c NUS_octree.c
 MATH_DIR::=math/
 
 MOD_SRC_FILES::=vertex.c triangle.c texture.c mesh.c model.c joint.c skeleton.c
@@ -14,7 +21,7 @@ MOD_DIR::=model/
 PHY_SRC_FILES::=center.c physics_state.c movement.c orientation.c kinematic_property.c
 PHY_DIR::=physics/
 
-REN_SRC_FILES::=shader_program.c
+REN_SRC_FILES::=vulkan_wrapper.c
 REN_DIR::=render/
 
 IO_SRC::=$(addprefix $(IO_DIR), $(IO_SRC_FILES))
@@ -23,8 +30,8 @@ MOD_SRC::=$(addprefix $(MOD_DIR), $(MOD_SRC_FILES))
 PHY_SRC::=$(addprefix $(PHY_DIR), $(PHY_SRC_FILES))
 REN_SRC::=$(addprefix $(REN_DIR), $(REN_SRC_FILES))
 
-#NUS_SRC::=$(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(PHY_SRC) $(REN_SRC)
-NUS_SRC_FILES::=$(IO_SRC) $(MATH_SRC)
+#NUS_SRC_FILES::=$(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(PHY_SRC) $(REN_SRC)
+NUS_SRC_FILES::=$(IO_SRC)
 SRC_DIR::=src/
 NUS_SRC::=$(addprefix $(SRC_DIR), $(NUS_SRC_FILES))
 

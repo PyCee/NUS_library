@@ -1,3 +1,13 @@
 NUS_engine
 
 A 3d game engine
+
+planned to impliment:
+-collisions
+-animations
+-3rd person camera
+-inverse kinematics
+-rope physics
+-cloth physics
+-raytracing lighting
+-metaballs snow
