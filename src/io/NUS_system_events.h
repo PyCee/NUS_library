@@ -17,11 +17,11 @@ typedef struct NUS_event_handler{
   void (*close_window)(void);
 } NUS_event_handler;
 
-NUS_event_handler NUS_build_event_handler(void);
-void NUS_set_event_handler(NUS_event_handler *);
+NUS_event_handler nus_build_event_handler(void);
+void nus_set_event_handler(NUS_event_handler *);
 
-void NUS_setup_system_events(struct NUS_window);
-void NUS_handle_system_events(struct NUS_window);
-void NUS_add_key_function(NUS_event_handler *, int, void (*)(void));
+void nus_setup_system_events(struct NUS_window);
+void nus_handle_system_events(struct NUS_window);
+void nus_add_key_function(NUS_event_handler *, int, void (*)(void));
 
 #endif /* NUS_SYSTEM_EVENTS_H_ */

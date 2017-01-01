@@ -11,15 +11,11 @@
 #include <NUS/NUS_window.h>
 #include <NUS/NUS_system_events.h>
 #include <vulkan/vulkan.h>
+#include <limits.h>
 
 #define PROGRAM_NAME "unit_test-vulkan_clear"
 
-
 #include <X11/Xlib-xcb.h>
-//#include <X11/Xlib.h>
-//#include <X11/Xutil.h>
-//#include <X11/Xos.h>
-//#include <xcb/xcb.h>
 
 char run;
 
@@ -32,12 +28,12 @@ int main(int argc, char *argv[])
   if(argv){}
   
 
-  NUS_window win = NUS_build_window(PROGRAM_NAME, 600, 400);
+  NUS_window win = nus_build_window(PROGRAM_NAME, 600, 400);
   
-  NUS_setup_system_events(win);
-  NUS_event_handler eve = NUS_build_event_handler();
+  nus_setup_system_events(win);
+  NUS_event_handler eve = nus_build_event_handler();
   eve.close_window = close_win;
-  NUS_set_event_handler(&eve);
+  nus_set_event_handler(&eve);
   run = 1;
 
 
@@ -144,20 +140,63 @@ int main(int argc, char *argv[])
   VkPhysicalDevice physical_device = VK_NULL_HANDLE;
   unsigned int device_count = 0;
   /* get number of devices */
-  vkEnumeratePhysicalDevices(vulkan_instance, &device_count, NULL);
-  if(0 == device_count){
-    printf("ERROR::no gpu with vulkan support\n");
+  
+  if(vkEnumeratePhysicalDevices(vulkan_instance, &device_count, NULL) != VK_SUCCESS ||
+     0 == device_count){
+    printf("ERROR::failed enumerating physical devices\n");
     return -1;
   }
 
   VkPhysicalDevice devices[device_count];
   /* get devices */
-  vkEnumeratePhysicalDevices(vulkan_instance, &device_count, devices);
+  if(vkEnumeratePhysicalDevices(vulkan_instance, &device_count, devices) != VK_SUCCESS){
+    printf("ERROR::failed enumerating physical devices\n");
+    return -1;
+  }
   
-  unsigned int graphics_oper_family_i = 0;
+  unsigned int graphics_family = UINT_MAX;
+  unsigned int present_family = UINT_MAX;
   
   /* test devices for compatability */
   for(unsigned int i = 0; i < device_count; ++i){
+
+    unsigned int device_extension_count = 0;
+    if((vkEnumerateDeviceExtensionProperties(devices[i], NULL,
+					     &device_extension_count, NULL)
+	!= VK_SUCCESS) || (device_extension_count == 0)){
+      printf("ERROR::failed to enumerate extensions on device %d\n", i);
+      continue;
+    }
+    
+    VkExtensionProperties device_extensions[device_extension_count];
+    if(vkEnumerateDeviceExtensionProperties(devices[i], NULL, &device_extension_count,
+					    &device_extensions[0] ) != VK_SUCCESS){
+      printf("ERROR::failed to enumerate extensions on device %d\n", i);
+      continue;
+    }
+    
+    printf("supported extensions:\n");
+    for(unsigned int j = 0; j < device_extension_count; ++j){
+      printf("%s\n", device_extensions[j].extensionName);
+    }
+    
+    const char *req_device_extensions[] = {
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
+    for(size_t j = 0;
+	j < sizeof(req_device_extensions) / sizeof(*req_device_extensions); ++j){
+      for(unsigned int k = 0; k < device_extension_count; ++k){
+	if(!strcmp(req_device_extensions[j], device_extensions[k].extensionName)){
+	  break;
+	}
+	if(supported_extension_count - 1 == k){
+	  printf("ERROR::device %d could not find extension named %s\n", i,
+		 req_device_extensions[j]);
+	}
+      }
+    }
+
+    
     VkPhysicalDeviceProperties device_properties;
     VkPhysicalDeviceFeatures device_features;
     
@@ -181,6 +220,7 @@ int main(int argc, char *argv[])
       continue;
     }
 
+    
     VkQueueFamilyProperties queue_family_properties[queue_family_count];
     vkGetPhysicalDeviceQueueFamilyProperties(devices[i], &queue_family_count,
 					     queue_family_properties);
@@ -188,9 +228,24 @@ int main(int argc, char *argv[])
       if((queue_family_properties[j].queueCount > 0) &&
 	 (queue_family_properties[j].queueFlags & VK_QUEUE_GRAPHICS_BIT)){
 	// this queue family is good with graphics operations
-	graphics_oper_family_i = j;
+	printf("found queue for graphics\n");
+	graphics_family = j;
+      }
+      
+      uint32_t queue_present = -1;
+      vkGetPhysicalDeviceSurfaceSupportKHR(devices[i], j, vulkan_surface,
+					   &queue_present);
+      printf("queue_present = %u\n", queue_present);
+      if(queue_present){
+	present_family = j;
+	//break;
       }
     }
+    if(-1 == graphics_family || -1 == present_family){
+      printf("device %d doesn't support both graphical operations and present\n", i);
+    }
+    
+    
     physical_device = devices[i];
   }
   
@@ -204,7 +259,7 @@ int main(int argc, char *argv[])
     VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
     NULL,
     0,
-    graphics_oper_family_i,
+    graphics_family,
     1,
     &queue_priorities
   };
@@ -231,14 +286,15 @@ int main(int argc, char *argv[])
 
   VkQueue device_queue;
   /* gets queue of specific queue-family of specific device */
-  vkGetDeviceQueue(vulkan_device, graphics_oper_family_i, 0, &device_queue);
+  vkGetDeviceQueue(vulkan_device, graphics_family, 0, &device_queue);
 
 
 
 
   //TODO load and free  vulkan library from device
+  
   while(run){
-    NUS_handle_system_events(win);
+    nus_handle_system_events(win);
   }
 
   // free program
@@ -251,7 +307,7 @@ int main(int argc, char *argv[])
     vkDestroyInstance(vulkan_instance, NULL);
   }
   
-  NUS_free_window(&win);
+  nus_free_window(&win);
   
   printf("unit test %s completed\n", PROGRAM_NAME);
   return 0;

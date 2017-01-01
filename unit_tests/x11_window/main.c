@@ -16,18 +16,18 @@ int main(int argc, char *argv[])
   if(argv){}
 
   
-  NUS_window win = NUS_build_window(PROGRAM_NAME, 600, 400);
-  NUS_setup_system_events(win);
+  NUS_window win = nus_build_window(PROGRAM_NAME, 600, 400);
+  nus_setup_system_events(win);
 
-  NUS_event_handler eve = NUS_build_event_handler();
+  NUS_event_handler eve = nus_build_event_handler();
   eve.close_window = close_win;
-  NUS_set_event_handler(&eve);
+  nus_set_event_handler(&eve);
   run = 1;
   while(run){
-    NUS_handle_system_events(win);
+    nus_handle_system_events(win);
   }
   
-  NUS_free_window(&win);
+  nus_free_window(&win);
   
   
   printf("unit test %s completed\n", PROGRAM_NAME);

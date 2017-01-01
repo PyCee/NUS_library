@@ -4,7 +4,7 @@
 #include <string.h>
 #include "NUS_system_events.h"
 
-NUS_window NUS_build_window(char *title, unsigned int width, unsigned int height)
+NUS_window nus_build_window(char *title, unsigned int width, unsigned int height)
 {
   NUS_window NUS_window_;
 
@@ -53,7 +53,7 @@ NUS_window NUS_build_window(char *title, unsigned int width, unsigned int height
   return NUS_window_;
 }
 
-void NUS_free_window(NUS_window *NUS_window_)
+void nus_free_window(NUS_window *NUS_window_)
 {
   free(NUS_window_->delete_message);
   XFreeGC(NUS_window_->display, NUS_window_->graphics_context);
@@ -64,7 +64,7 @@ void NUS_free_window(NUS_window *NUS_window_)
   NUS_window_->title = NULL;
 }
 
-void NUS_print_window(NUS_window NUS_window_)
+void nus_print_window(NUS_window NUS_window_)
 {
   printf("NUS_window has title: %s\ndimensions:\nw: %d\nh: %d\n",
 	 NUS_window_.title, NUS_window_.width, NUS_window_.height);

@@ -27,9 +27,9 @@ typedef struct NUS_window{
 #endif
 } NUS_window;
 
-NUS_window NUS_build_window(char *, unsigned int, unsigned int);
-void NUS_free_window(NUS_window *);
-void NUS_print_window(NUS_window);
+NUS_window nus_build_window(char *, unsigned int, unsigned int);
+void nus_free_window(NUS_window *);
+void nus_print_window(NUS_window);
 
 #endif /* _NUS_WINDOW_H_ */
 

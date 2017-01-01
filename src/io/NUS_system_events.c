@@ -6,28 +6,28 @@
 
 static NUS_event_handler *NUS_curr_event_handler = NULL;
 
-static void NUS_nothing_void(void){}
-static void NUS_nothing_float(float float_){}
+static void nus_nothing_void(void){}
+static void nus_nothing_float(float float_){}
 
-static void NUS_close_window_callback(void);
-static void NUS_key_callback(unsigned int);
+static void nus_close_window_callback(void);
+static void nus_key_callback(unsigned int);
 
-NUS_event_handler NUS_build_event_handler(void)
+NUS_event_handler nus_build_event_handler(void)
 {
   NUS_event_handler NUS_event_handler_;
   short i;
   for(i = 0; i < NUS_NUM_KEYS; i++){
-    NUS_event_handler_.key_press[i] = NUS_nothing_void;
-    NUS_event_handler_.key_release[i] = NUS_nothing_void;
+    NUS_event_handler_.key_press[i] = nus_nothing_void;
+    NUS_event_handler_.key_release[i] = nus_nothing_void;
   }
-  NUS_event_handler_.close_window = NUS_nothing_void;
+  NUS_event_handler_.close_window = nus_nothing_void;
   return NUS_event_handler_;
 }
-void NUS_set_event_handler(NUS_event_handler *NUS_event_handler_)
+void nus_set_event_handler(NUS_event_handler *NUS_event_handler_)
 {
   NUS_curr_event_handler = NUS_event_handler_;
 }
-void NUS_setup_system_events(NUS_window NUS_window_)
+void nus_setup_system_events(NUS_window NUS_window_)
 {
   
   /*TODO set calbacks for:
@@ -38,7 +38,7 @@ void NUS_setup_system_events(NUS_window NUS_window_)
 
    */
 }
-void NUS_handle_system_events(NUS_window NUS_window_)
+void nus_handle_system_events(NUS_window NUS_window_)
 {//TODO get button releases and don't get repeats from holding down
   XEvent x_event;
   while(XPending(NUS_window_.display)){
@@ -51,7 +51,7 @@ void NUS_handle_system_events(NUS_window NUS_window_)
       printf("button released\n");
       break;
     case KeyPress:
-      NUS_key_callback(x_event.xkey.keycode);
+      nus_key_callback(x_event.xkey.keycode);
       break;
     case KeyRelease:
 
@@ -66,11 +66,11 @@ void NUS_handle_system_events(NUS_window NUS_window_)
 	}
       }
       
-      NUS_key_callback(x_event.xkey.keycode);
+      nus_key_callback(x_event.xkey.keycode);
       break;
     case ClientMessage:
       if(x_event.xclient.data.l[0] == *NUS_window_.delete_message)
-	NUS_close_window_callback();
+	nus_close_window_callback();
       break;
     default:
       break;
@@ -78,7 +78,7 @@ void NUS_handle_system_events(NUS_window NUS_window_)
   }
 }
 
-void NUS_add_key_function
+void nus_add_key_function
 (NUS_event_handler *NUS_event_handler_, int key, void (*key_function)(void))
 {
   NUS_event_handler_->key_function_group[key].functions =
@@ -87,12 +87,12 @@ void NUS_add_key_function
   NUS_event_handler_->key_function_group[key].functions
     [NUS_event_handler_->key_function_group[key].num_functions - 1] = key_function;
 }
-static void NUS_close_window_callback(void)
+static void nus_close_window_callback(void)
 {
   assert(NUS_curr_event_handler);
   NUS_curr_event_handler->close_window();
 }
-static void NUS_key_callback(unsigned int key)
+static void nus_key_callback(unsigned int key)
 {//TODO: have parameters that describe: key, press/release
   assert(NUS_curr_event_handler);
   /*for(int i = 0; i < NUS_curr_event_handler->key_function_group[].num_functions; ++i){
