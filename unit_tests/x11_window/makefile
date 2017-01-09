@@ -1,15 +1,19 @@
 
 CC=gcc
-CFLAGS=-g -Wall -Wextra -Wfloat-equal -Wundef \
-	-Wcast-align -Wstrict-prototypes \
-	-I/home/strings/vulkan/VulkanSDK/1.0.33.0/x86_64/include
-LFLAGS= -lNUS_engine -lGLU -lglfw3 -lX11 -lXi -lXrandr -lXxf86vm -lXinerama -lXcursor \
-	-ldl -lm -pthread\
-	-L/home/strings/vulkan/VulkanSDK/1.0.33.0/x86_64/lib -lvulkan
+CFLAGS=-g -Wall -pedantic \
+	-Wshadow \
+	-Wpointer-arith \
+	-Wcast-qual \
+	-Wcast-align \
+	-Wstrict-prototypes \
+	-Wmissing-prototypes \
+	-Wconversion
 
-SOURCES::=main.c
-OBJS::=$(SOURCES:.c=.o)
-TARGET::=unit_test
+LFLAGS=-lNUS_engine -lX11 -lm
+
+SOURCES=main.c
+OBJS=$(SOURCES:.c=.o)
+TARGET=unit_test
 
 all: $(SOURCES) compile run
 compile: $(OBJS)

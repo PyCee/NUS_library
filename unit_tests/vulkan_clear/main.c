@@ -8,8 +8,10 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <NUS/NUS_window.h>
-#include <NUS/NUS_system_events.h>
+
+#define NUS_SYSTEM_GPU
+#define NUS_SYSTEM_WINDOW
+#include <NUS/NUS_engine.h>
 #include <vulkan/vulkan.h>
 #include <limits.h>
 
@@ -26,7 +28,11 @@ int main(int argc, char *argv[])
   printf("starting unit test %s\n", PROGRAM_NAME);
   if(argc){}
   if(argv){}
+
+  unsigned int i,
+    j;
   
+  NUS_gpu_group gpu_g;
 
   NUS_window win = nus_build_window(PROGRAM_NAME, 600, 400);
   
@@ -36,26 +42,7 @@ int main(int argc, char *argv[])
   nus_set_event_handler(&eve);
   run = 1;
 
-
-  
-  unsigned int supported_extension_count = 0;
-  if(vkEnumerateInstanceExtensionProperties(NULL, &supported_extension_count, NULL) !=
-     VK_SUCCESS || supported_extension_count == 0){
-    printf("ERROR::instance extension enumeration\n");
-    return -1;
-  }
-  VkExtensionProperties available_extensions[supported_extension_count];
-  if(vkEnumerateInstanceExtensionProperties(NULL, &supported_extension_count,
-					    available_extensions) != VK_SUCCESS){
-    printf("ERROR::instance extension enumeration secondary\n");
-    return -1;
-  }
-  printf("supported extensions:\n");
-  for(unsigned int i = 0; i < supported_extension_count; ++i){
-    printf("%s\n", available_extensions[i].extensionName);
-  }
-
-  const char *required_extensions[] = {
+  char *instance_extensions[] = {
     VK_KHR_SURFACE_EXTENSION_NAME,
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
     VK_KHR_WIN32_SURFACE_EXTENSION_NAME
@@ -63,48 +50,23 @@ int main(int argc, char *argv[])
     VK_KHR_XCB_SURFACE_EXTENSION_NAME
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
     VK_KHR_XLIB_SURFACE_EXTENSION_NAME
-#endif
+    #endif
   };
 
-  unsigned int used_extension_count = sizeof(required_extensions) /
-    sizeof(*required_extensions);
-  
-  for(unsigned int i = 0; i < used_extension_count; ++i){
-    for(unsigned int j = 0; j < supported_extension_count; ++j){
-      if(!strcmp(required_extensions[i], available_extensions[j].extensionName)){
-	break;
-      }
-      if(supported_extension_count - 1 == j){
-	printf("ERROR::could not find extension named %s\n", required_extensions[i]);
-      }
-    }
-  }
-  
-  VkInstance vulkan_instance;
-  
-  VkApplicationInfo application_info;
-  application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  application_info.pApplicationName = PROGRAM_NAME;
-  application_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-  application_info.pEngineName = "NUS";
-  application_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-  application_info.apiVersion = VK_API_VERSION_1_0;
- 
-  VkInstanceCreateInfo instance_info;
-  instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-  instance_info.pNext = NULL;
-  instance_info.flags = 0;
-  instance_info.pApplicationInfo = &application_info;
-  instance_info.enabledLayerCount = 0;
-  instance_info.ppEnabledLayerNames = NULL;
-  instance_info.enabledExtensionCount = used_extension_count;
-  instance_info.ppEnabledExtensionNames = required_extensions;
-
-  if(vkCreateInstance(&instance_info, NULL, &vulkan_instance) != VK_SUCCESS){
-    printf("ERROR::unable to create vulkan instance\n");
+  NUS_vulkan_instance_info instance_info;
+  if(nus_build_vulkan_instance_info(instance_extensions, 2, NULL, 0, &instance_info)
+     != NUS_SUCCESS){
+    printf("ERROR::failed to create vulkan instance info\n");
     return -1;
   }
-
+  NUS_vulkan_instance vulkan_instance;
+  if(nus_build_vulkan_instance(instance_info, &vulkan_instance)
+     != NUS_SUCCESS){
+    printf("ERROR::failed to create vulkan instance info\n");
+    return -1;
+  }
+  nus_free_vulkan_instance_info(&instance_info);
+  
 
   VkSurfaceKHR vulkan_surface;
   
@@ -129,7 +91,7 @@ int main(int argc, char *argv[])
   surface_create_info.flags = 0;
   surface_create_info.connection = XGetXCBConnection(win.display);
   surface_create_info.window = xcb_generate_id(surface_create_info.connection);
-  if(vkCreateXcbSurfaceKHR(vulkan_instance, &surface_create_info,
+  if(vkCreateXcbSurfaceKHR(vulkan_instance.instance, &surface_create_info,
 			   NULL, &vulkan_surface) != VK_SUCCESS){
     printf("ERROR::unable to create XCB vulkan surface\n");
     return -1;
@@ -138,174 +100,34 @@ int main(int argc, char *argv[])
 
 	   
   VkPhysicalDevice physical_device = VK_NULL_HANDLE;
-  unsigned int device_count = 0;
-  /* get number of devices */
   
-  if(vkEnumeratePhysicalDevices(vulkan_instance, &device_count, NULL) != VK_SUCCESS ||
-     0 == device_count){
-    printf("ERROR::failed enumerating physical devices\n");
+  if(nus_build_gpu_group(vulkan_instance.instance, &gpu_g) != NUS_SUCCESS){
+    printf("ERROR::build gpu group returned NUS_FAILURE\n");
     return -1;
   }
-
-  VkPhysicalDevice devices[device_count];
-  /* get devices */
-  if(vkEnumeratePhysicalDevices(vulkan_instance, &device_count, devices) != VK_SUCCESS){
-    printf("ERROR::failed enumerating physical devices\n");
+  nus_check_gpu_presentation_support(vulkan_surface, &gpu_g);
+  nus_print_gpu_group(gpu_g);
+  //if(nus_check_gpu_presentation_support(vulkan_surface, &gpu_g) != NUS_SUCCESS){
+  //printf("could not find support for presentation\n");
     return -1;
-  }
+    //}
   
-  unsigned int graphics_family = UINT_MAX;
-  unsigned int present_family = UINT_MAX;
-  
-  /* test devices for compatability */
-  for(unsigned int i = 0; i < device_count; ++i){
-
-    unsigned int device_extension_count = 0;
-    if((vkEnumerateDeviceExtensionProperties(devices[i], NULL,
-					     &device_extension_count, NULL)
-	!= VK_SUCCESS) || (device_extension_count == 0)){
-      printf("ERROR::failed to enumerate extensions on device %d\n", i);
-      continue;
-    }
-    
-    VkExtensionProperties device_extensions[device_extension_count];
-    if(vkEnumerateDeviceExtensionProperties(devices[i], NULL, &device_extension_count,
-					    &device_extensions[0] ) != VK_SUCCESS){
-      printf("ERROR::failed to enumerate extensions on device %d\n", i);
-      continue;
-    }
-    
-    printf("supported extensions:\n");
-    for(unsigned int j = 0; j < device_extension_count; ++j){
-      printf("%s\n", device_extensions[j].extensionName);
-    }
-    
-    const char *req_device_extensions[] = {
-      VK_KHR_SWAPCHAIN_EXTENSION_NAME
-    };
-    for(size_t j = 0;
-	j < sizeof(req_device_extensions) / sizeof(*req_device_extensions); ++j){
-      for(unsigned int k = 0; k < device_extension_count; ++k){
-	if(!strcmp(req_device_extensions[j], device_extensions[k].extensionName)){
-	  break;
-	}
-	if(supported_extension_count - 1 == k){
-	  printf("ERROR::device %d could not find extension named %s\n", i,
-		 req_device_extensions[j]);
-	}
-      }
-    }
-
-    
-    VkPhysicalDeviceProperties device_properties;
-    VkPhysicalDeviceFeatures device_features;
-    
-    vkGetPhysicalDeviceProperties(devices[i], &device_properties);
-    vkGetPhysicalDeviceFeatures(devices[i], &device_features);
-    
-    unsigned int major_version = VK_VERSION_MAJOR(device_properties.apiVersion);
-    unsigned int minor_version = VK_VERSION_MINOR(device_properties.apiVersion);
-    unsigned int patch_version = VK_VERSION_PATCH(device_properties.apiVersion);
-    if((major_version < 1) &&
-	(device_properties.limits.maxImageDimension2D < 4096)){
-      /* device doesn't support required parameters */
-      printf("physical device %d doesn't support required parameters\n", i);
-      continue;
-    }
-    uint32_t queue_family_count = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(devices[i], &queue_family_count, NULL);
-    if(queue_family_count == 0) {
-      /* device doesn't support any queue families */
-      printf("physical device %d doesn't support any queue families\n", i);
-      continue;
-    }
-
-    
-    VkQueueFamilyProperties queue_family_properties[queue_family_count];
-    vkGetPhysicalDeviceQueueFamilyProperties(devices[i], &queue_family_count,
-					     queue_family_properties);
-    for(unsigned int j = 0; j < queue_family_count; ++j){
-      if((queue_family_properties[j].queueCount > 0) &&
-	 (queue_family_properties[j].queueFlags & VK_QUEUE_GRAPHICS_BIT)){
-	// this queue family is good with graphics operations
-	printf("found queue for graphics\n");
-	graphics_family = j;
-      }
-      
-      uint32_t queue_present = -1;
-      vkGetPhysicalDeviceSurfaceSupportKHR(devices[i], j, vulkan_surface,
-					   &queue_present);
-      printf("queue_present = %u\n", queue_present);
-      if(queue_present){
-	present_family = j;
-	//break;
-      }
-    }
-    if(-1 == graphics_family || -1 == present_family){
-      printf("device %d doesn't support both graphical operations and present\n", i);
-    }
-    
-    
-    physical_device = devices[i];
-  }
-  
-  if(VK_NULL_HANDLE == physical_device){
-    printf("ERROR::no valid device found\n");
-    return -1;
-  }
-
-  float queue_priorities = 1.0;
-  VkDeviceQueueCreateInfo queue_create_info = {
-    VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-    NULL,
-    0,
-    graphics_family,
-    1,
-    &queue_priorities
-  };
-  VkDeviceCreateInfo device_create_info = {
-    VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-    NULL,
-    0,
-    1,
-    &queue_create_info,
-    0,
-    NULL,
-    0,
-    NULL,
-    NULL
-  };
-
-  VkDevice vulkan_device;
-  
-  if(vkCreateDevice(physical_device, &device_create_info, NULL, &vulkan_device)
-     != VK_SUCCESS){
-    printf("ERROR::failed to create VkDevice\n");
-    return -1;
-  }
-
-  VkQueue device_queue;
   /* gets queue of specific queue-family of specific device */
-  vkGetDeviceQueue(vulkan_device, graphics_family, 0, &device_queue);
+  /*vkGetDeviceQueue(vulkan_device, graphics_family, 0, &device_queue);*/
 
-
-
-
-  //TODO load and free  vulkan library from device
   
   while(run){
     nus_handle_system_events(win);
   }
 
   // free program
-  
+  /*
   if(VK_NULL_HANDLE != vulkan_device){
     vkDeviceWaitIdle(vulkan_device);
     vkDestroyDevice(vulkan_device, NULL);
   }
-  if(VK_NULL_HANDLE != vulkan_instance){
-    vkDestroyInstance(vulkan_instance, NULL);
-  }
+  */
+  nus_free_vulkan_instance(&vulkan_instance);
   
   nus_free_window(&win);
   

@@ -39,7 +39,7 @@ void nus_setup_system_events(NUS_window NUS_window_)
    */
 }
 void nus_handle_system_events(NUS_window NUS_window_)
-{//TODO get button releases and don't get repeats from holding down
+{
   XEvent x_event;
   while(XPending(NUS_window_.display)){
     XNextEvent(NUS_window_.display, &x_event);
@@ -93,7 +93,7 @@ static void nus_close_window_callback(void)
   NUS_curr_event_handler->close_window();
 }
 static void nus_key_callback(unsigned int key)
-{//TODO: have parameters that describe: key, press/release
+{/*TODO: have parameters that describe: key, press/release*/
   assert(NUS_curr_event_handler);
   /*for(int i = 0; i < NUS_curr_event_handler->key_function_group[].num_functions; ++i){
     NUS_curr_event_handler->key_function_group[].functions[i]();

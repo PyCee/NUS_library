@@ -6,11 +6,12 @@
 #elif __unix__
 #include <X11/Xlib-xcb.h>
 
-//#include <X11/Xlib.h>
 #include <X11/Xutil.h>
-//#include <X11/Xos.h>
-//#include <X11/Xlib-xcb.h>
-
+/*
+#include <X11/Xlib.h>
+#include <X11/Xos.h>
+#include <X11/Xlib-xcb.h>
+*/
 #endif
 
 typedef struct NUS_window{
@@ -26,7 +27,7 @@ typedef struct NUS_window{
   Atom *delete_message;
 #endif
 } NUS_window;
-
+//TODO replace with nus error checking
 NUS_window nus_build_window(char *, unsigned int, unsigned int);
 void nus_free_window(NUS_window *);
 void nus_print_window(NUS_window);

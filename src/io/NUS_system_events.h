@@ -5,7 +5,7 @@ struct NUS_window;
 
 #define NUS_NUM_KEYS 348
 
-// setup callbacks
+/*TODO setup callbacks */
 typedef struct NUS_event_handler{
   /* group of callbacks */
   void (*key_press[NUS_NUM_KEYS])(void);
