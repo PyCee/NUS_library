@@ -78,17 +78,17 @@ quaternion lerp_quaternion(quaternion qua_1, quaternion qua_2, float t)
 }
 quaternion slerp_quaternion(quaternion qua_1, quaternion qua_2, float t)
 {
-	float wp, wq, a, sa;
-	t = (t > 1) ? 1 : t;
-	t = (t < 0) ? 0 : t;
-	a = acos(qua_1.w * qua_1.w + qua_1.x * qua_1.x + qua_1.y * qua_1.y + qua_1.z * qua_1.z);
-	sa = sin(a);
-	wp = sin((1 - t) * a) / sa;
-	wq = sin(t * a) / sa;
-	return normalize_quaternion(build_quaternion(qua_1.w * wp + qua_2.w * wq,
-												qua_1.x * wp + qua_2.x * wq,
-												qua_1.y * wp + qua_2.y * wq,
-												qua_1.z * wp + qua_2.z* wq));
+  float wp, wq, a, sa;
+  t = (t > 1) ? 1 : t;
+  t = (t < 0) ? 0 : t;
+  a = acos(qua_1.w * qua_1.w + qua_1.x * qua_1.x + qua_1.y * qua_1.y + qua_1.z * qua_1.z);
+  sa = sin(a);
+  wp = sin((1 - t) * a) / sa;
+  wq = sin(t * a) / sa;
+  return normalize_quaternion(build_quaternion(qua_1.w * wp + qua_2.w * wq,
+					       qua_1.x * wp + qua_2.x * wq,
+					       qua_1.y * wp + qua_2.y * wq,
+					       qua_1.z * wp + qua_2.z* wq));
 }
 static quaternion normalize_quaternion(quaternion qua_1)
 {

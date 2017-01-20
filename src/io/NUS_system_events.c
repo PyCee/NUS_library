@@ -7,7 +7,7 @@
 static NUS_event_handler *NUS_curr_event_handler = NULL;
 
 static void nus_nothing_void(void){}
-static void nus_nothing_float(float float_){}
+//static void nus_nothing_float(float float_){}
 
 static void nus_close_window_callback(void);
 static void nus_key_callback(unsigned int);

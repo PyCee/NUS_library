@@ -9,14 +9,13 @@ CFLAGS=-g -Wall \
 	-Wconversion \
 	-I/home/kims/VulkanSDK/1.0.33.0/x86_64/include
 
-GPU_SRC_FILES=NUS_gpu_group.c NUS_vulkan_instance.c
+GPU_SRC_FILES=NUS_gpu_group.c NUS_gpu.c NUS_queue_family.c NUS_vulkan_instance.c
 GPU_DIR=gpu
 
 IO_SRC_FILES=NUS_window.c NUS_system_events.c
 IO_DIR=io
 
-MATH_SRC_FILES=vector.c matrix.c quaternion.c pythag.c angle.c cartesian_system.c \
-	frustum.c NUS_octree.c
+MATH_SRC_FILES=NUS_vector.c NUS_octree.c NUS_matrix.c NUS_axes.c NUS_quaternion.c
 MATH_DIR=math
 
 MOD_SRC_FILES=vertex.c triangle.c texture.c mesh.c model.c joint.c skeleton.c
@@ -34,6 +33,7 @@ MATH_SRC=$(addprefix $(MATH_DIR)/, $(MATH_SRC_FILES))
 MOD_SRC=$(addprefix $(MOD_DIR)/, $(MOD_SRC_FILES))
 PHY_SRC=$(addprefix $(PHY_DIR)/, $(PHY_SRC_FILES))
 REN_SRC=$(addprefix $(REN_DIR)/, $(REN_SRC_FILES))
+OTH_SRC=NUS_vulkan.c
 
 GPU_HEA=$(GPU_SRC:.c=.h)
 IO_HEA=$(IO_SRC:.c=.h)
@@ -41,15 +41,16 @@ MATH_HEA=$(MATH_SRC:.c=.h)
 MOD_HEA=$(MOD_SRC:.c=.h)
 PHY_HEA=$(PHY_SRC:.c=.h)
 REN_HEA=$(REN_SRC:.c=.h)
-OTHER_HEA=NUS_engine.h NUS_result.h
+OTH_HEA=NUS_engine.h NUS_result.h NUS_os.h $(OTH_SRC:.c=.h)
 
-#NUS_SRC_FILES=$(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(PHY_SRC) $(REN_SRC)
-NUS_SRC_FILES=$(GPU_SRC) $(IO_SRC) $(REN_SRC)
+#NUS_SRC_FILES=$(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(PHY_SRC) $(REN_SRC)
+NUS_SRC_FILES=$(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(REN_SRC) $(OTH_SRC)
+NUS_HEA_PRE_PREFIX=$(OTH_HEA) $(NUS_SRC_FILES:.c=.h)
 SRC_DIR=src
 NUS_SRC=$(addprefix $(SRC_DIR)/, $(NUS_SRC_FILES))
+NUS_HEA=$(addprefix $(SRC_DIR)/, $(NUS_HEA_PRE_PREFIX))
 
 NUS_OBJ=$(NUS_SRC:.c=.o)
-NUS_HEA=src/NUS_engine.h src/NUS_result.h $(NUS_SRC:.c=.h)
 
 all: $(NUS_SRC) compile
 
@@ -75,7 +76,7 @@ compile: $(NUS_OBJ)
 	sudo cp $(addprefix $(SRC_DIR)/, $(MOD_HEA)) /usr/local/include/NUS/$(MOD_DIR)/
 	sudo cp $(addprefix $(SRC_DIR)/, $(PHY_HEA)) /usr/local/include/NUS/$(PHY_DIR)/
 	sudo cp $(addprefix $(SRC_DIR)/, $(REN_HEA)) /usr/local/include/NUS/$(REN_DIR)/
-	sudo cp $(addprefix $(SRC_DIR)/, $(OTHER_HEA)) /usr/local/include/NUS/
+	sudo cp $(addprefix $(SRC_DIR)/, $(OTH_HEA)) /usr/local/include/NUS/
 rebuild: clean all
 
 .c.o:

@@ -2,7 +2,6 @@
 #include "../io/NUS_window.h"
 #include "../gpu/NUS_vulkan_instance.h"
 #include <stdio.h>
-#include <vulkan/vulkan.h>
 
 #if defined(NUS_OS_WINDOWS)
 
@@ -34,7 +33,6 @@ NUS_result nus_build_presentation_surface
   surface_create_info.flags = 0;
   surface_create_info.connection = XGetXCBConnection(NUS_window_.display);
   surface_create_info.window = xcb_generate_id(surface_create_info.connection);
-  printf("creating surface\n");
   if(vkCreateXcbSurfaceKHR(NUS_vulkan_instance_.instance, &surface_create_info,
 			   NULL, &NUS_presentation_surface_->surface) != VK_SUCCESS){
     printf("ERROR::unable to create XCB vulkan surface\n");
@@ -44,7 +42,10 @@ NUS_result nus_build_presentation_surface
   
   return NUS_SUCCESS;
 }
-void nus_free_presentation_surface(NUS_presentation_surface *NUS_presentation_surface_)
+void nus_free_presentation_surface
+(NUS_vulkan_instance NUS_vulkan_instance_,
+ NUS_presentation_surface *NUS_presentation_surface_)
 {
-  
+  vkDestroySurfaceKHR(NUS_vulkan_instance_.instance,
+		      NUS_presentation_surface_->surface, NULL);
 }

@@ -10,7 +10,7 @@ CFLAGS=-g -Wall \
 	-Wconversion \
 	-I/home/kims/VulkanSDK/1.0.33.0/x86_64/include
 
-LFLAGS= -lNUS_engine -lX11 -lxcb -lX11-xcb \
+LFLAGS= -lNUS_engine -lX11 -lxcb -lX11-xcb -ldl \
 	-L/home/kims/VulkanSDK/1.0.33.0/x86_64/lib -lvulkan
 
 SOURCES=main.c
@@ -32,5 +32,6 @@ rebuild::
 run:
 	./$(TARGET)
 
-valgrind: $(SOURCES) compile
-	valgrind -v --leak-check=full --show-leak-kinds=all --show-possibly-lost=no --read-var-info=yes --track-origins=yes ./$(TARGET)
+valgrind: $(SOURCES)
+	make compile
+	valgrind --leak-check=full --track-origins=yes ./$(TARGET)
