@@ -12,73 +12,51 @@ static void nus_nothing_void(void){}
 static void nus_close_window_callback(void);
 static void nus_key_callback(unsigned int);
 
-NUS_event_handler nus_build_event_handler(void)
+NUS_result nus_event_handler_build(NUS_event_handler *NUS_event_handler_)
 {
-  NUS_event_handler NUS_event_handler_;
   short i;
   for(i = 0; i < NUS_NUM_KEYS; i++){
-    NUS_event_handler_.key_press[i] = nus_nothing_void;
-    NUS_event_handler_.key_release[i] = nus_nothing_void;
+    NUS_event_handler_->key_press[i] = nus_nothing_void;
+    NUS_event_handler_->key_release[i] = nus_nothing_void;
   }
-  NUS_event_handler_.close_window = nus_nothing_void;
-  return NUS_event_handler_;
+  NUS_event_handler_->close_window = nus_nothing_void;
+  return NUS_SUCCESS;
 }
-void nus_set_event_handler(NUS_event_handler *NUS_event_handler_)
+void nus_event_handler_set(NUS_event_handler *NUS_event_handler_)
 {
   NUS_curr_event_handler = NUS_event_handler_;
 }
-void nus_setup_system_events(NUS_window NUS_window_)
+void nus_system_events_handle(NUS_window NUS_window_)
 {
-  
-  /*TODO set calbacks for:
-    -mouse movement
-    -mouse buttons
-    -joystick axes
-    -joystick buttons
-
-   */
-}
-void nus_handle_system_events(NUS_window NUS_window_)
-{
-  XEvent x_event;
-  while(XPending(NUS_window_.display)){
-    XNextEvent(NUS_window_.display, &x_event);
-    switch(x_event.type){
-    case ButtonPress:
-      printf("button pressed\n");
+#if defined(NUS_OS_WINDOWS)
+#elif defined(NUS_OS_UNIX)
+  xcb_generic_event_t *event;
+  while ((event = xcb_poll_for_event (NUS_window_.connection))) {
+    switch (event->response_type & ~0x80) {
+      //TODO run close function when close button is pressed
+    case XCB_EXPOSE:
       break;
-    case ButtonRelease:
+    case XCB_BUTTON_PRESS:
+      printf("button_pressed\n");
+      break;
+    case XCB_BUTTON_RELEASE:
       printf("button released\n");
       break;
-    case KeyPress:
-      nus_key_callback(x_event.xkey.keycode);
+    case XCB_KEY_PRESS:
+      printf("key_pressed\n");
       break;
-    case KeyRelease:
-
-      /* erases repeat press/release events that occur when a key is held down */
-      if(XPending(NUS_window_.display)){
-	XEvent next_event;
-	XPeekEvent(NUS_window_.display, &next_event);
-	if(next_event.type == KeyPress && next_event.xkey.time == x_event.xkey.time &&
-	   next_event.xkey.keycode == x_event.xkey.keycode){
-	  XNextEvent(NUS_window_.display, &next_event);
-	  break;
-	}
-      }
-      
-      nus_key_callback(x_event.xkey.keycode);
-      break;
-    case ClientMessage:
-      if(x_event.xclient.data.l[0] == *NUS_window_.delete_message)
-	nus_close_window_callback();
+    case XCB_KEY_RELEASE:
+      printf("key released\n");
       break;
     default:
       break;
     }
+    free(event);
   }
+#endif
 }
 
-void nus_add_key_function
+void nus_event_handler_add_key
 (NUS_event_handler *NUS_event_handler_, int key, void (*key_function)(void))
 {
   NUS_event_handler_->key_function_group[key].functions =

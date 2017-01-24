@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
   
   NUS_window win = nus_build_window(PROGRAM_NAME, 600, 400);
   nus_setup_system_events(win);
-  eve = nus_build_event_handler();
+  NUS_event_handler eve = nus_build_event_handler();
   eve.close_window = close_win;
   nus_set_event_handler(&eve);
   
@@ -68,7 +68,38 @@ int main(int argc, char *argv[])
   nus_gpu_group_check_surface_support(present.surface, &gpu_g);
   nus_gpu_group_print(gpu_g);
 
-  run = 1;
+  //tmp code
+  
+  nus_bind_device_vulkan_library(gpu_g.gpus[0].functions);
+  
+  VkSemaphore image_available,
+    render_finished;
+  VkSemaphoreCreateInfo semaphore_create_info;
+  semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+  semaphore_create_info.pNext = NULL;
+  semaphore_create_info.flags = 0;
+
+  printf("prior to semaphore creation\n");
+  if((vkCreateSemaphore(gpu_g.gpus[0].logical_device, &semaphore_create_info, NULL,
+			&image_available) != VK_SUCCESS) ||
+     (vkCreateSemaphore(gpu_g.gpus[0].logical_device, &semaphore_create_info, NULL,
+		       &render_finished) != VK_SUCCESS)){
+    printf("ERROR::failed to create semaphores\n");
+    return -1;
+  }
+  printf("after semaphore creation\n");
+  VkSurfaceCapabilitiesKHR surface_capabilities;
+  if(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu_g.physical_devices[0],
+					    present.surface, &surface_capabilities)
+     != VK_SUCCESS){
+    printf("ERROR::failed to get surface capabilities\n");
+    return -1;
+  }
+  printf("after get surface capabilities\n");
+  //end of tmp code
+  
+  //run = 1;
+  run = 0;
   while(run){
     nus_handle_system_events(win);
     //clear window to color

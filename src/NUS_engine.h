@@ -15,6 +15,7 @@
 #include "math/NUS_matrix.h"
 #include "math/NUS_axes.h"
 #include "math/NUS_quaternion.h"
+#include "math/NUS_frustum.h"
 
 /*  NUS_SYSTEM_WINDOW must be defined in the application to enable windowing */
 #if defined(NUS_SYSTEM_WINDOW)

@@ -1,6 +1,8 @@
 #ifndef _NUS_SYSTEM_EVENTS_H_
 #define _NUS_SYSTEM_EVENTS_H_
 
+#include "../NUS_result.h"
+
 struct NUS_window;
 
 #define NUS_NUM_KEYS 348
@@ -17,11 +19,9 @@ typedef struct NUS_event_handler{
   void (*close_window)(void);
 } NUS_event_handler;
 
-NUS_event_handler nus_build_event_handler(void);
-void nus_set_event_handler(NUS_event_handler *);
-
-void nus_setup_system_events(struct NUS_window);
-void nus_handle_system_events(struct NUS_window);
-void nus_add_key_function(NUS_event_handler *, int, void (*)(void));
+NUS_result nus_event_handler_build(NUS_event_handler *);
+void nus_event_handler_set(NUS_event_handler *);
+void nus_system_events_handle(struct NUS_window);
+void nus_event_handler_add_key(NUS_event_handler *, int, void (*)(void));
 
 #endif /* NUS_SYSTEM_EVENTS_H_ */

@@ -75,12 +75,19 @@ NUS_result nus_load_global_vulkan_library(void)
     printf("ERROR::failed to load vulkan_library\n");
     return NUS_FAILURE;
   }
-    
   NUS_VK_EXPORTED_FUNCTION(vkGetInstanceProcAddr);
   NUS_VK_GLOBAL_LEVEL_FUNCTION(vkCreateInstance);
   NUS_VK_GLOBAL_LEVEL_FUNCTION(vkEnumerateInstanceExtensionProperties);
   NUS_VK_GLOBAL_LEVEL_FUNCTION(vkEnumerateInstanceLayerProperties);
-  
+  return NUS_SUCCESS;
+}
+NUS_result nus_free_vulkan_library(void)
+{
+#if defined(NUS_OS_WINDOWS)
+  FreeLibrary(vulkan_library);
+#elif defined(NUS_OS_UNIX)
+  dlclose(vulkan_library);
+#endif
   return NUS_SUCCESS;
 }
 void nus_load_instance_vulkan_library
@@ -101,12 +108,21 @@ void nus_load_instance_vulkan_library
   NUS_VK_INSTANCE_LEVEL_FUNCTION(instance, functions, vkDestroySurfaceKHR);
   NUS_WINDOWS_VK_INSTANCE_LEVEL_FUNCTION(instance, functions, vkCreateWin32SurfaceKHR);
   NUS_UNIX_VK_INSTANCE_LEVEL_FUNCTION(instance, functions, vkCreateXcbSurfaceKHR);
+  NUS_VK_INSTANCE_LEVEL_FUNCTION(instance, functions,
+			       vkGetPhysicalDeviceSurfaceCapabilitiesKHR);
 }
 void nus_load_device_vulkan_library
 (VkDevice device, NUS_vk_device_functions *functions)
 {
   NUS_VK_DEVICE_LEVEL_FUNCTION(device, functions, vkDestroyDevice);
   NUS_VK_DEVICE_LEVEL_FUNCTION(device, functions, vkGetDeviceQueue);
+  NUS_VK_DEVICE_LEVEL_FUNCTION(device, functions, vkDeviceWaitIdle);
+  NUS_VK_DEVICE_LEVEL_FUNCTION(device, functions, vkCreateSwapchainKHR);
+  NUS_VK_DEVICE_LEVEL_FUNCTION(device, functions, vkDestroySwapchainKHR);
+  NUS_VK_DEVICE_LEVEL_FUNCTION(device, functions, vkGetSwapchainImagesKHR);
+  NUS_VK_DEVICE_LEVEL_FUNCTION(device, functions, vkAcquireNextImageKHR);
+  NUS_VK_DEVICE_LEVEL_FUNCTION(device, functions, vkQueuePresentKHR);
+  NUS_VK_DEVICE_LEVEL_FUNCTION(device, functions, vkCreateSemaphore);
 }
 void nus_bind_instance_vulkan_library
 (NUS_vk_instance_functions functions)
@@ -120,13 +136,21 @@ void nus_bind_instance_vulkan_library
   NUS_SET_VK_FUNCTION(functions, vkEnumerateDeviceExtensionProperties);	
   NUS_SET_VK_FUNCTION(functions, vkCreateDevice);
   NUS_SET_VK_FUNCTION(functions, vkGetPhysicalDeviceSurfaceSupportKHR);
-  NUS_SET_VK_FUNCTION(functions, vkDestroySurfaceKHR);			
+  NUS_SET_VK_FUNCTION(functions, vkDestroySurfaceKHR);
   NUS_WINDOWS_SET_VK_FUNCTION(functions, vkCreateWin32SurfaceKHR);		
   NUS_UNIX_SET_VK_FUNCTION(functions, vkCreateXcbSurfaceKHR);
+  NUS_SET_VK_FUNCTION(functions, vkGetPhysicalDeviceSurfaceCapabilitiesKHR);
 }
 void nus_bind_device_vulkan_library
 (NUS_vk_device_functions functions)
 {
   NUS_SET_VK_FUNCTION(functions, vkDestroyDevice);
   NUS_SET_VK_FUNCTION(functions, vkGetDeviceQueue);
+  NUS_SET_VK_FUNCTION(functions, vkDeviceWaitIdle);
+  NUS_SET_VK_FUNCTION(functions, vkCreateSwapchainKHR);
+  NUS_SET_VK_FUNCTION(functions, vkDestroySwapchainKHR);
+  NUS_SET_VK_FUNCTION(functions, vkGetSwapchainImagesKHR);
+  NUS_SET_VK_FUNCTION(functions, vkAcquireNextImageKHR);
+  NUS_SET_VK_FUNCTION(functions, vkQueuePresentKHR);
+  NUS_SET_VK_FUNCTION(functions, vkCreateSemaphore);
 }

@@ -12,6 +12,7 @@ typedef struct NUS_axes{
 NUS_axes nus_axes_build(NUS_vector, NUS_vector, NUS_vector);
 NUS_axes nus_axes_interpolate(NUS_axes, NUS_axes, double);
 NUS_axes nus_axes_invert(NUS_axes);
+void nus_axes_print(NUS_axes);
 
 NUS_axes nus_axes_local_pitch(NUS_axes, double);
 NUS_axes nus_axes_local_yaw(NUS_axes, double);

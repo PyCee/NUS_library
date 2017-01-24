@@ -31,8 +31,8 @@ NUS_result nus_build_presentation_surface
   surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
   surface_create_info.pNext = NULL;
   surface_create_info.flags = 0;
-  surface_create_info.connection = XGetXCBConnection(NUS_window_.display);
-  surface_create_info.window = xcb_generate_id(surface_create_info.connection);
+  surface_create_info.connection = NUS_window_.connection;
+  surface_create_info.window = NUS_window_.window;
   if(vkCreateXcbSurfaceKHR(NUS_vulkan_instance_.instance, &surface_create_info,
 			   NULL, &NUS_presentation_surface_->surface) != VK_SUCCESS){
     printf("ERROR::unable to create XCB vulkan surface\n");

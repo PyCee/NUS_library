@@ -51,6 +51,7 @@ NUS_matrix nus_matrix_scale(const NUS_matrix NUS_matrix_, const double s)
 NUS_matrix nus_matrix_multiply
 (const NUS_matrix NUS_matrix_1, const NUS_matrix NUS_matrix_2)
 {
+  /* matrix multiplication-loop form */
   /*
   unsigned char i, j, k;
   NUS_matrix NUS_matrix = nus_matrix_zero();
@@ -63,7 +64,7 @@ NUS_matrix nus_matrix_multiply
   }
   return NUS_matrix_;
   */
-  /* The below is the unrolled version of the above */
+  /* matrix multiplication-unrolled*/
   return nus_matrix_build(/* First row, first element */
 			  NUS_matrix_1.ele[0][0] * NUS_matrix_2.ele[0][0] + 
 			  NUS_matrix_1.ele[0][1] * NUS_matrix_2.ele[1][0] + 
@@ -152,10 +153,17 @@ NUS_matrix nus_matrix_translation(const struct NUS_vector NUS_vector_)
 			  0.0, 0.0, 1.0, NUS_vector_.z,
 			  0.0, 0.0, 0.0, 1.0);
 }
-NUS_matrix nus_matrix_rotation(struct NUS_axes NUS_axes_)
+NUS_matrix nus_matrix_rotation(NUS_axes NUS_axes_)
 {
-  return nus_matrix_build(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-  /* Below is a quaternion --> rotation matrix algorithm */
+  return nus_matrix_build(NUS_axes_.left.x, NUS_axes_.left.y,
+			  NUS_axes_.left.z, 0.0,
+			  NUS_axes_.upward.x, NUS_axes_.upward.y,
+			  NUS_axes_.upward.z, 0.0,
+			  NUS_axes_.forward.x, NUS_axes_.forward.y,
+			  NUS_axes_.forward.z, 0.0,
+			  0.0, 0.0, 0.0, 1.0);
+  /* Below is a quaternion --> rotation matrix algorithm.
+   a remnant of a past time */
   /*double w = NUS_quaternion_.w,
     x = NUS_quaternion_.x,
     y = NUS_quaternion_.y,
@@ -167,22 +175,41 @@ NUS_matrix nus_matrix_rotation(struct NUS_axes NUS_axes_)
   */
 }
 
-/* TODO: complete the below functions */
 NUS_matrix nus_matrix_transformation
-(struct NUS_vector, struct NUS_axes);
-
+(NUS_vector NUS_vector_, NUS_axes NUS_axes_)
+{
+  NUS_matrix scale = nus_matrix_scale(nus_matrix_identity(), 1.0),
+    rotation = nus_matrix_rotation(NUS_axes_),
+    translation = nus_matrix_translation(NUS_vector_);
+  return nus_matrix_multiply(nus_matrix_multiply(translation, rotation), scale);
+}
+NUS_vector nus_matrix_transform(NUS_matrix NUS_matrix_, NUS_vector NUS_vector_)
+{
+  return nus_vector_build(/* x component */
+			  NUS_matrix_.ele[0][0] * NUS_vector_.x +
+			  NUS_matrix_.ele[0][1] * NUS_vector_.y +
+			  NUS_matrix_.ele[0][2] * NUS_vector_.z +
+			  NUS_matrix_.ele[0][3] * 1.0,
+			  /* y component */
+			  NUS_matrix_.ele[1][0] * NUS_vector_.x +
+			  NUS_matrix_.ele[1][1] * NUS_vector_.y +
+			  NUS_matrix_.ele[1][2] * NUS_vector_.z +
+			  NUS_matrix_.ele[1][3] * 1.0,
+			  /* z component */
+			  NUS_matrix_.ele[2][0] * NUS_vector_.x +
+			  NUS_matrix_.ele[2][1] * NUS_vector_.y +
+			  NUS_matrix_.ele[2][2] * NUS_vector_.z +
+			  NUS_matrix_.ele[2][3] * 1.0);
+}
 NUS_matrix nus_matrix_inverted(NUS_matrix);
 
 void nus_matrix_print(NUS_matrix NUS_matrix_)
 {
-  printf("NUS_matrix:\n\
-{%f, %f, %f, %f,\n %f, %f, %f, %f,\n %f, %f, %f, %f,\n %f, %f, %f, %f}\n",
-	 NUS_matrix_.ele[0][0], NUS_matrix_.ele[0][1],
-	 NUS_matrix_.ele[0][2], NUS_matrix_.ele[0][3],
-	 NUS_matrix_.ele[1][0], NUS_matrix_.ele[1][1],
-	 NUS_matrix_.ele[1][2], NUS_matrix_.ele[1][3],
-	 NUS_matrix_.ele[2][0], NUS_matrix_.ele[2][1],
-	 NUS_matrix_.ele[2][2], NUS_matrix_.ele[2][3],
-	 NUS_matrix_.ele[3][0], NUS_matrix_.ele[3][1],
-	 NUS_matrix_.ele[3][2], NUS_matrix_.ele[3][3]);
+  printf("{%f, %f, %f, %f,\n %f, %f, %f, %f,\n %f, %f, %f, %f,\n %f, %f, %f, %f}\n",
+	 NUS_matrix_.ele[0][0], NUS_matrix_.ele[0][1], NUS_matrix_.ele[0][2],
+	 NUS_matrix_.ele[0][3], NUS_matrix_.ele[1][0], NUS_matrix_.ele[1][1],
+	 NUS_matrix_.ele[1][2], NUS_matrix_.ele[1][3], NUS_matrix_.ele[2][0],
+	 NUS_matrix_.ele[2][1], NUS_matrix_.ele[2][2], NUS_matrix_.ele[2][3],
+	 NUS_matrix_.ele[3][0], NUS_matrix_.ele[3][1], NUS_matrix_.ele[3][2],
+	 NUS_matrix_.ele[3][3]);
 }

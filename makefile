@@ -15,7 +15,8 @@ GPU_DIR=gpu
 IO_SRC_FILES=NUS_window.c NUS_system_events.c
 IO_DIR=io
 
-MATH_SRC_FILES=NUS_vector.c NUS_octree.c NUS_matrix.c NUS_axes.c NUS_quaternion.c
+MATH_SRC_FILES=NUS_vector.c NUS_octree.c NUS_matrix.c NUS_axes.c NUS_quaternion.c \
+	NUS_frustum.c
 MATH_DIR=math
 
 MOD_SRC_FILES=vertex.c triangle.c texture.c mesh.c model.c joint.c skeleton.c

@@ -71,7 +71,8 @@ void nus_gpu_free(NUS_gpu *NUS_gpu_)
   // do I need to free something for each property?
   free(NUS_gpu_->family_properties);
   NUS_gpu_->family_properties = NULL;
-  
+
+  vkDeviceWaitIdle(NUS_gpu_->logical_device);
   vkDestroyDevice(NUS_gpu_->logical_device, NULL);
 }
 void nus_gpu_print(NUS_gpu NUS_gpu_)

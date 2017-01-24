@@ -9,7 +9,7 @@ CFLAGS=-g -Wall -pedantic \
 	-Wmissing-prototypes \
 	-Wconversion
 
-LFLAGS=-lNUS_engine -lX11 -lm
+LFLAGS=-lNUS_engine -lxcb -lm
 
 SOURCES=main.c
 OBJS=$(SOURCES:.c=.o)
@@ -31,5 +31,5 @@ run:
 	./$(TARGET)
 
 valgrind: $(SOURCES) compile
-	valgrind -v --leak-check=full --show-leak-kinds=all --show-possibly-lost=no --read-var-info=yes --track-origins=yes ./$(TARGET)
+	valgrind --leak-check=full  ./$(TARGET)
 	make clean

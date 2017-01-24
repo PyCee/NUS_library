@@ -29,6 +29,7 @@
   NUS_VK_FUNCTION_DECLARATION(fun)
 #endif
 
+
 /* Declarations for global level vulkan functions */
 #define NUS_DECLARE_GLOBAL_VK_FUNCTIONS					\
   NUS_VK_FUNCTION_DECLARATION(vkGetInstanceProcAddr);			\
@@ -49,17 +50,20 @@
   NUS_VK_FUNCTION_DECLARATION(vkGetPhysicalDeviceSurfaceSupportKHR);	\
   NUS_VK_FUNCTION_DECLARATION(vkDestroySurfaceKHR);			\
   NUS_WINDOWS_VK_FUNCTION_DECLARATION(vkCreateWin32SurfaceKHR);		\
-  NUS_UNIX_VK_FUNCTION_DECLARATION(vkCreateXcbSurfaceKHR);		
+  NUS_UNIX_VK_FUNCTION_DECLARATION(vkCreateXcbSurfaceKHR);		\
+  NUS_VK_FUNCTION_DECLARATION(vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
 
 /* Declarations for device level vulkan functions */
 #define NUS_DECLARE_DEVICE_VK_FUNCTIONS			\
-  NUS_UNIX_VK_FUNCTION_DECLARATION(vkDestroyDevice);	\
-  NUS_UNIX_VK_FUNCTION_DECLARATION(vkGetDeviceQueue);	\
-  NUS_UNIX_VK_FUNCTION_DECLARATION(vkCreateSwapchainKHR);	\
-  NUS_UNIX_VK_FUNCTION_DECLARATION(vkDestroySwapchainKHR);	\
-  NUS_UNIX_VK_FUNCTION_DECLARATION(vkGetSwapchainImagesKHR);	\
-  NUS_UNIX_VK_FUNCTION_DECLARATION(vkAcquireNextImageKHR);	\
-  NUS_UNIX_VK_FUNCTION_DECLARATION(vkQueuePresentKHR);	
+  NUS_VK_FUNCTION_DECLARATION(vkDestroyDevice);		\
+  NUS_VK_FUNCTION_DECLARATION(vkGetDeviceQueue);	\
+  NUS_VK_FUNCTION_DECLARATION(vkDeviceWaitIdle);	\
+  NUS_VK_FUNCTION_DECLARATION(vkCreateSwapchainKHR);	\
+  NUS_VK_FUNCTION_DECLARATION(vkDestroySwapchainKHR);	\
+  NUS_VK_FUNCTION_DECLARATION(vkGetSwapchainImagesKHR);	\
+  NUS_VK_FUNCTION_DECLARATION(vkAcquireNextImageKHR);	\
+  NUS_VK_FUNCTION_DECLARATION(vkQueuePresentKHR);	\
+  NUS_VK_FUNCTION_DECLARATION(vkCreateSemaphore)
     
 NUS_DECLARE_GLOBAL_VK_FUNCTIONS;
 NUS_DECLARE_INSTANCE_VK_FUNCTIONS;
@@ -77,6 +81,7 @@ typedef struct NUS_vk_device_functions{
 struct NUS_vulkan_instance;
 struct NUS_gpu;
 NUS_result nus_load_global_vulkan_library(void);
+NUS_result nus_free_vulkan_library(void);
 void nus_load_instance_vulkan_library(VkInstance, NUS_vk_instance_functions *);
 void nus_load_device_vulkan_library(VkDevice, NUS_vk_device_functions *);
 void nus_bind_instance_vulkan_library(NUS_vk_instance_functions);

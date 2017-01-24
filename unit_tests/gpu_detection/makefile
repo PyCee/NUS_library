@@ -34,4 +34,4 @@ run:
 
 valgrind: $(SOURCES)
 	make compile
-	valgrind --leak-check=full --track-origins=yes ./$(TARGET)
+	valgrind --leak-check=yes ./$(TARGET)

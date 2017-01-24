@@ -1,12 +1,20 @@
-#ifndef _NUS_OCTREE_H_
-#define _NUS_OCTREE_H_
+#ifndef NUS_OCTREE_H
+#define NUS_OCTREE_H
 
-typedef struct NUS_octree{
+#include "NUS_vector.h"
+
+typedef unsigned int NUS_octree;
+
+typedef struct NUS_octree_t{
+  NUS_octree handle, parent_handle, children_handle[8];
   double size;
-  struct NUS_octree *parent, *child;
-} NUS_octree;
+  NUS_vector position;
+  char valid_children;
+} NUS_octree_t;
 
-NUS_octree NUS_build_octree(NUS_octree *);
-void NUS_create_octree_children(NUS_octree *);
+NUS_octree nus_octree_build(NUS_octree, double, NUS_vector);
+void nus_octree_create_children(NUS_octree);
+NUS_octree_t nus_octree_get(NUS_octree);
+NUS_octree nus_octree_next_handle(void);
 
-#endif /* _NUS_OCTREE_H_ */
+#endif /* NUS_OCTREE_H */

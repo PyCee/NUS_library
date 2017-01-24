@@ -66,6 +66,5 @@ char nus_vector_cmp(NUS_vector NUS_vector_0, NUS_vector NUS_vector_1, double ran
 }
 void nus_vector_print(NUS_vector NUS_vector_)
 {
-  printf("NUS_vector:\n{%f, %f, %f}\n",
-	 NUS_vector_.x, NUS_vector_.y, NUS_vector_.z);
+  printf("{%f, %f, %f}\n", NUS_vector_.x, NUS_vector_.y, NUS_vector_.z);
 }
