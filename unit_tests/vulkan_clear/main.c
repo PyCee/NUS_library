@@ -10,7 +10,7 @@
 
 #define PROGRAM_NAME "unit_test-vulkan_clear"
 
-
+void close_win(void);
 char run;
 void close_win(void);
 
@@ -29,6 +29,14 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to create window\n");
     return -1;
   }
+  NUS_event_handler eve;
+  if(nus_event_handler_build(&eve) != NUS_SUCCESS){
+    printf("ERROR::failed to build event handler\n");
+    return -1;
+  }
+  eve.close_window = close_win;
+  nus_event_handler_set(&eve);
+  
   
   NUS_vulkan_instance vulkan_instance;
   nus_init_vulkan_instance(&vulkan_instance);
@@ -260,9 +268,7 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-
-
-
+    
   unsigned int image_index;
   VkResult acquire_result = vkAcquireNextImageKHR(gpu_g.gpus[0].logical_device,
 						  swapchain,
@@ -284,6 +290,9 @@ int main(int argc, char *argv[])
     break;
   }
 
+  
+  
+  
 
   //creating command buffers:
 
@@ -312,7 +321,7 @@ int main(int argc, char *argv[])
     VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
     NULL,
     command_pool,
-
+    VK_COMMAND_BUFFER_LEVEL_PRIMARY,
     image_count
   };
   if(vkAllocateCommandBuffers(gpu_g.gpus[0].logical_device,
@@ -323,27 +332,121 @@ int main(int argc, char *argv[])
   }
 
   //record command buffer
+  VkImage swapchain_images[image_count];
+  if(vkGetSwapchainImagesKHR(gpu_g.gpus[0].logical_device, swapchain,
+			     &image_count, swapchain_images) != VK_SUCCESS){
+    printf("ERROR::failed to get swapchain images\n");
+    return -1;
+  }
 
+  VkCommandBufferBeginInfo command_buffer_begin_info = {
+    VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    NULL,
+    VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
+    NULL
+  };
+  VkClearColorValue clear_color = {
+    { 0.0, 0.0, 0.0, 0.0 }
+  };
 
+  VkImageSubresourceRange image_subresource_range = {
+    VK_IMAGE_ASPECT_COLOR_BIT,
+    0,
+    1,
+    0,
+    1
+  };
+  printf("before loop\n\n\n\n\n\n\n\n\n");
+  for(i = 0; i < image_count; ++i) {
+    VkImageMemoryBarrier barrier_from_present_to_clear = {
+      VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,     // VkStructureType                        sType
+      NULL,                                    // const void                            *pNext
+      VK_ACCESS_MEMORY_READ_BIT,                  // VkAccessFlags                          srcAccessMask
+      VK_ACCESS_TRANSFER_WRITE_BIT,               // VkAccessFlags                          dstAccessMask
+      VK_IMAGE_LAYOUT_UNDEFINED,                  // VkImageLayout                          oldLayout
+      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,       // VkImageLayout                          newLayout
+      0,             // uint32_t                               srcQueueFamilyIndex
+      0,             // uint32_t                               dstQueueFamilyIndex
+      swapchain_images[i],                       // VkImage                                image
+      image_subresource_range                     // VkImageSubresourceRange                subresourceRange
+    };
+    VkImageMemoryBarrier barrier_from_clear_to_present = {
+      VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,     // VkStructureType sType
+      NULL,                                    // const void *pNext
+      VK_ACCESS_TRANSFER_WRITE_BIT,               // VkAccessFlags srcAccessMask
+      VK_ACCESS_MEMORY_READ_BIT,                  // VkAccessFlags dstAccessMask
+      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,       // VkImageLayout oldLayout
+      VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,            // VkImageLayout newLayout
+      0,             // uint32_t                               srcQueueFamilyIndex
+      0,             // uint32_t                               dstQueueFamilyIndex
+      swapchain_images[i],                       // VkImage image
+      image_subresource_range                     // VkImageSubresourceRange                subresourceRange
+    };
+    vkBeginCommandBuffer( command_buffers[i], &command_buffer_begin_info );
+    vkCmdPipelineBarrier( command_buffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &barrier_from_present_to_clear );
+    
+    vkCmdClearColorImage( command_buffers[i], swapchain_images[i], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clear_color, 1, &image_subresource_range );
+    
+    vkCmdPipelineBarrier( command_buffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0, NULL, 1, &barrier_from_clear_to_present );
+    if( vkEndCommandBuffer( command_buffers[i] ) != VK_SUCCESS ) {
+      printf("ERROR::Could not record command buffers!\n");
+      return -1;
+    }
+    printf("end of loop\n\n\n");
+  }
   
 
-
-
-
-
-
-
-
-  //end record command buffer
+  //submit queue
+  VkPipelineStageFlags wait_dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+  VkSubmitInfo submit_info = {
+    VK_STRUCTURE_TYPE_SUBMIT_INFO,                // VkStructureType              sType
+    NULL,                                      // const void                  *pNext
+    1,                                            // uint32_t                     waitSemaphoreCount
+    &image_available,              // const VkSemaphore           *pWaitSemaphores
+    &wait_dst_stage_mask,                         // const VkPipelineStageFlags  *pWaitDstStageMask;
+    1,                                            // uint32_t                     commandBufferCount
+    &command_buffers[image_index],  // const VkCommandBuffer       *pCommandBuffers
+    1,                                            // uint32_t                     signalSemaphoreCount
+    &render_finished            // const VkSemaphore           *pSignalSemaphores
+  };
+  if( vkQueueSubmit( gpu_g.gpus[0].queue_families[0].queues[0], 1,
+		     &submit_info, VK_NULL_HANDLE ) != VK_SUCCESS ) {
+    printf("ERROR::failed to submit queue\n");
+    return -1;
+  }
+  
+  VkPresentInfoKHR present_info = {
+    VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,           // VkStructureType              sType
+    NULL,                                      // const void                  *pNext
+    1,                                            // uint32_t                     waitSemaphoreCount
+    &render_finished,           // const VkSemaphore           *pWaitSemaphores
+    1,                                            // uint32_t                     swapchainCount
+    &swapchain,                            // const VkSwapchainKHR        *pSwapchains
+    &image_index,                                 // const uint32_t              *pImageIndices
+    NULL                                       // VkResult           *pResults
+  };
+  VkResult result = vkQueuePresentKHR( gpu_g.gpus[0].queue_families[0].queues[0],
+				       &present_info );
+  switch(result){
+  case VK_SUCCESS:
+  case VK_SUBOPTIMAL_KHR:
+    break;
+  case VK_ERROR_OUT_OF_DATE_KHR:
+    //recreate swapchain and command buffers, window has been resized
+    printf("khr out of date\n");
+    break;
+  default:
+    printf("ERROR::failed to acquire image\n");
+    return -1;
+    break;
+  }
   
   
   //end of tmp code
   
-  //run = 1;
-  run = 0;
+  run = 1;
   while(run){
     nus_system_events_handle(win);
-    //clear window to color
   }
   
   printf("freeing unit test %s\n", PROGRAM_NAME);
@@ -356,4 +459,8 @@ int main(int argc, char *argv[])
   nus_window_free(&win);
   printf("unit test %s completed\n", PROGRAM_NAME);
   return 0;
+}
+void close_win(void)
+{
+  run = 0;
 }

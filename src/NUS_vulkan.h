@@ -51,7 +51,12 @@
   NUS_VK_UNIX_FUNCTION(vkCreateXcbSurfaceKHR, function, ##__VA_ARGS__ ); \
   function( vkGetPhysicalDeviceSurfaceCapabilitiesKHR, ##__VA_ARGS__ ); \
   function( vkGetPhysicalDeviceSurfaceFormatsKHR, ##__VA_ARGS__ );	\
-  function( vkGetPhysicalDeviceSurfacePresentModesKHR, ##__VA_ARGS__ )	
+  function( vkGetPhysicalDeviceSurfacePresentModesKHR, ##__VA_ARGS__ ); \
+  function( vkBeginCommandBuffer, ##__VA_ARGS__ );			\
+  function( vkCmdPipelineBarrier, ##__VA_ARGS__ );			\
+  function( vkCmdClearColorImage, ##__VA_ARGS__ );			\
+  function( vkEndCommandBuffer, ##__VA_ARGS__ );			\
+  function( vkQueueSubmit, ##__VA_ARGS__ )
 
 
 /* Macro to call any function on all device vk function pointers */
