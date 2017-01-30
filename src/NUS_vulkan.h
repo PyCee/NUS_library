@@ -11,72 +11,78 @@
 #elif defined(NUS_OS_UNIX)
 #define VK_USE_PLATFORM_XCB_KHR
 #endif
-
 #include <vulkan/vulkan.h>
+
+/* Call function only if compiled on windows */
+#if defined(NUS_OS_WINDOWS)
+#define NUS_VK_WINDOWS_FUNCTION(fun, function, ...) \
+  function( fun, ##__VA_ARGS__)
+#define NUS_VK_UNIX_FUNCTION(fun, function, ...)
+/* Call function only if compiled on unix */
+#elif defined(NUS_OS_UNIX)
+#define NUS_VK_WINDOWS_FUNCTION(fun, function, ...)
+#define NUS_VK_UNIX_FUNCTION(fun, function, ...) \
+  function( fun, ##__VA_ARGS__)
+#endif
+
+/* Macro to call any function on all universal vk function pointers */
+#define NUS_VK_UNIVERSAL_FUNCTION(function, ...)			\
+  function( vkGetInstanceProcAddr, ##__VA_ARGS__ );			\
+  
+/* Macro to call any function on all global vk function pointers */
+#define NUS_VK_GLOBAL_FUNCTION(function, ...)				\
+  function( vkCreateInstance, ##__VA_ARGS__ );				\
+  function( vkEnumerateInstanceExtensionProperties, ##__VA_ARGS__ );	\
+  function( vkEnumerateInstanceLayerProperties, ##__VA_ARGS__ )
+
+/* Macro to call any function on all instance vk function pointers */
+#define NUS_VK_INSTANCE_FUNCTION(function, ...)			\
+  function( vkGetDeviceProcAddr, ##__VA_ARGS__ );			\
+  function( vkDestroyInstance, ##__VA_ARGS__ );				\
+  function( vkEnumeratePhysicalDevices, ##__VA_ARGS__ );		\
+  function( vkGetPhysicalDeviceProperties, ##__VA_ARGS__ );		\
+  function( vkGetPhysicalDeviceFeatures, ##__VA_ARGS__ );		\
+  function( vkGetPhysicalDeviceQueueFamilyProperties, ##__VA_ARGS__ );	\
+  function( vkEnumerateDeviceExtensionProperties, ##__VA_ARGS__ );	\
+  function( vkCreateDevice, ##__VA_ARGS__ );				\
+  function( vkGetPhysicalDeviceSurfaceSupportKHR, ##__VA_ARGS__ );	\
+  function( vkDestroySurfaceKHR, ##__VA_ARGS__ );			\
+  NUS_VK_WINDOWS_FUNCTION(vkCreateWin32SurfaceKHR, function ##__VA_ARGS__ ); \
+  NUS_VK_UNIX_FUNCTION(vkCreateXcbSurfaceKHR, function, ##__VA_ARGS__ ); \
+  function( vkGetPhysicalDeviceSurfaceCapabilitiesKHR, ##__VA_ARGS__ ); \
+  function( vkGetPhysicalDeviceSurfaceFormatsKHR, ##__VA_ARGS__ );	\
+  function( vkGetPhysicalDeviceSurfacePresentModesKHR, ##__VA_ARGS__ )	
+
+
+/* Macro to call any function on all device vk function pointers */
+#define NUS_VK_DEVICE_FUNCTION(function, ...)			\
+  function( vkDestroyDevice, ##__VA_ARGS__ );			\
+  function( vkGetDeviceQueue, ##__VA_ARGS__ );			\
+  function( vkDeviceWaitIdle, ##__VA_ARGS__ );			\
+  function( vkCreateSwapchainKHR, ##__VA_ARGS__ );		\
+  function( vkDestroySwapchainKHR, ##__VA_ARGS__ );		\
+  function( vkGetSwapchainImagesKHR, ##__VA_ARGS__ );		\
+  function( vkAcquireNextImageKHR, ##__VA_ARGS__ );		\
+  function( vkQueuePresentKHR, ##__VA_ARGS__ );			\
+  function( vkCreateSemaphore, ##__VA_ARGS__ );			\
+  function( vkCreateCommandPool, ##__VA_ARGS__ )
+
 
 #define NUS_VK_FUNCTION_DECLARATION(fun)	\
   PFN_##fun fun
 
-/* Will declare vulkan function pointer only if compiled on windows */
-#if defined(NUS_OS_WINDOWS)
-#define NUS_WINDOWS_VK_FUNCTION_DECLARATION(fun)	\
-  NUS_VK_FUNCTION_DECLARATION(fun)
-#define NUS_UNIX_VK_FUNCTION_DECLARATION
-/* Will declare vulkan function pointer only if compiled on unix */
-#elif defined(NUS_OS_UNIX)
-#define NUS_WINDOWS_VK_FUNCTION_DECLARATION(fun)
-#define NUS_UNIX_VK_FUNCTION_DECLARATION(fun)	\
-  NUS_VK_FUNCTION_DECLARATION(fun)
-#endif
-
-
-/* Declarations for global level vulkan functions */
-#define NUS_DECLARE_GLOBAL_VK_FUNCTIONS					\
-  NUS_VK_FUNCTION_DECLARATION(vkGetInstanceProcAddr);			\
-  NUS_VK_FUNCTION_DECLARATION(vkCreateInstance);			\
-  NUS_VK_FUNCTION_DECLARATION(vkEnumerateInstanceExtensionProperties);	\
-  NUS_VK_FUNCTION_DECLARATION(vkEnumerateInstanceLayerProperties)
-
-/* Declarations for instance level vulkan functions */
-#define NUS_DECLARE_INSTANCE_VK_FUNCTIONS				\
-  NUS_VK_FUNCTION_DECLARATION(vkGetDeviceProcAddr);			\
-  NUS_VK_FUNCTION_DECLARATION(vkDestroyInstance);			\
-  NUS_VK_FUNCTION_DECLARATION(vkEnumeratePhysicalDevices);		\
-  NUS_VK_FUNCTION_DECLARATION(vkGetPhysicalDeviceProperties);		\
-  NUS_VK_FUNCTION_DECLARATION(vkGetPhysicalDeviceFeatures);		\
-  NUS_VK_FUNCTION_DECLARATION(vkGetPhysicalDeviceQueueFamilyProperties); \
-  NUS_VK_FUNCTION_DECLARATION(vkEnumerateDeviceExtensionProperties);	\
-  NUS_VK_FUNCTION_DECLARATION(vkCreateDevice);				\
-  NUS_VK_FUNCTION_DECLARATION(vkGetPhysicalDeviceSurfaceSupportKHR);	\
-  NUS_VK_FUNCTION_DECLARATION(vkDestroySurfaceKHR);			\
-  NUS_WINDOWS_VK_FUNCTION_DECLARATION(vkCreateWin32SurfaceKHR);		\
-  NUS_UNIX_VK_FUNCTION_DECLARATION(vkCreateXcbSurfaceKHR);		\
-  NUS_VK_FUNCTION_DECLARATION(vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
-
-/* Declarations for device level vulkan functions */
-#define NUS_DECLARE_DEVICE_VK_FUNCTIONS			\
-  NUS_VK_FUNCTION_DECLARATION(vkDestroyDevice);		\
-  NUS_VK_FUNCTION_DECLARATION(vkGetDeviceQueue);	\
-  NUS_VK_FUNCTION_DECLARATION(vkDeviceWaitIdle);	\
-  NUS_VK_FUNCTION_DECLARATION(vkCreateSwapchainKHR);	\
-  NUS_VK_FUNCTION_DECLARATION(vkDestroySwapchainKHR);	\
-  NUS_VK_FUNCTION_DECLARATION(vkGetSwapchainImagesKHR);	\
-  NUS_VK_FUNCTION_DECLARATION(vkAcquireNextImageKHR);	\
-  NUS_VK_FUNCTION_DECLARATION(vkQueuePresentKHR);	\
-  NUS_VK_FUNCTION_DECLARATION(vkCreateSemaphore)
-    
-NUS_DECLARE_GLOBAL_VK_FUNCTIONS;
-NUS_DECLARE_INSTANCE_VK_FUNCTIONS;
-NUS_DECLARE_DEVICE_VK_FUNCTIONS;
+NUS_VK_UNIVERSAL_FUNCTION( NUS_VK_FUNCTION_DECLARATION );
+NUS_VK_GLOBAL_FUNCTION( NUS_VK_FUNCTION_DECLARATION );
+NUS_VK_INSTANCE_FUNCTION( NUS_VK_FUNCTION_DECLARATION );
+NUS_VK_DEVICE_FUNCTION( NUS_VK_FUNCTION_DECLARATION );
 
 typedef struct NUS_vk_instance_functions{
-  NUS_DECLARE_INSTANCE_VK_FUNCTIONS;
+  NUS_VK_INSTANCE_FUNCTION( NUS_VK_FUNCTION_DECLARATION );
 } NUS_vk_instance_functions;
 
 typedef struct NUS_vk_device_functions{
-  NUS_DECLARE_DEVICE_VK_FUNCTIONS;
+  NUS_VK_DEVICE_FUNCTION( NUS_VK_FUNCTION_DECLARATION );
 } NUS_vk_device_functions;
-
 
 struct NUS_vulkan_instance;
 struct NUS_gpu;

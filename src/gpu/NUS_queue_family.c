@@ -6,7 +6,6 @@ NUS_result nus_queue_family_build
 (VkQueueFamilyProperties queue_family_properties, unsigned int queue_family_index,
  NUS_queue_family *NUS_queue_family_)
 {
-  
   unsigned char i;
   float default_priority;
 
@@ -27,16 +26,14 @@ NUS_result nus_queue_family_build
   for(i = 0; i < NUS_queue_family_->queue_count; ++i){
     NUS_queue_family_->priorities[i] = default_priority;
   }
-  NUS_queue_family_->queue_create_info.sType =
-    VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-  NUS_queue_family_->queue_create_info.pNext = NULL;
-  NUS_queue_family_->queue_create_info.flags = 0;
-  NUS_queue_family_->queue_create_info.queueFamilyIndex =
-    queue_family_index;
-  NUS_queue_family_->queue_create_info.queueCount =
-    NUS_queue_family_->queue_count;
-  NUS_queue_family_->queue_create_info.pQueuePriorities =
-    NUS_queue_family_->priorities;
+  NUS_queue_family_->queue_create_info = (VkDeviceQueueCreateInfo){
+    .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+    .pNext = NULL,
+    .flags = 0,
+    .queueFamilyIndex = queue_family_index,
+    .queueCount = NUS_queue_family_->queue_count,
+    .pQueuePriorities = NUS_queue_family_->priorities
+  };
 
   NUS_queue_family_->flags = 0;
   if(queue_family_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT){

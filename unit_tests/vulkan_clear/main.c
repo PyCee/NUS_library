@@ -10,26 +10,25 @@
 
 #define PROGRAM_NAME "unit_test-vulkan_clear"
 
-#include <X11/Xlib-xcb.h>
 
 char run;
 void close_win(void);
 
 int main(int argc, char *argv[])
 {
+  unsigned int i;
   printf("starting unit test %s\n", PROGRAM_NAME);
   if(argc){}
   if(argv){}
 
-  
-  NUS_window win = nus_build_window(PROGRAM_NAME, 600, 400);
-  nus_setup_system_events(win);
-  NUS_event_handler eve = nus_build_event_handler();
-  eve.close_window = close_win;
-  nus_set_event_handler(&eve);
-  
-
   nus_load_global_vulkan_library();
+
+  
+  NUS_window win;
+  if(nus_window_build(PROGRAM_NAME, 600, 400, &win) != NUS_SUCCESS){
+    printf("ERROR::failed to create window\n");
+    return -1;
+  }
   
   NUS_vulkan_instance vulkan_instance;
   nus_init_vulkan_instance(&vulkan_instance);
@@ -59,15 +58,20 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to build presentaion surface\n");
     return -1;
   }
+  
   NUS_gpu_group gpu_g;
- 
   if(nus_gpu_group_build(vulkan_instance.instance, &gpu_g) != NUS_SUCCESS){
     printf("ERROR::build gpu group returned NUS_FAILURE\n");
     return -1;
   }
   nus_gpu_group_check_surface_support(present.surface, &gpu_g);
-  nus_gpu_group_print(gpu_g);
 
+
+
+
+
+
+  
   //tmp code
   
   nus_bind_device_vulkan_library(gpu_g.gpus[0].functions);
@@ -79,7 +83,6 @@ int main(int argc, char *argv[])
   semaphore_create_info.pNext = NULL;
   semaphore_create_info.flags = 0;
 
-  printf("prior to semaphore creation\n");
   if((vkCreateSemaphore(gpu_g.gpus[0].logical_device, &semaphore_create_info, NULL,
 			&image_available) != VK_SUCCESS) ||
      (vkCreateSemaphore(gpu_g.gpus[0].logical_device, &semaphore_create_info, NULL,
@@ -87,33 +90,232 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to create semaphores\n");
     return -1;
   }
-  printf("after semaphore creation\n");
+  
   VkSurfaceCapabilitiesKHR surface_capabilities;
   if(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu_g.physical_devices[0],
 					    present.surface, &surface_capabilities)
      != VK_SUCCESS){
-    printf("ERROR::failed to get surface capabilities\n");
+    printf("ERROR::failed during surface capability enumeration\n");
     return -1;
   }
-  printf("after get surface capabilities\n");
+
+  unsigned int surface_format_count;
+  if((vkGetPhysicalDeviceSurfaceFormatsKHR(gpu_g.physical_devices[0], present.surface,
+					   &surface_format_count, NULL) != VK_SUCCESS)
+     || (surface_format_count == 0)){
+    printf("ERROR::failed during surface format enumeration\n");
+    return -1;
+  }
+  VkSurfaceFormatKHR surface_formats[surface_format_count];
+  if(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu_g.physical_devices[0], present.surface,
+					  &surface_format_count,
+					  surface_formats) != VK_SUCCESS){
+    printf("ERROR::failed during surface format enumeration\n");
+    return -1;
+  }
+
+  
+  unsigned int surface_present_mode_count;
+  if((vkGetPhysicalDeviceSurfacePresentModesKHR(gpu_g.physical_devices[0],
+						present.surface,
+						&surface_present_mode_count,
+						NULL) != VK_SUCCESS)
+     || (surface_present_mode_count == 0)){
+    printf("ERROR::failed during surface format enumeration\n");
+    return -1;
+  }
+  VkPresentModeKHR surface_present_modes[surface_present_mode_count];
+  if(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu_g.physical_devices[0],
+					       present.surface,
+					       &surface_present_mode_count,
+					       surface_present_modes) != VK_SUCCESS){
+    printf("ERROR::failed during surface format enumeration\n");
+    return -1;
+  }
+
+  //TODO better code to be sure variable in within range
+  unsigned int surface_desired_image_count = surface_capabilities.minImageCount + 1;
+  printf("min image count: %d\nmax image count: %d\n",
+	 surface_capabilities.minImageCount,
+	 surface_capabilities.maxImageCount);
+  if(0 == surface_capabilities.maxImageCount){
+    printf("\tmax image count of 0, no upper limit to the number of swapchain images\n");
+  }
+
+  VkSurfaceFormatKHR format;
+  /* If the surface has no preferred format */
+  if(1 == surface_format_count &&
+     surface_formats[0].format == VK_FORMAT_UNDEFINED){
+    format = (VkSurfaceFormatKHR)
+      {VK_FORMAT_R8G8B8A8_UNORM, VK_COLORSPACE_SRGB_NONLINEAR_KHR};
+  } else{
+    /* Search available formats for our preferred */
+    for(i = 0; i < surface_format_count; ++i){
+      /* If the current format is our preferred */
+      if(VK_FORMAT_R8G8B8A8_UNORM == surface_formats[i].format &&
+	 VK_COLORSPACE_SRGB_NONLINEAR_KHR == surface_formats[i].colorSpace){
+	format = surface_formats[i];
+	break;
+      } else if(i == (surface_format_count - 1)){
+	/* Else if we are on the last available format */
+	/* Set to first available format */
+	format = surface_formats[0];
+	break;
+      }
+    }
+  }
+
+  /* Obtain desired size of swapchain images */
+  VkExtent2D swapchain_extent = {600, 400};//{width, height};
+  if(-1 != surface_capabilities.currentExtent.width){
+    swapchain_extent = surface_capabilities.currentExtent;
+  } else{
+    unsigned int w = swapchain_extent.width,
+      h = swapchain_extent.height;
+    if(w > surface_capabilities.maxImageExtent.width){
+      w = surface_capabilities.maxImageExtent.width;
+    } else if(w < surface_capabilities.minImageExtent.width){
+      w = surface_capabilities.minImageExtent.width;
+    }
+    if(h > surface_capabilities.maxImageExtent.height){
+      h = surface_capabilities.maxImageExtent.height;
+    } else if(h < surface_capabilities.minImageExtent.height){
+      h = surface_capabilities.minImageExtent.height;
+    }
+    swapchain_extent = (VkExtent2D){w, h};
+  }
+
+  printf("surface usage flags:\n");
+  printf("VK_IMAGE_USAGE_TRANSFER_SRC: %d\n",
+	 !!(surface_capabilities.supportedUsageFlags &
+	    VK_IMAGE_USAGE_TRANSFER_SRC_BIT));
+  printf("VK_IMAGE_USAGE_TRANSFER_DST: %d\n",
+	 !!(surface_capabilities.supportedUsageFlags &
+	    VK_IMAGE_USAGE_TRANSFER_DST_BIT));
+  printf("VK_IMAGE_USAGE_SAMPLED: %d\n",
+	 !!(surface_capabilities.supportedUsageFlags &
+	    VK_IMAGE_USAGE_SAMPLED_BIT));
+  printf("VK_IMAGE_USAGE_STORAGE: %d\n",
+	 !!(surface_capabilities.supportedUsageFlags &
+	    VK_IMAGE_USAGE_STORAGE_BIT));
+  printf("VK_IMAGE_USAGE_COLOR_ATTACHMENT: %d\n",
+	 !!(surface_capabilities.supportedUsageFlags &
+	    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT));
+  printf("VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT: %d\n",
+	 !!(surface_capabilities.supportedUsageFlags &
+	    VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT));
+  printf("VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT: %d\n",
+	 !!(surface_capabilities.supportedUsageFlags &
+	    VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT));
+  printf("VK_IMAGE_USAGE_INPUT_ATTACHMENT: %d\n",
+	 !!(surface_capabilities.supportedUsageFlags &
+	    VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT));
+
+
+  VkSurfaceTransformFlagBitsKHR  surface_transform_bits;
+  if(surface_capabilities.supportedTransforms &
+     VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR){
+    surface_transform_bits = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+  }else{
+    surface_transform_bits = surface_capabilities.currentTransform;
+  }
+  
+  VkPresentModeKHR present_mode;
+  for(i = 0; i < surface_present_mode_count; ++i){
+    //request mailbox mode
+    if(surface_present_modes[i] == VK_PRESENT_MODE_FIFO_KHR){
+      present_mode = surface_present_modes[i];
+      break;
+    }
+    //may check for other present modes
+  }
+
+  VkSwapchainKHR old_swapchain = VK_NULL_HANDLE;
+  
+  VkSwapchainCreateInfoKHR swapchain_create_info = {
+    .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+    .pNext = NULL,
+    .flags = 0,
+    .surface = present.surface,
+    .minImageCount = surface_desired_image_count,
+    .imageFormat = format.format,
+    .imageColorSpace = format.colorSpace,
+    .imageExtent = swapchain_extent,
+    .imageArrayLayers = 1,
+    .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+    .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+    .queueFamilyIndexCount = 0,
+    .pQueueFamilyIndices = NULL,
+    .preTransform = surface_transform_bits,
+    .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+    .presentMode = present_mode,
+    .clipped = VK_TRUE,
+    .oldSwapchain = old_swapchain
+  };
+
+  VkSwapchainKHR swapchain;
+  if(vkCreateSwapchainKHR(gpu_g.gpus[0].logical_device, &swapchain_create_info,
+			   NULL, &swapchain) != VK_SUCCESS){
+    printf("ERROR::failed to create swapchain\n");
+    return -1;
+  }
+
+
+
+
+  unsigned int image_index;
+  VkResult acquire_result = vkAcquireNextImageKHR(gpu_g.gpus[0].logical_device,
+						  swapchain,
+						  (unsigned int)-1,
+						  image_available,
+						  VK_NULL_HANDLE,
+						  &image_index);
+  switch(acquire_result){
+  case VK_SUCCESS:
+  case VK_SUBOPTIMAL_KHR:
+    break;
+  case VK_ERROR_OUT_OF_DATE_KHR:
+    //recreate swapchain and command buffers, window has been resized
+    printf("khr out of date\n");
+    break;
+  default:
+    printf("ERROR::failed to acquire image\n");
+    return -1;
+    break;
+  }
+
+
+
+  VkCommandPoolCreateInfo command_pool_create_info = {
+    VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+    NULL,
+    0,
+    0 // queue family index
+  };
+  VkCommandPool command_pool;
+  if(vkCreateCommandPool(gpu_g.gpus[0].logical_device, &command_pool_create_info,
+			 NULL, &command_pool) != VK_SUCCESS){
+    printf("ERROR::failed to create command pool\n");
+    return -1;
+  }
+  
   //end of tmp code
   
   //run = 1;
   run = 0;
   while(run){
-    nus_handle_system_events(win);
+    nus_system_events_handle(win);
     //clear window to color
   }
   
+  printf("freeing unit test %s\n", PROGRAM_NAME);
+  
   nus_gpu_group_free(&gpu_g); 
   nus_free_presentation_surface(vulkan_instance, &present);
-  
-  printf("freeing unit test %s\n", PROGRAM_NAME);
   nus_free_vulkan_instance(&vulkan_instance);
-  nus_free_window(&win);
+  nus_free_vulkan_library();
+  
+  nus_window_free(&win);
   printf("unit test %s completed\n", PROGRAM_NAME);
   return 0;
-}
-void close_win(void){
-  run = 0;
 }

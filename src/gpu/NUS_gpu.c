@@ -98,18 +98,18 @@ static NUS_result nus_gpu_create_logical_device
     gpu_queue_count += NUS_gpu_->queue_families[i].queue_count;
     queue_create_info[i] = NUS_gpu_->queue_families[i].queue_create_info;
   }
-  
-  device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  device_create_info.pNext = NULL;
-  device_create_info.flags = 0;
-  device_create_info.queueCreateInfoCount = gpu_queue_count;
-  device_create_info.pQueueCreateInfos = queue_create_info;
-  device_create_info.enabledLayerCount = 0;
-  device_create_info.ppEnabledLayerNames = NULL;
-  device_create_info.enabledExtensionCount = 0;
-  device_create_info.ppEnabledExtensionNames = NULL;
-  device_create_info.pEnabledFeatures = NULL;
-  
+  device_create_info = (VkDeviceCreateInfo){
+    .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+    .pNext = NULL,
+    .flags = 0,
+    .queueCreateInfoCount = gpu_queue_count,
+    .pQueueCreateInfos = queue_create_info,
+    .enabledLayerCount = 0,
+    .ppEnabledLayerNames = NULL,
+    .enabledExtensionCount = 0,
+    .ppEnabledExtensionNames = NULL,
+    .pEnabledFeatures = NULL
+  };
   const char *exten[] = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
   };
