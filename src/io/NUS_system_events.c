@@ -33,7 +33,14 @@ void nus_system_events_handle(NUS_window NUS_window_)
   xcb_generic_event_t *event;
   while ((event = xcb_poll_for_event (NUS_window_.connection))) {
     switch (event->response_type & ~0x80) {
-      //TODO run close function when close button is pressed
+    case XCB_CLIENT_MESSAGE:
+      printf("Client Message\n");
+        if((*(xcb_client_message_event_t*)event).data.data32[0] ==
+	   (*NUS_window_.delete_reply).atom){
+	  nus_close_window_callback();
+          printf("Kill client\n");
+        }
+        break;
     case XCB_EXPOSE:
       break;
     case XCB_BUTTON_PRESS:

@@ -285,6 +285,7 @@ int main(int argc, char *argv[])
   }
 
 
+  //creating command buffers:
 
   VkCommandPoolCreateInfo command_pool_create_info = {
     VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -298,6 +299,43 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to create command pool\n");
     return -1;
   }
+  
+  unsigned int image_count;
+  if((vkGetSwapchainImagesKHR(gpu_g.gpus[0].logical_device, swapchain,
+			     &image_count, NULL ) != VK_SUCCESS) ||
+     (image_count == 0)){
+    printf("ERROR::failed to obtain count of swapchain images\n");
+    return -1;
+  }
+  VkCommandBuffer command_buffers[image_count];
+  VkCommandBufferAllocateInfo command_buffer_allocate_info = {
+    VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+    NULL,
+    command_pool,
+
+    image_count
+  };
+  if(vkAllocateCommandBuffers(gpu_g.gpus[0].logical_device,
+			      &command_buffer_allocate_info,
+			      command_buffers) != VK_SUCCESS){
+    printf("ERROR::failed to allocate command buffers\n");
+    return -1;
+  }
+
+  //record command buffer
+
+
+  
+
+
+
+
+
+
+
+
+  //end record command buffer
+  
   
   //end of tmp code
   

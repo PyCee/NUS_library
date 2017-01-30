@@ -27,7 +27,8 @@ int main(int argc, char *argv[])
     return -1;
   }
   eve.close_window = close_win;
-  run = 0;
+  nus_event_handler_set(&eve);
+  run = 1;
   while(run){
     nus_system_events_handle(win);
   }

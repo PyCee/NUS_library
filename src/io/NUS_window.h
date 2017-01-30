@@ -19,6 +19,11 @@ typedef struct NUS_window{
   xcb_connection_t *connection;
   xcb_screen_t *screen;
   xcb_window_t window;
+
+  xcb_intern_atom_cookie_t cookie;
+  xcb_intern_atom_reply_t* reply;
+  xcb_intern_atom_cookie_t delete_cookie;
+  xcb_intern_atom_reply_t* delete_reply;
 #endif
 } NUS_window;
 NUS_result nus_window_build(char *, unsigned short, unsigned short, NUS_window *);

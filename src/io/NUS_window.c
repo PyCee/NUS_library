@@ -45,6 +45,19 @@ NUS_result nus_window_build
 		      XCB_WINDOW_CLASS_INPUT_OUTPUT,
 		      NUS_window_->screen->root_visual,
 		      value_mask, value_list);
+
+    NUS_window_->cookie = xcb_intern_atom(NUS_window_->connection, 1, 12,
+					  "WM_PROTOCOLS");
+    NUS_window_->reply = xcb_intern_atom_reply(NUS_window_->connection,
+					       NUS_window_->cookie, 0);
+    NUS_window_->delete_cookie = xcb_intern_atom(NUS_window_->connection, 0, 16,
+						 "WM_DELETE_WINDOW");
+    NUS_window_->delete_reply = xcb_intern_atom_reply(NUS_window_->connection,
+						      NUS_window_->delete_cookie, 0);
+    
+    xcb_change_property(NUS_window_->connection, XCB_PROP_MODE_REPLACE,
+			NUS_window_->window, (*NUS_window_->reply).atom,
+			4, 32, 1, &(*NUS_window_->delete_reply).atom);
     
     xcb_map_window(NUS_window_->connection, NUS_window_->window);
     xcb_flush(NUS_window_->connection);

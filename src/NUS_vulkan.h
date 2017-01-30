@@ -65,7 +65,8 @@
   function( vkAcquireNextImageKHR, ##__VA_ARGS__ );		\
   function( vkQueuePresentKHR, ##__VA_ARGS__ );			\
   function( vkCreateSemaphore, ##__VA_ARGS__ );			\
-  function( vkCreateCommandPool, ##__VA_ARGS__ )
+  function( vkCreateCommandPool, ##__VA_ARGS__ );		\
+  function( vkAllocateCommandBuffers, ##__VA_ARGS__ )
 
 
 #define NUS_VK_FUNCTION_DECLARATION(fun)	\
