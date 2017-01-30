@@ -58,6 +58,11 @@ NUS_result nus_window_build
     xcb_change_property(NUS_window_->connection, XCB_PROP_MODE_REPLACE,
 			NUS_window_->window, (*NUS_window_->reply).atom,
 			4, 32, 1, &(*NUS_window_->delete_reply).atom);
+
+    /* Disables keyboard key repeats */
+    unsigned int mask = XCB_KB_AUTO_REPEAT_MODE;
+    unsigned int values[] = {XCB_AUTO_REPEAT_MODE_OFF, 0};
+    xcb_change_keyboard_control(NUS_window_->connection, mask, values);
     
     xcb_map_window(NUS_window_->connection, NUS_window_->window);
     xcb_flush(NUS_window_->connection);
