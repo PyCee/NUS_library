@@ -5,7 +5,7 @@
 #define NUS_SYSTEM_GPU
 #define NUS_SYSTEM_WINDOW
 #define NUS_SYSTEM_RENDER
-#include <NUS/NUS_engine.h>
+#include <NUS/NUS_library.h>
 #include <limits.h>
 
 #define PROGRAM_NAME "unit_test-vulkan_clear"
@@ -403,7 +403,7 @@ int main(int argc, char *argv[])
     1,                                            // uint32_t                     signalSemaphoreCount
     &render_finished            // const VkSemaphore           *pSignalSemaphores
   };
-  if( vkQueueSubmit( gpu_g.gpus[0].queue_families[0].queues[0], 1,
+  if( vkQueueSubmit( gpu_g.gpus[0].queue_families[0].queues[0].queue, 1,
 		     &submit_info, VK_NULL_HANDLE ) != VK_SUCCESS ) {
     printf("ERROR::failed to submit queue\n");
     return -1;
@@ -419,7 +419,7 @@ int main(int argc, char *argv[])
     &image_index,                                 // const uint32_t              *pImageIndices
     NULL                                       // VkResult           *pResults
   };
-  VkResult result = vkQueuePresentKHR( gpu_g.gpus[0].queue_families[0].queues[0],
+  VkResult result = vkQueuePresentKHR( gpu_g.gpus[0].queue_families[0].queues[0].queue,
 				       &present_info );
   switch(result){
   case VK_SUCCESS:

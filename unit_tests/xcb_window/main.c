@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #define NUS_SYSTEM_WINDOW
-#include <NUS/NUS_engine.h>
+#include <NUS/NUS_library.h>
 
 #define PROGRAM_NAME "unit_test-xcb_window"
 

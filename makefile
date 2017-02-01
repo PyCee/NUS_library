@@ -43,7 +43,7 @@ MATH_HEA=$(MATH_SRC:.c=.h)
 MOD_HEA=$(MOD_SRC:.c=.h)
 PHY_HEA=$(PHY_SRC:.c=.h)
 REN_HEA=$(REN_SRC:.c=.h)
-OTH_HEA=NUS_engine.h NUS_result.h NUS_os.h $(OTH_SRC:.c=.h)
+OTH_HEA=NUS_library.h NUS_result.h NUS_os.h $(OTH_SRC:.c=.h)
 
 #NUS_SRC_FILES=$(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(PHY_SRC) $(REN_SRC)
 NUS_SRC_FILES=$(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(REN_SRC) $(OTH_SRC)

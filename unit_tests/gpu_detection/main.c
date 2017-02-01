@@ -5,7 +5,7 @@
 #define NUS_SYSTEM_GPU
 #define NUS_SYSTEM_WINDOW
 #define NUS_SYSTEM_RENDER
-#include <NUS/NUS_engine.h>
+#include <NUS/NUS_library.h>
 #include <limits.h>
 
 #define PROGRAM_NAME "unit_test-gpu_detection"
