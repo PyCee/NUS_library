@@ -28,6 +28,7 @@
 #include "gpu/NUS_multi_gpu.h"
 #include "gpu/NUS_gpu.h"
 #include "gpu/NUS_queue_family.h"
+#include "gpu/NUS_command_queue.h"
 #include "gpu/NUS_vulkan_instance.h"
 #endif /* NUS_SYSTEM_GPU */
 

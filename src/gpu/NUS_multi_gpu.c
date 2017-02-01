@@ -64,7 +64,7 @@ NUS_result nus_multi_gpu_check_surface_support
   unsigned int i,
     j;
   for(i = 0; i < NUS_multi_gpu_->gpu_count; ++i){
-    for(j = 0; j < NUS_multi_gpu_->gpus[i].family_count; ++j){
+    for(j = 0; j < NUS_multi_gpu_->gpus[i].queue_family_count; ++j){
       if(nus_queue_family_test_surface_support(NUS_multi_gpu_->physical_devices[i],
 					       surface,
 					       NUS_multi_gpu_->gpus[i].queue_families
@@ -72,6 +72,26 @@ NUS_result nus_multi_gpu_check_surface_support
 	printf("ERROR::failed testing for surface support\n");
       }
     }
+  }
+  return NUS_SUCCESS;
+}
+
+NUS_result nus_multi_gpu_find_suitable_queue
+(NUS_multi_gpu NUS_multi_gpu_, unsigned int flags, VkQueue *queue)
+{
+  unsigned int i,
+    suitable_queue_found = 0;
+  for(i = 0; i < NUS_multi_gpu_.gpu_count; ++i){
+    if(nus_gpu_find_suitable_queue(NUS_multi_gpu_.gpus[i],
+				   flags, &suitable_queue_found,
+				   queue) != NUS_SUCCESS){
+      printf("ERROR::failed to find gpu suitable queue\n");
+      return NUS_FAILURE;
+    }
+  }
+  if(0 == suitable_queue_found){
+    printf("ERROR::no suitable queue found\n");
+    return NUS_FAILURE;
   }
   return NUS_SUCCESS;
 }

@@ -1,6 +1,7 @@
 #include "NUS_queue_family.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits.h>
 
 NUS_result nus_queue_family_build
 (VkQueueFamilyProperties queue_family_properties, unsigned int queue_family_index,
@@ -16,8 +17,6 @@ NUS_result nus_queue_family_build
   }
   NUS_queue_family_->queue_count = queue_family_properties.queueCount;
   
-  NUS_queue_family_->queues = malloc(sizeof(*NUS_queue_family_->queues)
-				       * NUS_queue_family_->queue_count);
   NUS_queue_family_->priorities =
     malloc(sizeof(*NUS_queue_family_->priorities) *
 	   NUS_queue_family_->queue_count);
@@ -76,25 +75,48 @@ void nus_queue_family_print(NUS_queue_family NUS_queue_family_)
   printf("present: %d\n", !!(NUS_queue_family_.flags &
 			     NUS_QUEUE_FAMILY_SUPPORT_PRESENT));
 }
-NUS_result nus_queue_family_get_queues
-(VkDevice logical_device, NUS_queue_family *NUS_queue_family_)
+NUS_result nus_queue_family_build_queues
+(VkDevice device, NUS_queue_family *NUS_queue_family_)
 {
   unsigned int i;
+  NUS_queue_family_->queues = malloc(sizeof(*NUS_queue_family_->queues)
+				       * NUS_queue_family_->queue_count);
+  
   for(i = 0; i < NUS_queue_family_->queue_count; ++i){
-    vkGetDeviceQueue(logical_device, NUS_queue_family_->family_index, i,
-		     NUS_queue_family_->queues + i);
+    nus_command_queue_build(device, NUS_queue_family_->family_index, i,
+			    NUS_queue_family_->queues + i);
   }
   return NUS_SUCCESS;
 }
 NUS_result nus_queue_family_test_surface_support
-(VkPhysicalDevice physical_device, VkSurfaceKHR surface, NUS_queue_family *NUS_queue_family_)
+(VkPhysicalDevice physical_device, VkSurfaceKHR surface,
+ NUS_queue_family *NUS_queue_family_)
 {
+  // Tests for surface support after surface has been created
   unsigned int device_support;
   vkGetPhysicalDeviceSurfaceSupportKHR(physical_device,
 				       NUS_queue_family_->family_index,
 				       surface, &device_support);
   if(VK_TRUE == device_support){
     NUS_queue_family_->flags |= NUS_QUEUE_FAMILY_SUPPORT_PRESENT;
+  }
+  return NUS_SUCCESS;
+}
+NUS_result nus_queue_family_find_suitable_queue
+(NUS_queue_family NUS_queue_family_, unsigned int *workload, VkQueue *queue)
+{
+  // Find queue with least workload
+  unsigned int i;
+  
+  for(i = 0; i < NUS_queue_family_.queue_count; ++i){
+    if((NUS_queue_family_.queues[i].workload < *workload) &&
+       (UINT_MAX == *workload)){
+      // If queue has less workload than passed queue
+      // Assigns queue to first queue with least workload
+      printf("set a queue\n");
+      *queue = NUS_queue_family_.queues[i].queue;
+      *workload = NUS_queue_family_.queues[i].workload;
+    }
   }
   return NUS_SUCCESS;
 }

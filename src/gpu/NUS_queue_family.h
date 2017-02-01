@@ -3,6 +3,7 @@
 
 #include "../NUS_result.h"
 #include "../NUS_vulkan.h"
+#include "NUS_command_queue.h"
 
 /* Bits for queue family supported operations flag */
 #define NUS_QUEUE_FAMILY_SUPPORT_GRAPHICS 0x01 /* supports graphics operations */
@@ -12,7 +13,7 @@
 #define NUS_QUEUE_FAMILY_SUPPORT_PRESENT 0x10 /* supports present/surface  operations */
 
 typedef struct NUS_queue_family{
-  VkQueue *queues;
+  NUS_command_queue *queues;
   float *priorities;
   VkDeviceQueueCreateInfo queue_create_info;
   unsigned int queue_count,
@@ -24,8 +25,10 @@ NUS_result nus_queue_family_build
 (VkQueueFamilyProperties, unsigned int, NUS_queue_family *);
 void nus_queue_family_free(NUS_queue_family *);
 void nus_queue_family_print(NUS_queue_family);
-NUS_result nus_queue_family_get_queues(VkDevice, NUS_queue_family *);
+NUS_result nus_queue_family_build_queues(VkDevice, NUS_queue_family *);
 NUS_result nus_queue_family_test_surface_support
 (VkPhysicalDevice, VkSurfaceKHR, NUS_queue_family *);
+NUS_result nus_queue_family_find_suitable_queue
+(NUS_queue_family, unsigned int *, VkQueue *);
 
 #endif /* NUS_QUEUE_FAMILY_H */

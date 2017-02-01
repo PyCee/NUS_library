@@ -59,7 +59,6 @@ void nus_system_events_handle(NUS_window NUS_window_)
       ++i;
     } else{
       // Else append the event
-      printf("adding event at event_list index %d\n", i);
       tmp_event_list = realloc(tmp_event_list, sizeof(*tmp_event_list) * (j + 1));
       tmp_event_list[j] = event_list[i];
       j++;
@@ -92,11 +91,9 @@ void nus_system_events_handle(NUS_window NUS_window_)
     case XCB_KEY_PRESS:
       //print char from detail
       //be able to get detail from keysym
-      //printf("%d\n", ((xcb_key_press_event_t*)event)->time);
       printf("key_pressed %d\n", ((*(xcb_key_press_event_t*)event)).detail);
       break;
     case XCB_KEY_RELEASE:
-      //printf("%d\n", ((xcb_key_press_event_t*)event)->time);
       printf("key released\n");
       break;
     default:

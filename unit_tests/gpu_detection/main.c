@@ -65,6 +65,11 @@ int main(int argc, char *argv[])
   }
   
   nus_multi_gpu_print(gpu_g);
+
+  VkQueue que;
+  nus_multi_gpu_find_suitable_queue(gpu_g,
+				    NUS_QUEUE_FAMILY_SUPPORT_GRAPHICS,
+				    &que);
   
   printf("freeing unit test %s\n", PROGRAM_NAME);
   
