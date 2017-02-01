@@ -1,5 +1,6 @@
 #include "NUS_presentation_surface.h"
 #include "../io/NUS_window.h"
+#include "../gpu/NUS_multi_gpu.h"
 #include "../gpu/NUS_vulkan_instance.h"
 #include <stdio.h>
 
@@ -9,8 +10,9 @@
 #include <X11/Xlib-xcb.h>
 #endif
 
-NUS_result nus_build_presentation_surface
+NUS_result nus_presentation_surface_build
 (NUS_window NUS_window_, NUS_vulkan_instance NUS_vulkan_instance_,
+ NUS_multi_gpu *NUS_multi_gpu_,
  NUS_presentation_surface *NUS_presentation_surface_)
 {
 
@@ -39,10 +41,12 @@ NUS_result nus_build_presentation_surface
     return NUS_FAILURE;
   }
 #endif
+  nus_multi_gpu_check_surface_support(NUS_presentation_surface_->surface,
+				      NUS_multi_gpu_);
   
   return NUS_SUCCESS;
 }
-void nus_free_presentation_surface
+void nus_presentation_surface_free
 (NUS_vulkan_instance NUS_vulkan_instance_,
  NUS_presentation_surface *NUS_presentation_surface_)
 {

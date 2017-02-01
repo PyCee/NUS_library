@@ -9,7 +9,7 @@ CFLAGS=-g -Wall \
 	-Wconversion \
 	-I/home/kims/VulkanSDK/1.0.33.0/x86_64/include
 
-GPU_SRC_FILES=NUS_gpu_group.c NUS_gpu.c NUS_queue_family.c NUS_vulkan_instance.c
+GPU_SRC_FILES=NUS_multi_gpu.c NUS_gpu.c NUS_queue_family.c NUS_vulkan_instance.c
 GPU_DIR=gpu
 
 IO_SRC_FILES=NUS_window.c NUS_system_events.c

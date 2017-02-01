@@ -1,7 +1,5 @@
 #include "NUS_vulkan.h"
 #include "NUS_engine.h"
-#include "gpu/NUS_vulkan_instance.h"
-#include "gpu/NUS_gpu_group.h"
 #include <stdio.h>
 
 #include <dlfcn.h>

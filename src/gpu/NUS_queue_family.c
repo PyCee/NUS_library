@@ -37,16 +37,16 @@ NUS_result nus_queue_family_build
 
   NUS_queue_family_->flags = 0;
   if(queue_family_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT){
-    NUS_queue_family_->flags |= NUS_QUEUE_SUPPORT_GRAPHICS;
+    NUS_queue_family_->flags |= NUS_QUEUE_FAMILY_SUPPORT_GRAPHICS;
   }
   if(queue_family_properties.queueFlags & VK_QUEUE_COMPUTE_BIT){
-    NUS_queue_family_->flags |= NUS_QUEUE_SUPPORT_COMPUTE;
+    NUS_queue_family_->flags |= NUS_QUEUE_FAMILY_SUPPORT_COMPUTE;
   }
   if(queue_family_properties.queueFlags & VK_QUEUE_TRANSFER_BIT){
-    NUS_queue_family_->flags |= NUS_QUEUE_SUPPORT_TRANSFER;
+    NUS_queue_family_->flags |= NUS_QUEUE_FAMILY_SUPPORT_TRANSFER;
   }
   if(queue_family_properties.queueFlags & VK_QUEUE_SPARSE_BINDING_BIT){
-    NUS_queue_family_->flags |= NUS_QUEUE_SUPPORT_SPARSE;
+    NUS_queue_family_->flags |= NUS_QUEUE_FAMILY_SUPPORT_SPARSE;
   }
   
   return NUS_SUCCESS;
@@ -65,11 +65,16 @@ void nus_queue_family_free(NUS_queue_family *NUS_queue_family_)
 void nus_queue_family_print(NUS_queue_family NUS_queue_family_)
 {
   printf("queue family has %d queue(s) and supports:\n", NUS_queue_family_.queue_count);
-  printf("graphics: %d\n", !!(NUS_queue_family_.flags & NUS_QUEUE_SUPPORT_GRAPHICS));
-  printf("compute: %d\n", !!(NUS_queue_family_.flags & NUS_QUEUE_SUPPORT_COMPUTE));
-  printf("transfer: %d\n", !!(NUS_queue_family_.flags & NUS_QUEUE_SUPPORT_TRANSFER));
-  printf("sparse: %d\n", !!(NUS_queue_family_.flags & NUS_QUEUE_SUPPORT_SPARSE));
-  printf("present: %d\n", !!(NUS_queue_family_.flags & NUS_QUEUE_SUPPORT_PRESENT));
+  printf("graphics: %d\n", !!(NUS_queue_family_.flags &
+			      NUS_QUEUE_FAMILY_SUPPORT_GRAPHICS));
+  printf("compute: %d\n", !!(NUS_queue_family_.flags &
+			     NUS_QUEUE_FAMILY_SUPPORT_COMPUTE));
+  printf("transfer: %d\n", !!(NUS_queue_family_.flags &
+			      NUS_QUEUE_FAMILY_SUPPORT_TRANSFER));
+  printf("sparse: %d\n", !!(NUS_queue_family_.flags &
+			    NUS_QUEUE_FAMILY_SUPPORT_SPARSE));
+  printf("present: %d\n", !!(NUS_queue_family_.flags &
+			     NUS_QUEUE_FAMILY_SUPPORT_PRESENT));
 }
 NUS_result nus_queue_family_get_queues
 (VkDevice logical_device, NUS_queue_family *NUS_queue_family_)
@@ -89,7 +94,7 @@ NUS_result nus_queue_family_test_surface_support
 				       NUS_queue_family_->family_index,
 				       surface, &device_support);
   if(VK_TRUE == device_support){
-    NUS_queue_family_->flags |= NUS_QUEUE_SUPPORT_PRESENT;
+    NUS_queue_family_->flags |= NUS_QUEUE_FAMILY_SUPPORT_PRESENT;
   }
   return NUS_SUCCESS;
 }

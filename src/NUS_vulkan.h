@@ -51,12 +51,7 @@
   NUS_VK_UNIX_FUNCTION(vkCreateXcbSurfaceKHR, function, ##__VA_ARGS__ ); \
   function( vkGetPhysicalDeviceSurfaceCapabilitiesKHR, ##__VA_ARGS__ ); \
   function( vkGetPhysicalDeviceSurfaceFormatsKHR, ##__VA_ARGS__ );	\
-  function( vkGetPhysicalDeviceSurfacePresentModesKHR, ##__VA_ARGS__ ); \
-  function( vkBeginCommandBuffer, ##__VA_ARGS__ );			\
-  function( vkCmdPipelineBarrier, ##__VA_ARGS__ );			\
-  function( vkCmdClearColorImage, ##__VA_ARGS__ );			\
-  function( vkEndCommandBuffer, ##__VA_ARGS__ );			\
-  function( vkQueueSubmit, ##__VA_ARGS__ )
+  function( vkGetPhysicalDeviceSurfacePresentModesKHR, ##__VA_ARGS__ )
 
 
 /* Macro to call any function on all device vk function pointers */
@@ -71,7 +66,13 @@
   function( vkQueuePresentKHR, ##__VA_ARGS__ );			\
   function( vkCreateSemaphore, ##__VA_ARGS__ );			\
   function( vkCreateCommandPool, ##__VA_ARGS__ );		\
-  function( vkAllocateCommandBuffers, ##__VA_ARGS__ )
+  function( vkAllocateCommandBuffers, ##__VA_ARGS__ );		\
+  function( vkBeginCommandBuffer, ##__VA_ARGS__ );			\
+  function( vkCmdPipelineBarrier, ##__VA_ARGS__ );			\
+  function( vkCmdClearColorImage, ##__VA_ARGS__ );			\
+  function( vkEndCommandBuffer, ##__VA_ARGS__ );			\
+  function( vkQueueSubmit, ##__VA_ARGS__ );				\
+  function( vkDestroySemaphore, ##__VA_ARGS__ )
 
 
 #define NUS_VK_FUNCTION_DECLARATION(fun)	\

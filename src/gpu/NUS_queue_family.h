@@ -5,11 +5,11 @@
 #include "../NUS_vulkan.h"
 
 /* Bits for queue family supported operations flag */
-#define NUS_QUEUE_SUPPORT_GRAPHICS 0x01 /* supports graphics operations */
-#define NUS_QUEUE_SUPPORT_COMPUTE 0x02 /* supports compute operations */
-#define NUS_QUEUE_SUPPORT_TRANSFER 0x04 /* supports transfer operations */
-#define NUS_QUEUE_SUPPORT_SPARSE 0x08 /* supports sparse operations */
-#define NUS_QUEUE_SUPPORT_PRESENT 0x10 /* supports present/surface  operations */
+#define NUS_QUEUE_FAMILY_SUPPORT_GRAPHICS 0x01 /* supports graphics operations */
+#define NUS_QUEUE_FAMILY_SUPPORT_COMPUTE 0x02 /* supports compute operations */
+#define NUS_QUEUE_FAMILY_SUPPORT_TRANSFER 0x04 /* supports transfer operations */
+#define NUS_QUEUE_FAMILY_SUPPORT_SPARSE 0x08 /* supports sparse operations */
+#define NUS_QUEUE_FAMILY_SUPPORT_PRESENT 0x10 /* supports present/surface  operations */
 
 typedef struct NUS_queue_family{
   VkQueue *queues;

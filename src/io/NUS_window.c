@@ -45,6 +45,11 @@ NUS_result nus_window_build
 		      XCB_WINDOW_CLASS_INPUT_OUTPUT,
 		      NUS_window_->screen->root_visual,
 		      value_mask, value_list);
+    
+    xcb_change_property(NUS_window_->connection, XCB_PROP_MODE_REPLACE,
+			NUS_window_->window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+		        strlen(NUS_window_->title),
+			NUS_window_->title); 
 
     NUS_window_->cookie = xcb_intern_atom(NUS_window_->connection, 1, 12,
 					  "WM_PROTOCOLS");
@@ -54,15 +59,13 @@ NUS_result nus_window_build
 						 "WM_DELETE_WINDOW");
     NUS_window_->delete_reply = xcb_intern_atom_reply(NUS_window_->connection,
 						      NUS_window_->delete_cookie, 0);
-    
+
     xcb_change_property(NUS_window_->connection, XCB_PROP_MODE_REPLACE,
 			NUS_window_->window, (*NUS_window_->reply).atom,
 			4, 32, 1, &(*NUS_window_->delete_reply).atom);
 
     /* Disables keyboard key repeats */
-    unsigned int mask = XCB_KB_AUTO_REPEAT_MODE;
-    unsigned int values[] = {XCB_AUTO_REPEAT_MODE_OFF, 0};
-    xcb_change_keyboard_control(NUS_window_->connection, mask, values);
+    
     
     xcb_map_window(NUS_window_->connection, NUS_window_->window);
     xcb_flush(NUS_window_->connection);

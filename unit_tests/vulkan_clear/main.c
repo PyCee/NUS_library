@@ -39,8 +39,7 @@ int main(int argc, char *argv[])
   
   
   NUS_vulkan_instance vulkan_instance;
-  nus_init_vulkan_instance(&vulkan_instance);
-  
+  nus_vulkan_instance_init(&vulkan_instance);
   nus_vulkan_instance_add_extension(VK_KHR_SURFACE_EXTENSION_NAME,
 				    &vulkan_instance);
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
@@ -54,25 +53,26 @@ int main(int argc, char *argv[])
 				    &vulkan_instance);
 #endif
   
-  if(nus_build_vulkan_instance(&vulkan_instance)
+  if(nus_vulkan_instance_build(&vulkan_instance)
      != NUS_SUCCESS){
     printf("ERROR::failed to create vulkan instance info\n");
     return -1;
   }
   
+  NUS_multi_gpu gpu_g;
+  if(nus_multi_gpu_build(vulkan_instance.instance, &gpu_g) != NUS_SUCCESS){
+    printf("ERROR::build multi gpu returned NUS_FAILURE\n");
+    return -1;
+  }
+  
   NUS_presentation_surface present;
-  if(nus_build_presentation_surface(win, vulkan_instance, &present)
+  if(nus_presentation_surface_build(win, vulkan_instance, &gpu_g, &present)
      != NUS_SUCCESS){
     printf("ERROR::failed to build presentaion surface\n");
     return -1;
   }
   
-  NUS_gpu_group gpu_g;
-  if(nus_gpu_group_build(vulkan_instance.instance, &gpu_g) != NUS_SUCCESS){
-    printf("ERROR::build gpu group returned NUS_FAILURE\n");
-    return -1;
-  }
-  nus_gpu_group_check_surface_support(present.surface, &gpu_g);
+  nus_multi_gpu_check_surface_support(present.surface, &gpu_g);
 
 
 
@@ -290,12 +290,7 @@ int main(int argc, char *argv[])
     break;
   }
 
-  
-  
-  
-
   //creating command buffers:
-
   VkCommandPoolCreateInfo command_pool_create_info = {
     VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
     NULL,
@@ -356,7 +351,7 @@ int main(int argc, char *argv[])
     0,
     1
   };
-  printf("before loop\n\n\n\n\n\n\n\n\n");
+  
   for(i = 0; i < image_count; ++i) {
     VkImageMemoryBarrier barrier_from_present_to_clear = {
       VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,     // VkStructureType                        sType
@@ -392,7 +387,6 @@ int main(int argc, char *argv[])
       printf("ERROR::Could not record command buffers!\n");
       return -1;
     }
-    printf("end of loop\n\n\n");
   }
   
 
@@ -450,10 +444,26 @@ int main(int argc, char *argv[])
   }
   
   printf("freeing unit test %s\n", PROGRAM_NAME);
+
+  //tmp cleanup
   
-  nus_gpu_group_free(&gpu_g); 
-  nus_free_presentation_surface(vulkan_instance, &present);
-  nus_free_vulkan_instance(&vulkan_instance);
+  vkDeviceWaitIdle(gpu_g.gpus[0].logical_device);
+  if(image_available != VK_NULL_HANDLE){
+    vkDestroySemaphore(gpu_g.gpus[0].logical_device, image_available, NULL);
+  }
+  if(render_finished != VK_NULL_HANDLE){
+    vkDestroySemaphore(gpu_g.gpus[0].logical_device, render_finished, NULL);
+  }
+  if(swapchain != VK_NULL_HANDLE){
+    vkDestroySwapchainKHR(gpu_g.gpus[0].logical_device, swapchain, NULL);
+  }
+  
+
+  //end tmp cleanup
+  
+  nus_multi_gpu_free(&gpu_g); 
+  nus_presentation_surface_free(vulkan_instance, &present);
+  nus_vulkan_instance_free(&vulkan_instance);
   nus_free_vulkan_library();
   
   nus_window_free(&win);

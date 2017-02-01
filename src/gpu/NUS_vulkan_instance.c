@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static NUS_result nus_check_vulkan_instance_support(NUS_vulkan_instance);
+static NUS_result nus_vulkan_instance_check_support(NUS_vulkan_instance);
 static NUS_result nus_check_extension_support(char **, unsigned char);
 static NUS_result nus_check_layer_support(char **, unsigned char);
 
-void nus_init_vulkan_instance(NUS_vulkan_instance *NUS_vulkan_instance_)
+void nus_vulkan_instance_init(NUS_vulkan_instance *NUS_vulkan_instance_)
 {
   NUS_vulkan_instance_->extensions = NULL;
   NUS_vulkan_instance_->layers = NULL;
@@ -15,7 +15,7 @@ void nus_init_vulkan_instance(NUS_vulkan_instance *NUS_vulkan_instance_)
   NUS_vulkan_instance_->extension_count = 0;
   NUS_vulkan_instance_->layer_count = 0;
 }
-NUS_result nus_build_vulkan_instance
+NUS_result nus_vulkan_instance_build
 (NUS_vulkan_instance *NUS_vulkan_instance_)
 {
   VkApplicationInfo application_create_info;
@@ -26,7 +26,7 @@ NUS_result nus_build_vulkan_instance
   const char * const *layers =
     (const char * const *)NUS_vulkan_instance_->layers;
   
-  if(nus_check_vulkan_instance_support(*NUS_vulkan_instance_) != NUS_SUCCESS){
+  if(nus_vulkan_instance_check_support(*NUS_vulkan_instance_) != NUS_SUCCESS){
     printf("ERROR::vulkan instance info not supported\n");
     return NUS_FAILURE;
   }
@@ -56,7 +56,7 @@ NUS_result nus_build_vulkan_instance
   nus_bind_instance_vulkan_library(NUS_vulkan_instance_->functions);
   return NUS_SUCCESS;
 }
-void nus_free_vulkan_instance(NUS_vulkan_instance *NUS_vulkan_instance_)
+void nus_vulkan_instance_free(NUS_vulkan_instance *NUS_vulkan_instance_)
 {
   unsigned char i;
   if(VK_NULL_HANDLE != NUS_vulkan_instance_->instance){
@@ -80,7 +80,7 @@ void nus_free_vulkan_instance(NUS_vulkan_instance *NUS_vulkan_instance_)
   }
 }
 
-static NUS_result nus_check_vulkan_instance_support
+static NUS_result nus_vulkan_instance_check_support
 (NUS_vulkan_instance NUS_vulkan_instance_)
 {
   if(nus_check_extension_support(NUS_vulkan_instance_.extensions,
