@@ -71,8 +71,6 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to build presentaion surface\n");
     return -1;
   }
-  
-  nus_multi_gpu_check_surface_support(present.surface, &gpu_g);
 
 
 
@@ -98,7 +96,8 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to create semaphores\n");
     return -1;
   }
-  
+
+  /*
   VkSurfaceCapabilitiesKHR surface_capabilities;
   if(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu_g.physical_devices[0],
 					    present.surface, &surface_capabilities)
@@ -121,7 +120,6 @@ int main(int argc, char *argv[])
     printf("ERROR::failed during surface format enumeration\n");
     return -1;
   }
-
   
   unsigned int surface_present_mode_count;
   if((vkGetPhysicalDeviceSurfacePresentModesKHR(gpu_g.physical_devices[0],
@@ -140,8 +138,9 @@ int main(int argc, char *argv[])
     printf("ERROR::failed during surface format enumeration\n");
     return -1;
   }
-
+  */
   //TODO better code to be sure variable in within range
+  /*
   unsigned int surface_desired_image_count = surface_capabilities.minImageCount + 1;
   printf("min image count: %d\nmax image count: %d\n",
 	 surface_capabilities.minImageCount,
@@ -149,49 +148,51 @@ int main(int argc, char *argv[])
   if(0 == surface_capabilities.maxImageCount){
     printf("\tmax image count of 0, no upper limit to the number of swapchain images\n");
   }
-
-  VkSurfaceFormatKHR format;
-  /* If the surface has no preferred format */
-  if(1 == surface_format_count &&
-     surface_formats[0].format == VK_FORMAT_UNDEFINED){
-    format = (VkSurfaceFormatKHR)
-      {VK_FORMAT_R8G8B8A8_UNORM, VK_COLORSPACE_SRGB_NONLINEAR_KHR};
-  } else{
-    /* Search available formats for our preferred */
-    for(i = 0; i < surface_format_count; ++i){
-      /* If the current format is our preferred */
-      if(VK_FORMAT_R8G8B8A8_UNORM == surface_formats[i].format &&
-	 VK_COLORSPACE_SRGB_NONLINEAR_KHR == surface_formats[i].colorSpace){
-	format = surface_formats[i];
-	break;
-      } else if(i == (surface_format_count - 1)){
-	/* Else if we are on the last available format */
-	/* Set to first available format */
-	format = surface_formats[0];
-	break;
-      }
-    }
-  }
+  */
+  //done format
+  /* /\* */
+  /* VkSurfaceFormatKHR format; */
+  /* /\* If the surface has no preferred format *\/ */
+  /* if(1 == surface_format_count && */
+  /*    surface_formats[0].format == VK_FORMAT_UNDEFINED){ */
+  /*   format = (VkSurfaceFormatKHR) */
+  /*     {VK_FORMAT_R8G8B8A8_UNORM, VK_COLORSPACE_SRGB_NONLINEAR_KHR}; */
+  /* } else{ */
+  /*   /\* Search available formats for our preferred *\/ */
+  /*   for(i = 0; i < surface_format_count; ++i){ */
+  /*     /\* If the current format is our preferred *\/ */
+  /*     if(VK_FORMAT_R8G8B8A8_UNORM == surface_formats[i].format && */
+  /* 	 VK_COLORSPACE_SRGB_NONLINEAR_KHR == surface_formats[i].colorSpace){ */
+  /* 	format = surface_formats[i]; */
+  /* 	break; */
+  /*     } else if(i == (surface_format_count - 1)){ */
+  /* 	/\* Else if we are on the last available format *\/ */
+  /* 	/\* Set to first available format *\/ */
+  /* 	format = surface_formats[0]; */
+  /* 	break; */
+  /*     } */
+  /*   } */
+  /* } */
 
   /* Obtain desired size of swapchain images */
-  VkExtent2D swapchain_extent = {600, 400};//{width, height};
-  if(-1 != surface_capabilities.currentExtent.width){
-    swapchain_extent = surface_capabilities.currentExtent;
-  } else{
-    unsigned int w = swapchain_extent.width,
-      h = swapchain_extent.height;
-    if(w > surface_capabilities.maxImageExtent.width){
-      w = surface_capabilities.maxImageExtent.width;
-    } else if(w < surface_capabilities.minImageExtent.width){
-      w = surface_capabilities.minImageExtent.width;
-    }
-    if(h > surface_capabilities.maxImageExtent.height){
-      h = surface_capabilities.maxImageExtent.height;
-    } else if(h < surface_capabilities.minImageExtent.height){
-      h = surface_capabilities.minImageExtent.height;
-    }
-    swapchain_extent = (VkExtent2D){w, h};
-  }
+  /* VkExtent2D swapchain_extent = {600, 400};//{width, height}; */
+  /* if(-1 != surface_capabilities.currentExtent.width){ */
+  /*   swapchain_extent = surface_capabilities.currentExtent; */
+  /* } else{ */
+  /*   unsigned int w = swapchain_extent.width, */
+  /*     h = swapchain_extent.height; */
+  /*   if(w > surface_capabilities.maxImageExtent.width){ */
+  /*     w = surface_capabilities.maxImageExtent.width; */
+  /*   } else if(w < surface_capabilities.minImageExtent.width){ */
+  /*     w = surface_capabilities.minImageExtent.width; */
+  /*   } */
+  /*   if(h > surface_capabilities.maxImageExtent.height){ */
+  /*     h = surface_capabilities.maxImageExtent.height; */
+  /*   } else if(h < surface_capabilities.minImageExtent.height){ */
+  /*     h = surface_capabilities.minImageExtent.height; */
+  /*   } */
+  /*   swapchain_extent = (VkExtent2D){w, h}; */
+  /* } */
 
   printf("surface usage flags:\n");
   printf("VK_IMAGE_USAGE_TRANSFER_SRC: %d\n",
@@ -219,7 +220,7 @@ int main(int argc, char *argv[])
 	 !!(surface_capabilities.supportedUsageFlags &
 	    VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT));
 
-
+  /*
   VkSurfaceTransformFlagBitsKHR  surface_transform_bits;
   if(surface_capabilities.supportedTransforms &
      VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR){
@@ -227,7 +228,8 @@ int main(int argc, char *argv[])
   }else{
     surface_transform_bits = surface_capabilities.currentTransform;
   }
-  
+  */
+  /*
   VkPresentModeKHR present_mode;
   for(i = 0; i < surface_present_mode_count; ++i){
     //request mailbox mode
@@ -237,7 +239,8 @@ int main(int argc, char *argv[])
     }
     //may check for other present modes
   }
-
+  */
+  /*
   VkSwapchainKHR old_swapchain = VK_NULL_HANDLE;
   
   VkSwapchainCreateInfoKHR swapchain_create_info = {
@@ -267,12 +270,12 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to create swapchain\n");
     return -1;
   }
-
+  */
     
   unsigned int image_index;
   VkResult acquire_result = vkAcquireNextImageKHR(gpu_g.gpus[0].logical_device,
 						  swapchain,
-						  (unsigned int)-1,
+						  UINT_MAX,
 						  image_available,
 						  VK_NULL_HANDLE,
 						  &image_index);
@@ -453,9 +456,6 @@ int main(int argc, char *argv[])
   }
   if(render_finished != VK_NULL_HANDLE){
     vkDestroySemaphore(gpu_g.gpus[0].logical_device, render_finished, NULL);
-  }
-  if(swapchain != VK_NULL_HANDLE){
-    vkDestroySwapchainKHR(gpu_g.gpus[0].logical_device, swapchain, NULL);
   }
   
 

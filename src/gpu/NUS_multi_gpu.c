@@ -75,7 +75,13 @@ NUS_result nus_multi_gpu_check_surface_support
   }
   return NUS_SUCCESS;
 }
-
+NUS_result nus_multi_gpu_find_suitable_gpu_index
+(NUS_multi_gpu NUS_multi_gpu_, unsigned int *gpu_index)
+{
+  // TODO replace with algorithm to determine suitable gpu
+  *gpu_index = 0;
+  return NUS_SUCCESS;
+}
 NUS_result nus_multi_gpu_find_suitable_queue
 (NUS_multi_gpu NUS_multi_gpu_, unsigned int flags, VkQueue *queue)
 {
