@@ -1,4 +1,3 @@
-
 CC=gcc
 CFLAGS=-g -Wall \
 	-Wshadow \
@@ -16,21 +15,23 @@ LFLAGS= -lNUS_library -lX11 -lxcb -lX11-xcb -ldl \
 SOURCES=main.c
 OBJS=$(SOURCES:.c=.o)
 
-UNIT_TESTS:= xcb_window/ gpu_detection/ #vulkan_clear/
+UNIT_TESTS:= xcb_window/ gpu_detection/ vulkan_clear/
 UNIT_TESTS:=$(UNIT_TESTS:/=/unit_test)
 
-RUN_DIR?=gpu_detection/
+TEST?=$(UNIT_TESTS)
+EMPTY:= 
+SPACE=$(EMPTY) $(EMPTY)
 
 .PHONY: clean run valgrind
 
 all: recompile
 
 run:
-	./$(RUN_DIR)unit_test
+	$(subst $(SPACE), && ,$(addprefix ./, $(TEST:/=/unit_test)))
 valgrind: recompile
 	valgrind --leak-check=yes --track-origins=yes ./$(RUN_DIR)unit_test
 
-compile: $(UNIT_TESTS)
+compile: $(TESTS)
 recompile: clean compile
 %/unit_test: %/main.o
 	gcc $< $(LFLAGS) -o $@
@@ -38,8 +39,3 @@ recompile: clean compile
 	$(CC) $(CFLAGS) -c $<  -o $@
 clean:
 	find . -type f \( -name 'unit_test' -o -name '*.o' \) -delete
-rebuild:
-	make all
-
-
-.PHONY: clean
