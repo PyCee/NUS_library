@@ -88,6 +88,8 @@ void nus_presentation_surface_free
 (NUS_vulkan_instance NUS_vulkan_instance_,
  NUS_presentation_surface *NUS_presentation_surface_)
 {
+  vkDestroySwapchainKHR(NUS_presentation_surface_->presenting_device,
+			NUS_presentation_surface_->swapchain, NULL);
   vkDestroySurfaceKHR(NUS_vulkan_instance_.instance,
 		      NUS_presentation_surface_->surface, NULL);
 }

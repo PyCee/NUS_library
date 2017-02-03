@@ -39,19 +39,15 @@ int main(int argc, char *argv[])
   
   
   NUS_vulkan_instance vulkan_instance;
-  nus_vulkan_instance_init(&vulkan_instance);
-  nus_vulkan_instance_add_extension(VK_KHR_SURFACE_EXTENSION_NAME,
-				    &vulkan_instance);
-#if defined(VK_USE_PLATFORM_WIN32_KHR)
-  nus_vulkan_instance_add_extension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-				    &vulkan_instance);
-#elif defined(VK_USE_PLATFORM_XCB_KHR)
-  nus_vulkan_instance_add_extension(VK_KHR_XCB_SURFACE_EXTENSION_NAME,
-				    &vulkan_instance);
-#elif defined(VK_USE_PLATFORM_XLIB_KHR)
-  nus_vulkan_instance_add_extension(VK_KHR_XLIB_SURFACE_EXTENSION_NAME,
-				    &vulkan_instance);
+  char *extensions[] = {
+    VK_KHR_SURFACE_EXTENSION_NAME,
+#if defined(NUS_OS_WINDOWS)
+    VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+#elif defined(NUS_OS_UNIX)
+    VK_KHR_XCB_SURFACE_EXTENSION_NAME
 #endif
+  };
+  nus_vulkan_instance_set_extensions(2, extensions, &vulkan_instance);
   
   if(nus_vulkan_instance_build(&vulkan_instance)
      != NUS_SUCCESS){

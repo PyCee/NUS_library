@@ -16,11 +16,12 @@ typedef struct NUS_vulkan_instance{
     layer_count;
 } NUS_vulkan_instance;
 
-void nus_vulkan_instance_init(NUS_vulkan_instance *);
 NUS_result nus_vulkan_instance_build(NUS_vulkan_instance *);
 void nus_vulkan_instance_free(NUS_vulkan_instance *);
 
-NUS_result nus_vulkan_instance_add_extension(char *, NUS_vulkan_instance *);
-NUS_result nus_vulkan_instance_add_layer(char *, NUS_vulkan_instance *);
+NUS_result nus_vulkan_instance_set_extensions
+(unsigned char, char **, NUS_vulkan_instance *);
+NUS_result nus_vulkan_instance_set_layers
+(unsigned char, char **, NUS_vulkan_instance *);
 
 #endif /* _NUS_VULKAN_INSTANCE_H_ */

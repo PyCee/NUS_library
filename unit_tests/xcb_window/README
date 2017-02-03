@@ -1,1 +1,1 @@
-unit test for creating a window and clearing the screen
+unit_test that creates a window and recieves user input until the window is closed

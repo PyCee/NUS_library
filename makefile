@@ -57,7 +57,7 @@ NUS_OBJ=$(NUS_SRC:.c=.o)
 all: $(NUS_SRC) compile
 
 compile: $(NUS_OBJ)
-	sudo ar rcs /usr/local/lib/libNUS_engine.a $(NUS_OBJ)
+	sudo ar rcs /usr/local/lib/libNUS_library.a $(NUS_OBJ)
 	if [ ! -d "/usr/local/include/NUS" ]; then \
 		sudo mkdir /usr/local/include/NUS; fi
 	if [ ! -d "/usr/local/include/NUS/$(GPU_DIR)" ]; then \

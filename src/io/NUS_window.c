@@ -63,9 +63,6 @@ NUS_result nus_window_build
     xcb_change_property(NUS_window_->connection, XCB_PROP_MODE_REPLACE,
 			NUS_window_->window, (*NUS_window_->reply).atom,
 			4, 32, 1, &(*NUS_window_->delete_reply).atom);
-
-    /* Disables keyboard key repeats */
-    
     
     xcb_map_window(NUS_window_->connection, NUS_window_->window);
     xcb_flush(NUS_window_->connection);
@@ -76,6 +73,9 @@ NUS_result nus_window_build
 
 void nus_window_free(NUS_window *NUS_window_)
 {
+  free(NUS_window_->reply);
+  free(NUS_window_->delete_reply);
+  
   xcb_disconnect(NUS_window_->connection);
   free(NUS_window_->title);
 }

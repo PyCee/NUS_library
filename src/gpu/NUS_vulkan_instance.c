@@ -7,14 +7,6 @@ static NUS_result nus_vulkan_instance_check_support(NUS_vulkan_instance);
 static NUS_result nus_check_extension_support(char **, unsigned char);
 static NUS_result nus_check_layer_support(char **, unsigned char);
 
-void nus_vulkan_instance_init(NUS_vulkan_instance *NUS_vulkan_instance_)
-{
-  NUS_vulkan_instance_->extensions = NULL;
-  NUS_vulkan_instance_->layers = NULL;
-  NUS_vulkan_instance_->instance = VK_NULL_HANDLE;
-  NUS_vulkan_instance_->extension_count = 0;
-  NUS_vulkan_instance_->layer_count = 0;
-}
 NUS_result nus_vulkan_instance_build
 (NUS_vulkan_instance *NUS_vulkan_instance_)
 {
@@ -163,31 +155,30 @@ static NUS_result nus_check_layer_support(char **layers, unsigned char layer_cou
   return NUS_SUCCESS;
 }
 
-#define NUS_VULKAN_INSTANCE_ADD_INFO(p_instance, type, i)		\
+#define NUS_VULKAN_INSTANCE_ADD_INFO(p_instance, info, count, i)	\
   do{									\
-    i = p_instance->type##_count++;					\
-    if(NULL == type){							\
-      printf("ERROR::no %s passed\n", type);				\
-      return NUS_FAILURE;						\
+    p_instance->info##_count = count;					\
+    p_instance->info##s = malloc(sizeof(*p_instance->info##s) * count);	\
+    for(i = 0; i < count; ++i){						\
+      p_instance->info##s[i] = malloc(sizeof(**p_instance->info##s) *	\
+				      (strlen(info[i]) + 1));		\
+      strcpy(p_instance->info##s[i], info[i]);				\
     }									\
-    p_instance->type##s = realloc(p_instance->type##s,			\
-				  sizeof(*p_instance->type##s) *	\
-				  p_instance->type##_count);		\
-    p_instance->type##s[i] = malloc(strlen(type) + 1);			\
-    strcpy(p_instance->type##s[i], type);				\
   }while(0)
 
-NUS_result nus_vulkan_instance_add_extension
-(char *extension, NUS_vulkan_instance *NUS_vulkan_instance_)
+NUS_result nus_vulkan_instance_set_extensions
+(unsigned char extension_count, char **extension,
+ NUS_vulkan_instance *NUS_vulkan_instance_)
 {
   unsigned char i;
-  NUS_VULKAN_INSTANCE_ADD_INFO(NUS_vulkan_instance_, extension, i);
+  NUS_VULKAN_INSTANCE_ADD_INFO(NUS_vulkan_instance_, extension, extension_count, i);
   return NUS_SUCCESS;
 }
-NUS_result nus_vulkan_instance_add_layer
-(char *layer, NUS_vulkan_instance *NUS_vulkan_instance_)
+NUS_result nus_vulkan_instance_set_layers
+(unsigned char layer_count, char **layer,
+ NUS_vulkan_instance *NUS_vulkan_instance_)
 {
   unsigned char i;
-  NUS_VULKAN_INSTANCE_ADD_INFO(NUS_vulkan_instance_, layer, i);
+  NUS_VULKAN_INSTANCE_ADD_INFO(NUS_vulkan_instance_, layer, layer_count, i);
   return NUS_SUCCESS;
 }
