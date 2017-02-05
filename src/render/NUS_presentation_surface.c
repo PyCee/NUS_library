@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <limits.h>
 
+static NUS_result nus_presentation_surface_new_image
+(NUS_presentation_surface *);
 static NUS_result nus_presentation_surface_build_swapchain
 (NUS_presentation_surface *);
 static NUS_result nus_presentation_surface_build_swapchain_info
@@ -40,7 +42,7 @@ NUS_result nus_presentation_surface_build
     printf("ERROR::unable to create Win32 vulkan surface\n");
     return NUS_FAILURE;
   }
-#elif defined(VK_USE_PLATFORM_XCB_KHR)
+#elif defined(NUS_OS_UNIX)
   VkXcbSurfaceCreateInfoKHR surface_create_info;
   surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
   surface_create_info.pNext = NULL;
@@ -57,17 +59,20 @@ NUS_result nus_presentation_surface_build
 				      NUS_multi_gpu_);
 
   unsigned int suitable_gpu_index;
-  if(nus_multi_gpu_find_suitable_gpu_index(*NUS_multi_gpu_,
-					   &suitable_gpu_index) != NUS_SUCCESS){
+  if(nus_multi_gpu_find_suitable_gpu(*NUS_multi_gpu_,
+				     NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
+				     NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
+				     &suitable_gpu_index) != NUS_SUCCESS){
     printf("ERROR::failed to find presentation surface suitable gpu index\n");
     return NUS_FAILURE;
   }
   NUS_gpu * const suitable_gpu = NUS_multi_gpu_->gpus + suitable_gpu_index;
-  NUS_presentation_surface_->presenting_device = suitable_gpu->logical_device;
-  nus_bind_device_vulkan_library(suitable_gpu->functions);
+  NUS_presentation_surface_->presenting_gpu = suitable_gpu;
   VkPhysicalDevice suitable_physical_device =
     NUS_multi_gpu_->physical_devices[suitable_gpu_index];
   
+  nus_bind_device_vulkan_library(suitable_gpu->functions);
+
   if(nus_presentation_surface_build_swapchain_info(suitable_physical_device,
 						   NUS_presentation_surface_) !=
      NUS_SUCCESS){
@@ -80,28 +85,218 @@ NUS_result nus_presentation_surface_build
     printf("ERROR::failed to build presentation surface swapchain\n");
     return NUS_FAILURE;
   }
-  
-  
   return NUS_SUCCESS;
 }
 void nus_presentation_surface_free
 (NUS_vulkan_instance NUS_vulkan_instance_,
  NUS_presentation_surface *NUS_presentation_surface_)
 {
-  vkDestroySwapchainKHR(NUS_presentation_surface_->presenting_device,
+  vkDeviceWaitIdle(NUS_presentation_surface_->presenting_gpu->logical_device);
+  if(NUS_presentation_surface_->image_available != VK_NULL_HANDLE){
+    vkDestroySemaphore(NUS_presentation_surface_->presenting_gpu->logical_device,
+		       NUS_presentation_surface_->image_available, NULL);
+  }
+  if(NUS_presentation_surface_->image_rendered != VK_NULL_HANDLE){
+    vkDestroySemaphore(NUS_presentation_surface_->presenting_gpu->logical_device,
+		       NUS_presentation_surface_->image_rendered, NULL);
+  }
+  vkDestroySwapchainKHR(NUS_presentation_surface_->presenting_gpu->logical_device,
 			NUS_presentation_surface_->swapchain, NULL);
+  NUS_presentation_surface_->presenting_gpu = NULL;
+  NUS_presentation_surface_->swapchain_length = 0;
+  NUS_presentation_surface_->image_index = UINT_MAX;
   vkDestroySurfaceKHR(NUS_vulkan_instance_.instance,
 		      NUS_presentation_surface_->surface, NULL);
 }
-void nus_presentation_surface_clear
-(unsigned int image_index, VkClearColorValue clear_color,
+NUS_result nus_presentation_surface_present
+(NUS_presentation_surface *NUS_presentation_surface_)
+{
+  unsigned int queue_family_index = UINT_MAX,
+    queue_index = UINT_MAX;
+  if((nus_gpu_find_suitable_queue_family(*NUS_presentation_surface_->presenting_gpu,
+					 NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
+					 &queue_family_index) != NUS_SUCCESS) ||
+     UINT_MAX == queue_family_index){
+    printf("ERROR::failed to find suitable queue family for presentation\n");
+    return NUS_FAILURE;
+  }
+  if((nus_queue_family_find_suitable_queue(NUS_presentation_surface_->presenting_gpu->
+					   queue_families[queue_family_index],
+					   &queue_index) != NUS_SUCCESS) ||
+     UINT_MAX == queue_index){
+    printf("ERROR::failed to find suitable queue for presentation\n");
+    return NUS_FAILURE;
+  }
+  VkPresentInfoKHR present_info = {
+    .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+    .pNext = NULL,
+    .waitSemaphoreCount = 1,
+    .pWaitSemaphores = &NUS_presentation_surface_->image_rendered,
+    .swapchainCount = 1,
+    .pSwapchains = &NUS_presentation_surface_->swapchain,
+    .pImageIndices = &NUS_presentation_surface_->image_index,
+    .pResults = NULL
+  };
+  switch(vkQueuePresentKHR(NUS_presentation_surface_->presenting_gpu->
+			   queue_families[queue_family_index].
+			   queues[queue_index].queue, &present_info)){
+  case VK_SUCCESS:
+  case VK_SUBOPTIMAL_KHR:
+    break;
+  case VK_ERROR_OUT_OF_DATE_KHR:
+    // Recreate swapchain and command buffers, window has been resized
+    //(or something similar)
+    printf("khr out of date\n");
+    break;
+  default:
+    printf("ERROR::failed to present image\n");
+    return NUS_FAILURE;
+    break;
+  }
+
+  if(nus_presentation_surface_new_image(NUS_presentation_surface_) != NUS_SUCCESS){
+    printf("ERROR::failed to get new swapchain image\n");
+    return NUS_FAILURE;
+  }
+  return NUS_SUCCESS;
+}
+NUS_result nus_presentation_surface_clear
+(VkSemaphore wait, VkSemaphore signal, VkClearColorValue clear_color,
  NUS_presentation_surface *NUS_presentation_surface_)
 {
-  // submit information to queues to clear image
+  unsigned int queue_family_index = UINT_MAX,
+    queue_index = UINT_MAX;
+  VkCommandBuffer command_buffer;
+  
+  if((nus_gpu_find_suitable_queue_family(*NUS_presentation_surface_->presenting_gpu,
+					 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
+					 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
+					 &queue_family_index) !=
+      NUS_SUCCESS) || (UINT_MAX == queue_family_index)){
+    printf("ERROR::failed to find presentation surface suitable queue family\n");
+    return NUS_FAILURE;
+  }
+  if((nus_queue_family_find_suitable_queue(NUS_presentation_surface_->presenting_gpu->
+					   queue_families[queue_family_index],
+					   &queue_index) !=
+      NUS_SUCCESS) || (UINT_MAX == queue_index)){
+    printf("ERROR::failed to find presentation surface suitable queue\n");
+    return NUS_FAILURE;
+  }
+  NUS_command_queue *command_queue =
+    NUS_presentation_surface_->presenting_gpu->
+    queue_families[queue_family_index].queues + queue_index;
+  
+  if(nus_command_queue_add_buffer(command_queue,
+				  NUS_presentation_surface_->
+				  presenting_gpu->logical_device,
+				  NUS_presentation_surface_->presenting_gpu->
+				  queue_families[queue_family_index].command_pool,
+				  &command_buffer) != NUS_SUCCESS){
+    printf("ERROR::failed to add command queue buffer\n");
+    return NUS_FAILURE;
+  }
+  
+  if(nus_command_queue_add_semaphores(command_queue, 1, &wait, 1, &signal) !=
+     NUS_SUCCESS){
+    printf("ERROR::failed to add semaphores in clear presentation surface\n");
+    return NUS_FAILURE;
+  }
+  VkCommandBufferBeginInfo command_buffer_begin_info = {
+    VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    NULL,
+    VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
+    NULL
+  };
+  VkImageSubresourceRange image_subresource_range = {
+    VK_IMAGE_ASPECT_COLOR_BIT,
+    0,
+    1,
+    0,
+    1
+  };
+  VkImageMemoryBarrier barrier_from_present_to_clear = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    .pNext = NULL,
+    .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+    .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+    .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+    .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    .srcQueueFamilyIndex = queue_family_index,
+    .dstQueueFamilyIndex = queue_family_index,
+    .image = NUS_presentation_surface_->render_image,
+    .subresourceRange = image_subresource_range
+  };
+  VkImageMemoryBarrier barrier_from_clear_to_present = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    .pNext = NULL,
+    .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+    .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+    .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    .srcQueueFamilyIndex = queue_family_index,
+    .dstQueueFamilyIndex = queue_family_index,
+    .image = NUS_presentation_surface_->render_image,
+    .subresourceRange = image_subresource_range
+  };
+  vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
+  
+  vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
+		       VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL,
+		       1, &barrier_from_present_to_clear);
+  
+  vkCmdClearColorImage(command_buffer, NUS_presentation_surface_->render_image,
+		       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		       &clear_color, 1, &image_subresource_range);
+  
+  vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
+		       VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL,
+		       0, NULL, 1, &barrier_from_clear_to_present);
+  
+  if(vkEndCommandBuffer(command_buffer) != VK_SUCCESS){
+      printf("ERROR::Could not record command buffers!\n");
+      return NUS_FAILURE;
+  }
+  return NUS_SUCCESS;
+}
+static NUS_result nus_presentation_surface_new_image
+(NUS_presentation_surface *NUS_presentation_surface_)
+{
+  switch(vkAcquireNextImageKHR(NUS_presentation_surface_->presenting_gpu->
+			       logical_device,
+			       NUS_presentation_surface_->swapchain,
+			       UINT_MAX,
+			       NUS_presentation_surface_->image_available,
+			       VK_NULL_HANDLE,
+			       &NUS_presentation_surface_->image_index)){
+  case VK_SUCCESS:
+  case VK_SUBOPTIMAL_KHR:
+    break;
+  case VK_ERROR_OUT_OF_DATE_KHR:
+    printf("khr out of date\n");
+    break;
+  default:
+    printf("ERROR::failed to acquire image\n");
+    return NUS_FAILURE;
+    break;
+  }
+  VkImage swapchain_images[NUS_presentation_surface_->swapchain_length];
+  if(vkGetSwapchainImagesKHR(NUS_presentation_surface_->presenting_gpu->logical_device,
+			     NUS_presentation_surface_->swapchain,
+			     &NUS_presentation_surface_->swapchain_length,
+			     swapchain_images) != VK_SUCCESS){
+    printf("ERROR::failed to obtain swapchain images\n");
+    return NUS_FAILURE;
+  }
+  NUS_presentation_surface_->render_image =
+    swapchain_images[NUS_presentation_surface_->image_index];
+  return NUS_SUCCESS;
 }
 static NUS_result nus_presentation_surface_build_swapchain
 (NUS_presentation_surface *NUS_presentation_surface_)
 {
+  // should I put swapchain extent code in here, for when the window is resized and
+  // this function is called
   VkSwapchainCreateInfoKHR swapchain_create_info = {
     .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
     .pNext = NULL,
@@ -122,10 +317,25 @@ static NUS_result nus_presentation_surface_build_swapchain
     .clipped = VK_TRUE,
     .oldSwapchain = NUS_presentation_surface_->swapchain
   };
-  if(vkCreateSwapchainKHR(NUS_presentation_surface_->presenting_device,
+  if(vkCreateSwapchainKHR(NUS_presentation_surface_->presenting_gpu->logical_device,
 			  &swapchain_create_info, NULL,
 			  &NUS_presentation_surface_->swapchain) != VK_SUCCESS){
-    printf("ERROR::failed to create swapchain\n");
+    printf("ERROR::failed to create swapchain\n");    
+    return NUS_FAILURE;
+  }
+  
+  nus_presentation_surface_new_image(NUS_presentation_surface_);
+  
+  VkSemaphoreCreateInfo image_available_create_info = {
+    .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+    .pNext = NULL,
+    .flags = 0
+  };
+  if(vkCreateSemaphore(NUS_presentation_surface_->presenting_gpu->logical_device,
+		       &image_available_create_info, NULL,
+		       &NUS_presentation_surface_->image_available) !=
+     VK_SUCCESS){
+    printf("ERROR::failed to create surface semaphore\n");
     return NUS_FAILURE;
   }
   return NUS_SUCCESS;
@@ -180,10 +390,10 @@ static NUS_result nus_presentation_surface_build_swapchain_length
     // If there is no max limit on number of images
 
     // 3 is our optimal length for mailbox present mode
-    NUS_presentation_surface_->swapchain_length = 3;
-  }else if((3 > NUS_presentation_surface_->capabilities.minImageCount) &&
-	   (3 < NUS_presentation_surface_->capabilities.maxImageCount)){
-    NUS_presentation_surface_->swapchain_length = 3;
+    NUS_presentation_surface_->swapchain_length = 4;
+  }else if((4 > NUS_presentation_surface_->capabilities.minImageCount) &&
+	   (4 < NUS_presentation_surface_->capabilities.maxImageCount)){
+    NUS_presentation_surface_->swapchain_length = 4;
   }else{
     NUS_presentation_surface_->swapchain_length =
       NUS_presentation_surface_->capabilities.minImageCount + 1;
@@ -259,11 +469,13 @@ static NUS_result nus_presentation_surface_build_surface_present_modes
   }
   
   unsigned int desired_present_mode_index = UINT_MAX;
-  for(i = 0; i < present_mode_count; ++i){
-    // Search for our desired present mode
-    if(VK_PRESENT_MODE_MAILBOX_KHR == available_present_modes[i]){
-      desired_present_mode_index = i;
-      break;
+  if(NUS_presentation_surface_->swapchain_length > 3){
+    for(i = 0; i < present_mode_count; ++i){
+      // Search for our desired present mode
+      if(VK_PRESENT_MODE_MAILBOX_KHR == available_present_modes[i]){
+	desired_present_mode_index = i;
+	break;
+      }
     }
   }
   if(UINT_MAX == desired_present_mode_index){

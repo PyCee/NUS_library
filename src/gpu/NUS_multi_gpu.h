@@ -16,7 +16,8 @@ void nus_multi_gpu_free(NUS_multi_gpu *);
 void nus_multi_gpu_print(NUS_multi_gpu);
 NUS_result nus_multi_gpu_check_surface_support(VkSurfaceKHR, NUS_multi_gpu *);
 NUS_result nus_multi_gpu_find_suitable_gpu_index(NUS_multi_gpu, unsigned int *);
-NUS_result nus_multi_gpu_find_suitable_queue
-(NUS_multi_gpu, unsigned int, VkQueue *);
+NUS_result nus_multi_gpu_find_suitable_gpu
+(NUS_multi_gpu, unsigned int, unsigned int *);
+NUS_result nus_multi_gpu_submit_commands(NUS_multi_gpu);
 
 #endif /* NUS_MULTI_GPU_H */

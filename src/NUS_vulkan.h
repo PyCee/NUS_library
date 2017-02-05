@@ -72,7 +72,9 @@
   function( vkCmdClearColorImage, ##__VA_ARGS__ );			\
   function( vkEndCommandBuffer, ##__VA_ARGS__ );			\
   function( vkQueueSubmit, ##__VA_ARGS__ );				\
-  function( vkDestroySemaphore, ##__VA_ARGS__ )
+  function( vkDestroySemaphore, ##__VA_ARGS__ );			\
+  function( vkFreeCommandBuffers, ##__VA_ARGS__ );			\
+  function( vkDestroyCommandPool, ##__VA_ARGS__ )
 
 
 #define NUS_VK_FUNCTION_DECLARATION(fun)	\

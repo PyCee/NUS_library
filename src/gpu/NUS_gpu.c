@@ -36,6 +36,7 @@ NUS_result nus_gpu_build(VkPhysicalDevice physical_device, NUS_gpu *NUS_gpu_)
 					   NUS_gpu_->family_properties);
   NUS_gpu_->queue_families = malloc(sizeof(*NUS_gpu_->queue_families)
 				    * NUS_gpu_->queue_family_count);
+  
   for(i = 0; i < NUS_gpu_->queue_family_count; ++i){
     if(nus_queue_family_build(NUS_gpu_->family_properties[i], i,
 			      NUS_gpu_->queue_families + i) != NUS_SUCCESS){
@@ -48,7 +49,7 @@ NUS_result nus_gpu_build(VkPhysicalDevice physical_device, NUS_gpu *NUS_gpu_)
   
   for(i = 0; i < NUS_gpu_->queue_family_count; ++i){
     if(nus_queue_family_build_queues(NUS_gpu_->logical_device,
-				   NUS_gpu_->queue_families + i) != NUS_SUCCESS){
+				     NUS_gpu_->queue_families + i) != NUS_SUCCESS){
       printf("ERROR::failed to create queues\n");
       return NUS_FAILURE;
     }
@@ -60,7 +61,7 @@ void nus_gpu_free(NUS_gpu *NUS_gpu_)
   unsigned int i;
 
   for(i = 0; i < NUS_gpu_->queue_family_count; ++i){
-    nus_queue_family_free(NUS_gpu_->queue_families + i);
+    nus_queue_family_free(NUS_gpu_->queue_families + i, NUS_gpu_->logical_device);
   }
   free(NUS_gpu_->queue_families);
   NUS_gpu_->queue_families = NULL;
@@ -124,22 +125,48 @@ static NUS_result nus_gpu_create_logical_device
   nus_load_device_vulkan_library(NUS_gpu_->logical_device, &NUS_gpu_->functions);
   return NUS_SUCCESS;
 }
-NUS_result nus_gpu_find_suitable_queue
+NUS_result nus_gpu_find_suitable_queue_family
 (NUS_gpu NUS_gpu_, unsigned int flags,
- unsigned int *suitable_queue_found, VkQueue *queue)
+ unsigned int *queue_family_index)
 {
   unsigned int i,
-    workload = UINT_MAX;
+    command_buffer_count = UINT_MAX,
+    queue_index = UINT_MAX;
+
   for(i = 0; i < NUS_gpu_.queue_family_count; ++i){
     if((NUS_gpu_.queue_families[i].flags & flags) == flags){
-      if(0 == *suitable_queue_found){
-	*suitable_queue_found = 1;
-      }
       if(nus_queue_family_find_suitable_queue(NUS_gpu_.queue_families[i],
-					      &workload, queue) != NUS_SUCCESS){
-	printf("ERROR::failed to find queue family suitable queue\n");
+					      &queue_index) !=
+	 NUS_SUCCESS){
+	printf("ERROR::failed to find suitable queue\n");
 	return NUS_FAILURE;
       }
+      if(NUS_gpu_.queue_families[i].queues[queue_index].command_buffer_count <
+	 command_buffer_count){
+	*queue_family_index = i;
+	command_buffer_count =
+	  NUS_gpu_.queue_families[i].queues[queue_index].command_buffer_count;
+      }
+    }
+  }
+  return NUS_SUCCESS;
+}
+NUS_result nus_gpu_add_command_buffer
+(NUS_gpu NUS_gpu_, unsigned int *queue_family_index,
+ VkCommandBuffer *command_buffer)
+{
+  
+  return NUS_SUCCESS;
+}
+NUS_result nus_gpu_submit_commands(NUS_gpu NUS_gpu_)
+{
+  unsigned int i;
+  for(i = 0; i < NUS_gpu_.queue_family_count; ++i){
+    if(nus_queue_family_submit_commands(NUS_gpu_.queue_families[i],
+					NUS_gpu_.logical_device) !=
+       NUS_SUCCESS){
+      printf("ERROR::failed to submit queue family command queues\n");
+      return NUS_FAILURE;
     }
   }
   return NUS_SUCCESS;

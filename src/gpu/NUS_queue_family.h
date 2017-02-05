@@ -16,6 +16,7 @@ typedef struct NUS_queue_family{
   NUS_command_queue *queues;
   float *priorities;
   VkDeviceQueueCreateInfo queue_create_info;
+  VkCommandPool command_pool;
   unsigned int queue_count,
     family_index,
     flags;
@@ -23,12 +24,15 @@ typedef struct NUS_queue_family{
 
 NUS_result nus_queue_family_build
 (VkQueueFamilyProperties, unsigned int, NUS_queue_family *);
-void nus_queue_family_free(NUS_queue_family *);
+void nus_queue_family_free(NUS_queue_family *, VkDevice);
 void nus_queue_family_print(NUS_queue_family);
 NUS_result nus_queue_family_build_queues(VkDevice, NUS_queue_family *);
 NUS_result nus_queue_family_test_surface_support
 (VkPhysicalDevice, VkSurfaceKHR, NUS_queue_family *);
 NUS_result nus_queue_family_find_suitable_queue
-(NUS_queue_family, unsigned int *, VkQueue *);
+(NUS_queue_family, unsigned int *);
+NUS_result nus_queue_family_add_command_buffer
+(NUS_queue_family, VkDevice, VkCommandBuffer *);
+NUS_result nus_queue_family_submit_commands(NUS_queue_family, VkDevice);
 
 #endif /* NUS_QUEUE_FAMILY_H */

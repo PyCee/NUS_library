@@ -9,11 +9,8 @@ CFLAGS=-g -Wall \
 	-Wconversion \
 	-I/home/kims/VulkanSDK/1.0.33.0/x86_64/include
 
-LFLAGS= -lNUS_library -lX11 -lxcb -lX11-xcb -ldl \
+LFLAGS= -lNUS_library -lX11 -lxcb -lX11-xcb -ldl -lm \
 	-L/home/kims/VulkanSDK/1.0.33.0/x86_64/lib -lvulkan
-
-SOURCES=main.c
-OBJS=$(SOURCES:.c=.o)
 
 UNIT_TESTS:= xcb_window/ gpu_detection/ vulkan_clear/
 UNIT_TESTS:=$(UNIT_TESTS:/=/unit_test)
@@ -26,14 +23,15 @@ SPACE=$(EMPTY) $(EMPTY)
 
 all: recompile
 
-run:
+run: compile
 	$(subst $(SPACE), && ,$(addprefix ./, $(TEST:/=/unit_test)))
-valgrind: recompile
-	valgrind --leak-check=yes --track-origins=yes ./$(RUN_DIR)unit_test
+valgrind:
+	valgrind --leak-check=yes --track-origins=yes ./$(TEST)unit_test
 
-compile: $(TESTS)
+compile: $(TEST:/=/unit_test)
 recompile: clean compile
 %/unit_test: %/main.o
+	echo $<
 	gcc $< $(LFLAGS) -o $@
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<  -o $@

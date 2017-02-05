@@ -29,12 +29,16 @@ PHY_DIR=physics
 REN_SRC_FILES=NUS_presentation_surface.c
 REN_DIR=render
 
+TIME_SRC_FILES=NUS_clock.c
+TIME_DIR=time
+
 GPU_SRC=$(addprefix $(GPU_DIR)/, $(GPU_SRC_FILES))
 IO_SRC=$(addprefix $(IO_DIR)/, $(IO_SRC_FILES))
 MATH_SRC=$(addprefix $(MATH_DIR)/, $(MATH_SRC_FILES))
 MOD_SRC=$(addprefix $(MOD_DIR)/, $(MOD_SRC_FILES))
 PHY_SRC=$(addprefix $(PHY_DIR)/, $(PHY_SRC_FILES))
 REN_SRC=$(addprefix $(REN_DIR)/, $(REN_SRC_FILES))
+TIME_SRC=$(addprefix $(TIME_DIR)/, $(TIME_SRC_FILES))
 OTH_SRC=NUS_vulkan.c
 
 GPU_HEA=$(GPU_SRC:.c=.h)
@@ -43,10 +47,11 @@ MATH_HEA=$(MATH_SRC:.c=.h)
 MOD_HEA=$(MOD_SRC:.c=.h)
 PHY_HEA=$(PHY_SRC:.c=.h)
 REN_HEA=$(REN_SRC:.c=.h)
+TIME_HEA=$(TIME_SRC:.c=.h)
 OTH_HEA=NUS_library.h NUS_result.h NUS_os.h $(OTH_SRC:.c=.h)
 
 #NUS_SRC_FILES=$(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(PHY_SRC) $(REN_SRC)
-NUS_SRC_FILES=$(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(REN_SRC) $(OTH_SRC)
+NUS_SRC_FILES=$(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(REN_SRC) $(OTH_SRC) $(TIME_SRC)
 NUS_HEA_PRE_PREFIX=$(OTH_HEA) $(NUS_SRC_FILES:.c=.h)
 SRC_DIR=src
 NUS_SRC=$(addprefix $(SRC_DIR)/, $(NUS_SRC_FILES))
@@ -72,12 +77,15 @@ compile: $(NUS_OBJ)
 		sudo mkdir /usr/local/include/NUS/$(PHY_DIR); fi
 	if [ ! -d "/usr/local/include/NUS/$(REN_DIR)" ]; then \
 		sudo mkdir /usr/local/include/NUS/$(REN_DIR); fi
+	if [ ! -d "/usr/local/include/NUS/$(TIME_DIR)" ]; then \
+		sudo mkdir /usr/local/include/NUS/$(TIME_DIR); fi
 	sudo cp $(addprefix $(SRC_DIR)/, $(GPU_HEA)) /usr/local/include/NUS/$(GPU_DIR)/
 	sudo cp $(addprefix $(SRC_DIR)/, $(IO_HEA)) /usr/local/include/NUS/$(IO_DIR)/
 	sudo cp $(addprefix $(SRC_DIR)/, $(MATH_HEA)) /usr/local/include/NUS/$(MATH_DIR)/
 	sudo cp $(addprefix $(SRC_DIR)/, $(MOD_HEA)) /usr/local/include/NUS/$(MOD_DIR)/
 	sudo cp $(addprefix $(SRC_DIR)/, $(PHY_HEA)) /usr/local/include/NUS/$(PHY_DIR)/
 	sudo cp $(addprefix $(SRC_DIR)/, $(REN_HEA)) /usr/local/include/NUS/$(REN_DIR)/
+	sudo cp $(addprefix $(SRC_DIR)/, $(TIME_HEA)) /usr/local/include/NUS/$(TIME_DIR)/
 	sudo cp $(addprefix $(SRC_DIR)/, $(OTH_HEA)) /usr/local/include/NUS/
 rebuild: clean all
 

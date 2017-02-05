@@ -1,6 +1,7 @@
 #include "NUS_multi_gpu.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits.h>
 
 NUS_result nus_multi_gpu_build
 (VkInstance vulkan_instance, NUS_multi_gpu *NUS_multi_gpu_)
@@ -82,22 +83,38 @@ NUS_result nus_multi_gpu_find_suitable_gpu_index
   *gpu_index = 0;
   return NUS_SUCCESS;
 }
-NUS_result nus_multi_gpu_find_suitable_queue
-(NUS_multi_gpu NUS_multi_gpu_, unsigned int flags, VkQueue *queue)
+NUS_result nus_multi_gpu_find_suitable_gpu
+(NUS_multi_gpu NUS_multi_gpu_, unsigned int flags,
+ unsigned int *suitable_gpu_index)
 {
   unsigned int i,
-    suitable_queue_found = 0;
+    suitable_queue_family_index = UINT_MAX;
   for(i = 0; i < NUS_multi_gpu_.gpu_count; ++i){
-    if(nus_gpu_find_suitable_queue(NUS_multi_gpu_.gpus[i],
-				   flags, &suitable_queue_found,
-				   queue) != NUS_SUCCESS){
-      printf("ERROR::failed to find gpu suitable queue\n");
+    if(nus_gpu_find_suitable_queue_family(NUS_multi_gpu_.gpus[i], flags,
+					  &suitable_queue_family_index) !=
+       NUS_SUCCESS){
+      printf("ERROR::failed to find suitable gpu\n");
       return NUS_FAILURE;
     }
+    if(UINT_MAX != suitable_queue_family_index){
+      *suitable_gpu_index = i;
+      return NUS_SUCCESS;
+    }
   }
-  if(0 == suitable_queue_found){
-    printf("ERROR::no suitable queue found\n");
+  if(UINT_MAX == suitable_queue_family_index){
+    printf("ERROR::no suitable gpu found\n");
     return NUS_FAILURE;
+  }
+  return NUS_SUCCESS;
+}
+NUS_result nus_multi_gpu_submit_commands(NUS_multi_gpu NUS_multi_gpu_)
+{
+  unsigned int i;
+  for(i = 0; i < NUS_multi_gpu_.gpu_count; ++i){
+    if(nus_gpu_submit_commands(NUS_multi_gpu_.gpus[i]) != NUS_SUCCESS){
+      printf("ERROR::failed to submit gpu command queues\n");
+      return NUS_FAILURE;
+    }
   }
   return NUS_SUCCESS;
 }

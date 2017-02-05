@@ -50,7 +50,8 @@ NUS_result nus_queue_family_build
   
   return NUS_SUCCESS;
 }
-void nus_queue_family_free(NUS_queue_family *NUS_queue_family_)
+void nus_queue_family_free
+(NUS_queue_family *NUS_queue_family_, VkDevice logical_device)
 {
   if(NUS_queue_family_->priorities){
     free(NUS_queue_family_->priorities);
@@ -60,6 +61,7 @@ void nus_queue_family_free(NUS_queue_family *NUS_queue_family_)
     free(NUS_queue_family_->queues);
     NUS_queue_family_->queues = NULL;
   }
+  vkDestroyCommandPool(logical_device, NUS_queue_family_->command_pool, NULL);
 }
 void nus_queue_family_print(NUS_queue_family NUS_queue_family_)
 {
@@ -76,14 +78,27 @@ void nus_queue_family_print(NUS_queue_family NUS_queue_family_)
 			     NUS_QUEUE_FAMILY_SUPPORT_PRESENT));
 }
 NUS_result nus_queue_family_build_queues
-(VkDevice device, NUS_queue_family *NUS_queue_family_)
+(VkDevice logical_device, NUS_queue_family *NUS_queue_family_)
 {
   unsigned int i;
+
+  VkCommandPoolCreateInfo command_pool_create_info = {
+    .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+    .pNext = NULL,
+    .flags = 0,
+    .queueFamilyIndex = NUS_queue_family_->family_index
+  };
+  if(vkCreateCommandPool(logical_device, &command_pool_create_info,
+			 NULL, &NUS_queue_family_->command_pool) != VK_SUCCESS){
+    printf("ERROR::failed to create command pool\n");
+    return NUS_FAILURE;
+  }
+  
   NUS_queue_family_->queues = malloc(sizeof(*NUS_queue_family_->queues)
 				       * NUS_queue_family_->queue_count);
   
   for(i = 0; i < NUS_queue_family_->queue_count; ++i){
-    nus_command_queue_build(device, NUS_queue_family_->family_index, i,
+    nus_command_queue_build(logical_device, NUS_queue_family_->family_index, i,
 			    NUS_queue_family_->queues + i);
   }
   return NUS_SUCCESS;
@@ -103,19 +118,51 @@ NUS_result nus_queue_family_test_surface_support
   return NUS_SUCCESS;
 }
 NUS_result nus_queue_family_find_suitable_queue
-(NUS_queue_family NUS_queue_family_, unsigned int *workload, VkQueue *queue)
+(NUS_queue_family NUS_queue_family_, unsigned int *command_queue_index)
 {
-  // Find queue with least workload
-  unsigned int i;
+  unsigned int i,
+    least_command_buffer_count = UINT_MAX;
   
   for(i = 0; i < NUS_queue_family_.queue_count; ++i){
-    if((NUS_queue_family_.queues[i].workload < *workload) &&
-       (UINT_MAX == *workload)){
-      // If queue has less workload than passed queue
-      // Assigns queue to first queue with least workload
-      printf("set a queue\n");
-      *queue = NUS_queue_family_.queues[i].queue;
-      *workload = NUS_queue_family_.queues[i].workload;
+    if(NUS_queue_family_.queues[i].command_buffer_count <
+       least_command_buffer_count){
+      // If queue has the least command buffers queued up of the queues we've checked
+      *command_queue_index = i;
+      least_command_buffer_count = NUS_queue_family_.queues[i].command_buffer_count;
+    }
+  }
+  return NUS_SUCCESS;
+}
+
+NUS_result nus_queue_family_add_command_buffer
+(NUS_queue_family NUS_queue_family_, VkDevice logical_device,
+ VkCommandBuffer *command_buffer)
+{
+  unsigned int command_queue_index = UINT_MAX;
+  if(nus_queue_family_find_suitable_queue(NUS_queue_family_,
+					  &command_queue_index) != NUS_SUCCESS){
+    printf("ERROR::failed to find queue family suitable queue\n");
+    return NUS_FAILURE;
+  }
+  if(nus_command_queue_add_buffer(NUS_queue_family_.queues + command_queue_index,
+				  logical_device, NUS_queue_family_.command_pool,
+				  command_buffer) != NUS_SUCCESS){
+    printf("ERROR::failed to add queue family command buffer\n");
+    return NUS_FAILURE;
+  }
+  return NUS_SUCCESS;
+}
+NUS_result nus_queue_family_submit_commands
+(NUS_queue_family NUS_queue_family_, VkDevice logical_device)
+{
+  unsigned int i;
+  for(i = 0; i < NUS_queue_family_.queue_count; ++i){
+    if(nus_command_queue_submit_commands(NUS_queue_family_.queues + i,
+					 logical_device,
+					 NUS_queue_family_.command_pool) !=
+       NUS_SUCCESS){
+      printf("ERROR::failed to submit command queues\n");
+      return NUS_FAILURE;
     }
   }
   return NUS_SUCCESS;

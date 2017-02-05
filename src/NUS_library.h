@@ -11,6 +11,8 @@
 /* Include files that should be present in any instance of this engine*/
 #include "NUS_result.h"
 
+#include "time/NUS_clock.h"
+
 #include "math/NUS_vector.h"
 #include "math/NUS_matrix.h"
 #include "math/NUS_axes.h"

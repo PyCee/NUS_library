@@ -7,7 +7,7 @@
 NUS_result nus_window_build
 (char *title, unsigned short width, unsigned short height, NUS_window *NUS_window_)
 {
-  NUS_window_->title = malloc(strlen(title) + 1);
+  NUS_window_->title = malloc(sizeof(NUS_window_->title) * (strlen(title) + 1));
   strcpy(NUS_window_->title, title);
   NUS_window_->width = width;
   NUS_window_->height = height;
@@ -48,7 +48,7 @@ NUS_result nus_window_build
     
     xcb_change_property(NUS_window_->connection, XCB_PROP_MODE_REPLACE,
 			NUS_window_->window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-		        strlen(NUS_window_->title),
+		        (unsigned int)strlen(NUS_window_->title),
 			NUS_window_->title); 
 
     NUS_window_->cookie = xcb_intern_atom(NUS_window_->connection, 1, 12,

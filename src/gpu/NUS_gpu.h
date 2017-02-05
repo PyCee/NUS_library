@@ -18,7 +18,10 @@ NUS_result nus_gpu_build(VkPhysicalDevice, NUS_gpu *);
 void nus_gpu_free(NUS_gpu *);
 NUS_result nus_gpu_build_logical_device(VkPhysicalDevice, NUS_gpu *);
 void nus_gpu_print(NUS_gpu);
-NUS_result nus_gpu_find_suitable_queue
-(NUS_gpu, unsigned int, unsigned int *, VkQueue *);
+NUS_result nus_gpu_find_suitable_queue_family
+(NUS_gpu, unsigned int, unsigned int *);
+NUS_result nus_gpu_add_command_buffer
+(NUS_gpu, unsigned int *, VkCommandBuffer *);
+NUS_result nus_gpu_submit_commands(NUS_gpu);
 
 #endif /* NUS_GPU_H */
