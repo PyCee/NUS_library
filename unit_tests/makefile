@@ -12,7 +12,7 @@ CFLAGS=-g -Wall \
 LFLAGS= -lNUS_library -lxcb -ldl -lm \
 	-L/home/kims/VulkanSDK/1.0.33.0/x86_64/lib -lvulkan
 
-UNIT_TESTS:= xcb_window/ gpu_detection/ vulkan_clear/
+UNIT_TESTS:= 3d_math/ xcb_window/ gpu_detection/ vulkan_clear/
 UNIT_TESTS:=$(UNIT_TESTS:/=/unit_test)
 
 TEST?=$(UNIT_TESTS)
@@ -31,7 +31,7 @@ valgrind:
 compile: $(TEST:/=/unit_test)
 recompile: clean compile
 %/unit_test: %/main.o
-	echo $<
+	@echo
 	gcc $< $(LFLAGS) -o $@
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<  -o $@

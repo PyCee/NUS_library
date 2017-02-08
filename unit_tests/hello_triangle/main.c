@@ -34,9 +34,11 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to build event handler\n");
     return -1;
   }
-  eve.close_window = close_win;
-  nus_event_handler_set(&eve);
+  nus_event_handler_function_append(eve, NUS_EVENT_CLOSE_WINDOW, 0, close_win);
   
+  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS,
+				    NUS_KEY_ESC, close_win);
+  nus_event_handler_set(&eve);
   
   NUS_vulkan_instance vulkan_instance;
   char *extensions[] = {
@@ -72,16 +74,17 @@ int main(int argc, char *argv[])
   run = 1;
   while(run){
     nus_system_events_handle(win);
-
-
+    
+    
     //TODO: fix
     //  if I change the clear color at runtime, the window flickers black
     //    this only happens If i updateat a certain speed
     
-    if(nus_presentation_surface_clear(present.image_available,
-				      present.image_rendered,
-				      (VkClearColorValue){{0.0f, 0.0f, 0.0f, 0.0f}},
-				      &present) != NUS_SUCCESS){
+    if(nus_image_clear(present.image_available,
+		       present.image_rendered,
+		       (VkClearColorValue){{0.0f, 0.0f, 0.0f, 0.0f}},
+		       multi_gpu.gpus[0], present.render_image) !=
+       NUS_SUCCESS){
       printf("ERROR::failed to clear window\n");
       return -1;
     }

@@ -13,6 +13,7 @@ typedef struct NUS_presentation_surface{
   VkSurfaceKHR surface;
   VkSwapchainKHR swapchain;
   NUS_gpu *presenting_gpu;
+  VkPhysicalDevice physical_device;
   VkSurfaceFormatKHR format;
   VkSurfaceCapabilitiesKHR capabilities;
   VkPresentModeKHR present_mode;

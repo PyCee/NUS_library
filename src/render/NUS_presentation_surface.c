@@ -68,12 +68,13 @@ NUS_result nus_presentation_surface_build
   }
   NUS_gpu * const suitable_gpu = NUS_multi_gpu_->gpus + suitable_gpu_index;
   NUS_presentation_surface_->presenting_gpu = suitable_gpu;
-  VkPhysicalDevice suitable_physical_device =
+  NUS_presentation_surface_->physical_device =
     NUS_multi_gpu_->physical_devices[suitable_gpu_index];
   
   nus_bind_device_vulkan_library(suitable_gpu->functions);
 
-  if(nus_presentation_surface_build_swapchain_info(suitable_physical_device,
+  if(nus_presentation_surface_build_swapchain_info(NUS_presentation_surface_->
+						   physical_device,
 						   NUS_presentation_surface_) !=
      NUS_SUCCESS){
     printf("ERROR::failed to build presentation surface swapchain info\n");
@@ -149,7 +150,9 @@ NUS_result nus_presentation_surface_present
 
     //TODO why is the below not working?
     vkDeviceWaitIdle(NUS_presentation_surface_->presenting_gpu->logical_device);
-    nus_presentation_surface_build_surface_extent(NUS_presentation_surface_);
+    nus_presentation_surface_build_swapchain_info(NUS_presentation_surface_->
+						  physical_device,
+						  NUS_presentation_surface_);
     nus_presentation_surface_build_swapchain(NUS_presentation_surface_);
     printf("khr out of date\n");
     break;
@@ -181,7 +184,9 @@ static NUS_result nus_presentation_surface_new_image
   case VK_ERROR_OUT_OF_DATE_KHR:
     printf("khr out of date or suboptimal\n");
     vkDeviceWaitIdle(NUS_presentation_surface_->presenting_gpu->logical_device);
-    nus_presentation_surface_build_surface_extent(NUS_presentation_surface_);
+    nus_presentation_surface_build_swapchain_info(NUS_presentation_surface_->
+						  physical_device,
+						  NUS_presentation_surface_);
     nus_presentation_surface_build_swapchain(NUS_presentation_surface_);
     break;
   default:

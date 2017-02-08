@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include <NUS/NUS_engine.h>
+#include <NUS/NUS_library.h>
 
 #define PROGRAM_NAME "unit_test-3d_math"
 
