@@ -36,7 +36,7 @@
   function( vkEnumerateInstanceLayerProperties, ##__VA_ARGS__ )
 
 /* Macro to call any function on all instance vk function pointers */
-#define NUS_VK_INSTANCE_FUNCTION(function, ...)			\
+#define NUS_VK_INSTANCE_FUNCTION(function, ...)				\
   function( vkGetDeviceProcAddr, ##__VA_ARGS__ );			\
   function( vkDestroyInstance, ##__VA_ARGS__ );				\
   function( vkEnumeratePhysicalDevices, ##__VA_ARGS__ );		\
@@ -55,18 +55,18 @@
 
 
 /* Macro to call any function on all device vk function pointers */
-#define NUS_VK_DEVICE_FUNCTION(function, ...)			\
-  function( vkDestroyDevice, ##__VA_ARGS__ );			\
-  function( vkGetDeviceQueue, ##__VA_ARGS__ );			\
-  function( vkDeviceWaitIdle, ##__VA_ARGS__ );			\
-  function( vkCreateSwapchainKHR, ##__VA_ARGS__ );		\
-  function( vkDestroySwapchainKHR, ##__VA_ARGS__ );		\
-  function( vkGetSwapchainImagesKHR, ##__VA_ARGS__ );		\
-  function( vkAcquireNextImageKHR, ##__VA_ARGS__ );		\
-  function( vkQueuePresentKHR, ##__VA_ARGS__ );			\
-  function( vkCreateSemaphore, ##__VA_ARGS__ );			\
-  function( vkCreateCommandPool, ##__VA_ARGS__ );		\
-  function( vkAllocateCommandBuffers, ##__VA_ARGS__ );		\
+#define NUS_VK_DEVICE_FUNCTION(function, ...)				\
+  function( vkDestroyDevice, ##__VA_ARGS__ );				\
+  function( vkGetDeviceQueue, ##__VA_ARGS__ );				\
+  function( vkDeviceWaitIdle, ##__VA_ARGS__ );				\
+  function( vkCreateSwapchainKHR, ##__VA_ARGS__ );			\
+  function( vkDestroySwapchainKHR, ##__VA_ARGS__ );			\
+  function( vkGetSwapchainImagesKHR, ##__VA_ARGS__ );			\
+  function( vkAcquireNextImageKHR, ##__VA_ARGS__ );			\
+  function( vkQueuePresentKHR, ##__VA_ARGS__ );				\
+  function( vkCreateSemaphore, ##__VA_ARGS__ );				\
+  function( vkCreateCommandPool, ##__VA_ARGS__ );			\
+  function( vkAllocateCommandBuffers, ##__VA_ARGS__ );			\
   function( vkBeginCommandBuffer, ##__VA_ARGS__ );			\
   function( vkCmdPipelineBarrier, ##__VA_ARGS__ );			\
   function( vkCmdClearColorImage, ##__VA_ARGS__ );			\

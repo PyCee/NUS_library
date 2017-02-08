@@ -37,6 +37,7 @@
 /*  NUS_SYSTEM_RENDER must be defined in the application to enable rendering */
 #if defined(NUS_SYSTEM_RENDER)
 #include "render/NUS_presentation_surface.h"
+#include "render/NUS_image_clear.h"
 #endif /* NUS_SYSTEM_RENDER */
 
 #endif /* NUS_ENGINE_H */

@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "NUS_system_events.h"
 
 NUS_result nus_window_build
 (char *title, unsigned short width, unsigned short height, NUS_window *NUS_window_)

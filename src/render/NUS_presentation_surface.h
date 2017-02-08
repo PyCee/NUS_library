@@ -31,8 +31,6 @@ NUS_result nus_presentation_surface_build
 void nus_presentation_surface_free
 (struct NUS_vulkan_instance, NUS_presentation_surface *);
 NUS_result nus_presentation_surface_present(NUS_presentation_surface *);
-NUS_result nus_presentation_surface_clear
-(VkSemaphore, VkSemaphore, VkClearColorValue, NUS_presentation_surface *);
 
 
 #endif /* NUS_PRESENTATION_SURFACE_H */

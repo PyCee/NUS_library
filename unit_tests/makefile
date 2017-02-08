@@ -9,7 +9,7 @@ CFLAGS=-g -Wall \
 	-Wconversion \
 	-I/home/kims/VulkanSDK/1.0.33.0/x86_64/include
 
-LFLAGS= -lNUS_library -lX11 -lxcb -lX11-xcb -ldl -lm \
+LFLAGS= -lNUS_library -lxcb -ldl -lm \
 	-L/home/kims/VulkanSDK/1.0.33.0/x86_64/lib -lvulkan
 
 UNIT_TESTS:= xcb_window/ gpu_detection/ vulkan_clear/

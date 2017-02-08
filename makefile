@@ -26,7 +26,7 @@ MOD_DIR=model
 PHY_SRC_FILES=center.c physics_state.c movement.c orientation.c kinematic_property.c
 PHY_DIR=physics
 
-REN_SRC_FILES=NUS_presentation_surface.c
+REN_SRC_FILES=NUS_presentation_surface.c NUS_image_clear.c
 REN_DIR=render
 
 TIME_SRC_FILES=NUS_clock.c
