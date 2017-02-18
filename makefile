@@ -7,13 +7,13 @@ CFLAGS=-g -Wall \
 	-Wstrict-prototypes \
 	-Wmissing-prototypes \
 	-Wconversion \
-	-I/home/kims/VulkanSDK/1.0.33.0/x86_64/include
+	-I/home/kims/VulkanSDK/1.0.39.0/x86_64/include
 
 GPU_SRC_FILES=NUS_multi_gpu.c NUS_gpu.c NUS_queue_family.c NUS_command_queue.c \
 	NUS_vulkan_instance.c
 GPU_DIR=gpu
 
-IO_SRC_FILES=NUS_window.c NUS_system_events.c
+IO_SRC_FILES=NUS_window.c NUS_system_events.c NUS_executable_path.c
 IO_DIR=io
 
 MATH_SRC_FILES=NUS_vector.c NUS_octree.c NUS_matrix.c NUS_axes.c NUS_quaternion.c \
@@ -26,7 +26,7 @@ MOD_DIR=model
 PHY_SRC_FILES=center.c physics_state.c movement.c orientation.c kinematic_property.c
 PHY_DIR=physics
 
-REN_SRC_FILES=NUS_presentation_surface.c NUS_image_clear.c
+REN_SRC_FILES=NUS_presentation_surface.c NUS_image_clear.c NUS_shaders.c
 REN_DIR=render
 
 TIME_SRC_FILES=NUS_clock.c
@@ -62,36 +62,41 @@ NUS_OBJ=$(NUS_SRC:.c=.o)
 all: $(NUS_SRC) compile
 
 compile: $(NUS_OBJ)
-	sudo ar rcs /usr/local/lib/libNUS_library.a $(NUS_OBJ)
-	if [ ! -d "/usr/local/include/NUS" ]; then \
+	@echo $(CFLAGS)
+	echo
+	@sudo ar rcs /usr/local/lib/libNUS_library.a $(NUS_OBJ)
+	@if [ ! -d "/usr/local/include/NUS" ]; then \
 		sudo mkdir /usr/local/include/NUS; fi
-	if [ ! -d "/usr/local/include/NUS/$(GPU_DIR)" ]; then \
+	@if [ ! -d "/usr/local/include/NUS/$(GPU_DIR)" ]; then \
 		sudo mkdir /usr/local/include/NUS/$(GPU_DIR); fi
-	if [ ! -d "/usr/local/include/NUS/$(IO_DIR)" ]; then \
+	@if [ ! -d "/usr/local/include/NUS/$(IO_DIR)" ]; then \
 		sudo mkdir /usr/local/include/NUS/$(IO_DIR); fi
-	if [ ! -d "/usr/local/include/NUS/$(MATH_DIR)" ]; then \
+	@if [ ! -d "/usr/local/include/NUS/$(MATH_DIR)" ]; then \
 		sudo mkdir /usr/local/include/NUS/$(MATH_DIR); fi
-	if [ ! -d "/usr/local/include/NUS/$(MOD_DIR)" ]; then \
+	@if [ ! -d "/usr/local/include/NUS/$(MOD_DIR)" ]; then \
 		sudo mkdir /usr/local/include/NUS/$(MOD_DIR); fi
-	if [ ! -d "/usr/local/include/NUS/$(PHY_DIR)" ]; then \
+	@if [ ! -d "/usr/local/include/NUS/$(PHY_DIR)" ]; then \
 		sudo mkdir /usr/local/include/NUS/$(PHY_DIR); fi
-	if [ ! -d "/usr/local/include/NUS/$(REN_DIR)" ]; then \
+	@if [ ! -d "/usr/local/include/NUS/$(REN_DIR)" ]; then \
 		sudo mkdir /usr/local/include/NUS/$(REN_DIR); fi
-	if [ ! -d "/usr/local/include/NUS/$(TIME_DIR)" ]; then \
+	@if [ ! -d "/usr/local/include/NUS/$(TIME_DIR)" ]; then \
 		sudo mkdir /usr/local/include/NUS/$(TIME_DIR); fi
-	sudo cp $(addprefix $(SRC_DIR)/, $(GPU_HEA)) /usr/local/include/NUS/$(GPU_DIR)/
-	sudo cp $(addprefix $(SRC_DIR)/, $(IO_HEA)) /usr/local/include/NUS/$(IO_DIR)/
-	sudo cp $(addprefix $(SRC_DIR)/, $(MATH_HEA)) /usr/local/include/NUS/$(MATH_DIR)/
-	sudo cp $(addprefix $(SRC_DIR)/, $(MOD_HEA)) /usr/local/include/NUS/$(MOD_DIR)/
-	sudo cp $(addprefix $(SRC_DIR)/, $(PHY_HEA)) /usr/local/include/NUS/$(PHY_DIR)/
-	sudo cp $(addprefix $(SRC_DIR)/, $(REN_HEA)) /usr/local/include/NUS/$(REN_DIR)/
-	sudo cp $(addprefix $(SRC_DIR)/, $(TIME_HEA)) /usr/local/include/NUS/$(TIME_DIR)/
-	sudo cp $(addprefix $(SRC_DIR)/, $(OTH_HEA)) /usr/local/include/NUS/
+	@sudo cp $(addprefix $(SRC_DIR)/, $(GPU_HEA)) /usr/local/include/NUS/$(GPU_DIR)/
+	@sudo cp $(addprefix $(SRC_DIR)/, $(IO_HEA)) /usr/local/include/NUS/$(IO_DIR)/
+	@sudo cp $(addprefix $(SRC_DIR)/, $(MATH_HEA)) /usr/local/include/NUS/$(MATH_DIR)/
+	@sudo cp $(addprefix $(SRC_DIR)/, $(MOD_HEA)) /usr/local/include/NUS/$(MOD_DIR)/
+	@sudo cp $(addprefix $(SRC_DIR)/, $(PHY_HEA)) /usr/local/include/NUS/$(PHY_DIR)/
+	@sudo cp $(addprefix $(SRC_DIR)/, $(REN_HEA)) /usr/local/include/NUS/$(REN_DIR)/
+	@sudo cp $(addprefix $(SRC_DIR)/, $(TIME_HEA)) /usr/local/include/NUS/$(TIME_DIR)/
+	@sudo cp $(addprefix $(SRC_DIR)/, $(OTH_HEA)) /usr/local/include/NUS/
 rebuild: clean all
-
 .c.o:
 	$(CC) $(CFLAGS) -c $<  -o $@
 .PHONY: clean
+
+debug: CFLAGS += -D NUS_DEBUG
+debug: rebuild
+	echo $(CFLAGS)
 clean:
 	find . -type f \( -name '*.o' -o -name '*~' \) -delete
 install:

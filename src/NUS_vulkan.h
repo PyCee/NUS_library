@@ -35,6 +35,18 @@
   function( vkEnumerateInstanceExtensionProperties, ##__VA_ARGS__ );	\
   function( vkEnumerateInstanceLayerProperties, ##__VA_ARGS__ )
 
+
+/* Macro to call any function on all validation instance vk function pointers */
+#if defined(NUS_DEBUG)
+#define NUS_VK_VALIDATION_FUNCTION(function, ...)		       \
+  function( vkCreateDebugReportCallbackEXT, ##__VA_ARGS__ );	       \
+  function( vkDebugReportMessageEXT, ##__VA_ARGS__ );		       \
+  function( vkDestroyDebugReportCallbackEXT, ##__VA_ARGS__ )
+
+#else
+#define NUS_VK_VALIDATION_FUNCTION(function, ...)
+#endif
+
 /* Macro to call any function on all instance vk function pointers */
 #define NUS_VK_INSTANCE_FUNCTION(function, ...)				\
   function( vkGetDeviceProcAddr, ##__VA_ARGS__ );			\
@@ -51,7 +63,8 @@
   NUS_VK_UNIX_FUNCTION(vkCreateXcbSurfaceKHR, function, ##__VA_ARGS__ ); \
   function( vkGetPhysicalDeviceSurfaceCapabilitiesKHR, ##__VA_ARGS__ ); \
   function( vkGetPhysicalDeviceSurfaceFormatsKHR, ##__VA_ARGS__ );	\
-  function( vkGetPhysicalDeviceSurfacePresentModesKHR, ##__VA_ARGS__ )
+  function( vkGetPhysicalDeviceSurfacePresentModesKHR, ##__VA_ARGS__ );	\
+  NUS_VK_VALIDATION_FUNCTION( function, ##__VA_ARGS__ )
 
 
 /* Macro to call any function on all device vk function pointers */
@@ -74,7 +87,13 @@
   function( vkQueueSubmit, ##__VA_ARGS__ );				\
   function( vkDestroySemaphore, ##__VA_ARGS__ );			\
   function( vkFreeCommandBuffers, ##__VA_ARGS__ );			\
-  function( vkDestroyCommandPool, ##__VA_ARGS__ )
+  function( vkDestroyCommandPool, ##__VA_ARGS__ );			\
+  function( vkCreateShaderModule, ##__VA_ARGS__ );			\
+  function( vkCreateRenderPass, ##__VA_ARGS__ );			\
+  function( vkCreateImageView, ##__VA_ARGS__ );				\
+  function( vkCreateFramebuffer, ##__VA_ARGS__ );			\
+  function( vkCreatePipelineLayout, ##__VA_ARGS__ );			\
+  function( vkCreateGraphicsPipelines, ##__VA_ARGS__ )
 
 
 #define NUS_VK_FUNCTION_DECLARATION(fun)	\

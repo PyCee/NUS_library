@@ -3,11 +3,12 @@
 #include <stdio.h>
 #include <limits.h>
 
-static NUS_result nus_gpu_create_logical_device(VkPhysicalDevice, NUS_gpu *);
+static NUS_result nus_gpu_build_logical_device(NUS_gpu *);
 
 NUS_result nus_gpu_build(VkPhysicalDevice physical_device, NUS_gpu *NUS_gpu_)
 {
   unsigned int i;
+  NUS_gpu_->physical_device = physical_device;
   if(vkEnumerateDeviceExtensionProperties(physical_device, NULL, 
 					  &NUS_gpu_->extension_property_count, NULL)
      != VK_SUCCESS){
@@ -23,7 +24,7 @@ NUS_result nus_gpu_build(VkPhysicalDevice physical_device, NUS_gpu *NUS_gpu_)
     printf("ERROR::failed enumerating device extensions\n");
     return NUS_FAILURE;
   }
-  vkGetPhysicalDeviceQueueFamilyProperties(physical_device,
+  vkGetPhysicalDeviceQueueFamilyProperties(NUS_gpu_->physical_device,
 					   &NUS_gpu_->queue_family_count, NULL);
   if(0 == NUS_gpu_->queue_family_count){
     printf("ERROR::physical device doesn't support any queue families\n");
@@ -44,7 +45,10 @@ NUS_result nus_gpu_build(VkPhysicalDevice physical_device, NUS_gpu *NUS_gpu_)
       return NUS_FAILURE;
     }
   }
-  nus_gpu_create_logical_device(physical_device, NUS_gpu_);
+  if(nus_gpu_build_logical_device(NUS_gpu_) != NUS_SUCCESS){
+    printf("ERROR::failed to build logical device\n");
+    return NUS_FAILURE;
+  }
   nus_bind_device_vulkan_library(NUS_gpu_->functions);
   
   for(i = 0; i < NUS_gpu_->queue_family_count; ++i){
@@ -78,52 +82,17 @@ void nus_gpu_free(NUS_gpu *NUS_gpu_)
 void nus_gpu_print(NUS_gpu NUS_gpu_)
 {
   unsigned int i;
+  VkPhysicalDeviceProperties physical_device_properties;
+  
+  vkGetPhysicalDeviceProperties(NUS_gpu_.physical_device,
+				&physical_device_properties);
+  printf("gpu: %s\n", physical_device_properties.deviceName);
   
   printf("gpu has %d queue families\n", NUS_gpu_.queue_family_count);
   for(i = 0; i < NUS_gpu_.queue_family_count; ++i){
     printf("queue family %d:\n", i);
     nus_queue_family_print(NUS_gpu_.queue_families[i]);
   }
-  
-}
-static NUS_result nus_gpu_create_logical_device
-(VkPhysicalDevice physical_device, NUS_gpu *NUS_gpu_)
-{
-  VkDeviceCreateInfo device_create_info;
-  unsigned int gpu_queue_count,
-    i;
-  VkDeviceQueueCreateInfo queue_create_info[NUS_gpu_->queue_family_count];
-  gpu_queue_count = 0;
-  for(i = 0; i < NUS_gpu_->queue_family_count; ++i){
-    gpu_queue_count += NUS_gpu_->queue_families[i].queue_count;
-    queue_create_info[i] = NUS_gpu_->queue_families[i].queue_create_info;
-  }
-  device_create_info = (VkDeviceCreateInfo){
-    .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-    .pNext = NULL,
-    .flags = 0,
-    .queueCreateInfoCount = gpu_queue_count,
-    .pQueueCreateInfos = queue_create_info,
-    .enabledLayerCount = 0,
-    .ppEnabledLayerNames = NULL,
-    .enabledExtensionCount = 0,
-    .ppEnabledExtensionNames = NULL,
-    .pEnabledFeatures = NULL
-  };
-  const char *exten[] = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
-  };
-  device_create_info.enabledExtensionCount = 1;
-  device_create_info.ppEnabledExtensionNames = exten;
-  device_create_info.pEnabledFeatures = NULL;
-  
-  if(vkCreateDevice(physical_device, &device_create_info, NULL,
-		    &NUS_gpu_->logical_device) != VK_SUCCESS){
-    printf("ERROR::failed to create logical device\n");
-    return NUS_FAILURE;
-  }
-  nus_load_device_vulkan_library(NUS_gpu_->logical_device, &NUS_gpu_->functions);
-  return NUS_SUCCESS;
 }
 NUS_result nus_gpu_find_suitable_queue_family
 (NUS_gpu NUS_gpu_, unsigned int flags,
@@ -169,5 +138,43 @@ NUS_result nus_gpu_submit_commands(NUS_gpu NUS_gpu_)
       return NUS_FAILURE;
     }
   }
+  return NUS_SUCCESS;
+}
+static NUS_result nus_gpu_build_logical_device
+(NUS_gpu *NUS_gpu_)
+{
+  unsigned int i;
+  VkDeviceQueueCreateInfo queue_create_info[NUS_gpu_->queue_family_count];
+  for(i = 0; i < NUS_gpu_->queue_family_count; ++i){
+    queue_create_info[i] = NUS_gpu_->queue_families[i].queue_create_info;
+  }
+  const char *extensions[] = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+  };
+  VkDeviceCreateInfo device_create_info = {
+    .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+    .pNext = NULL,
+    .flags = 0,
+    .queueCreateInfoCount = NUS_gpu_->queue_family_count,
+    .pQueueCreateInfos = queue_create_info,
+    .enabledLayerCount = 0,
+    .ppEnabledLayerNames = NULL,
+    .enabledExtensionCount = 1,
+    .ppEnabledExtensionNames = extensions,
+    .pEnabledFeatures = NULL
+  };
+#if defined(NUS_DEBUG)
+  const char *layers[] = {
+    "VK_LAYER_LUNARG_standard_validation"
+  };
+  device_create_info.enabledLayerCount = 1;
+  device_create_info.ppEnabledLayerNames = layers;
+#endif
+  if(vkCreateDevice(NUS_gpu_->physical_device, &device_create_info, NULL,
+		    &NUS_gpu_->logical_device) != VK_SUCCESS){
+    printf("ERROR::failed to create logical device\n");
+    return NUS_FAILURE;
+  }
+  nus_load_device_vulkan_library(NUS_gpu_->logical_device, &NUS_gpu_->functions);
   return NUS_SUCCESS;
 }
