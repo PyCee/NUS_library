@@ -41,24 +41,29 @@ int main(int argc, char *argv[])
   nus_event_handler_set(&eve);
   
   NUS_vulkan_instance vulkan_instance;
-  char *extensions[] = {
-    VK_KHR_SURFACE_EXTENSION_NAME,
+  NUS_string_group extensions;
+  nus_string_group_build(extensions, 
+			 VK_KHR_SURFACE_EXTENSION_NAME,
 #if defined(NUS_OS_WINDOWS)
-    VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+			 VK_KHR_WIN32_SURFACE_EXTENSION_NAME
 #elif defined(NUS_OS_UNIX)
-    VK_KHR_XCB_SURFACE_EXTENSION_NAME
+			 VK_KHR_XCB_SURFACE_EXTENSION_NAME
 #endif
-  };
-  nus_vulkan_instance_set_extensions(2, extensions, &vulkan_instance);
+			 );
+  NUS_string_group layers;
+  nus_string_group_init(&layers);
   
-  if(nus_vulkan_instance_build(&vulkan_instance)
-     != NUS_SUCCESS){
+  if(nus_vulkan_instance_build(&vulkan_instance, extensions, layers) !=
+     NUS_SUCCESS){
     printf("ERROR::failed to create vulkan instance info\n");
     return -1;
   }
+
+  nus_string_group_free(&extensions);
+  nus_string_group_free(&layers);
   
   NUS_multi_gpu multi_gpu;
-  if(nus_multi_gpu_build(vulkan_instance.instance, &multi_gpu) != NUS_SUCCESS){
+  if(nus_multi_gpu_build(vulkan_instance, &multi_gpu) != NUS_SUCCESS){
     printf("ERROR::build multi gpu returned NUS_FAILURE\n");
     return -1;
   }
@@ -105,6 +110,7 @@ int main(int argc, char *argv[])
   nus_vulkan_instance_free(&vulkan_instance);
   nus_free_vulkan_library();
   
+  nus_event_handler_free(&eve);
   nus_window_free(&win);
   printf("unit test %s completed\n", PROGRAM_NAME);
   return 0;

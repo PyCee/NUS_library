@@ -21,7 +21,18 @@ NUS_result nus_command_queue_build
 }
 void nus_command_queue_free(NUS_command_queue *NUS_command_queue_)
 {
-  
+  if(NUS_command_queue_->command_buffers){
+    free(NUS_command_queue_->command_buffers);
+    NUS_command_queue_->command_buffers = NULL;
+  }
+  if(NUS_command_queue_->wait){
+    free(NUS_command_queue_->wait);
+    NUS_command_queue_->wait = NULL;
+  }
+  if(NUS_command_queue_->signal){
+    free(NUS_command_queue_->signal);
+    NUS_command_queue_->signal = NULL;
+  }
 }
 NUS_result nus_command_queue_submit(NUS_command_queue *NUS_command_queue_)
 {

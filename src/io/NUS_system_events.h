@@ -35,7 +35,14 @@ struct NUS_window;
 #define NUS_FUNCTION_GROUP_INIT(function_group)	\
   function_group.functions = NULL;		\
   function_group.function_count = 0
-
+#define NUS_FUNCTION_GROUP_FREE(function_group)	\
+  do{						\
+    if(function_group.function_count > 0){	\
+      free(function_group.functions);		\
+      function_group.functions = 0;		\
+    }						\
+  }while(0)
+    
 #define nus_function_group_append(function_group, function)		\
   function_group.functions = realloc(function_group.functions,		\
 				     sizeof(*function_group.functions) * \
@@ -107,6 +114,7 @@ typedef struct NUS_event_handler{
 } NUS_event_handler;
 
 NUS_result nus_event_handler_build(NUS_event_handler *);
+void nus_event_handler_free(NUS_event_handler *);
 void nus_event_handler_set(NUS_event_handler *);
 void nus_system_events_handle(struct NUS_window);
 

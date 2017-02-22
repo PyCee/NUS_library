@@ -38,11 +38,12 @@
 
 /* Macro to call any function on all validation instance vk function pointers */
 #if defined(NUS_DEBUG)
+//#define NUS_VK_VALIDATION_FUNCTION(function, ...)
+
 #define NUS_VK_VALIDATION_FUNCTION(function, ...)		       \
   function( vkCreateDebugReportCallbackEXT, ##__VA_ARGS__ );	       \
   function( vkDebugReportMessageEXT, ##__VA_ARGS__ );		       \
   function( vkDestroyDebugReportCallbackEXT, ##__VA_ARGS__ )
-
 #else
 #define NUS_VK_VALIDATION_FUNCTION(function, ...)
 #endif

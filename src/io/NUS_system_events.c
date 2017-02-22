@@ -34,6 +34,27 @@ NUS_result nus_event_handler_build(NUS_event_handler *NUS_event_handler_)
   }
   return NUS_SUCCESS;
 }
+void nus_event_handler_free(NUS_event_handler *NUS_event_handler_)
+{
+  short i;
+  for(i = 0; i < NUS_CLOSE_WINDOW_COUNT; ++i){
+    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->close_window[i]);
+  }
+  for(i = 0; i < NUS_KEY_COUNT; i++){
+    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->key_press[i]);
+    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->key_release[i]);
+  }
+  for(i = 0; i < NUS_MOUSE_BUTTON_COUNT; i++){
+    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->mouse_button_press[i]);
+    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->mouse_button_release[i]);
+  }
+  for(i = 0; i < NUS_MOUSE_SCROLL_COUNT; i++){
+    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->mouse_scroll[i]);
+  }
+  for(i = 0; i < NUS_MOUSE_MOTION_COUNT; i++){
+    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->mouse_motion[i]);
+  }
+}
 void nus_event_handler_set(NUS_event_handler *NUS_event_handler_)
 {
   NUS_bound_event_handler = NUS_event_handler_;

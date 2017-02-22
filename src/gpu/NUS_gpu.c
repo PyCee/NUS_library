@@ -164,12 +164,14 @@ static NUS_result nus_gpu_build_logical_device
     .pEnabledFeatures = NULL
   };
 #if defined(NUS_DEBUG)
+  // enable validation layer for logical device
   const char *layers[] = {
     "VK_LAYER_LUNARG_standard_validation"
   };
   device_create_info.enabledLayerCount = 1;
   device_create_info.ppEnabledLayerNames = layers;
 #endif
+  NUS_gpu_->logical_device = VK_NULL_HANDLE;
   if(vkCreateDevice(NUS_gpu_->physical_device, &device_create_info, NULL,
 		    &NUS_gpu_->logical_device) != VK_SUCCESS){
     printf("ERROR::failed to create logical device\n");

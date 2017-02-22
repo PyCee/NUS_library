@@ -71,7 +71,8 @@ int main(int argc, char *argv[])
   while(run){
     nus_system_events_handle(win);
   }
-  
+
+  nus_event_handler_free(&eve);
   nus_window_free(&win);
   
   printf("unit test %s completed\n", PROGRAM_NAME);

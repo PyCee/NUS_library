@@ -11,13 +11,15 @@ static NUS_result nus_presentation_surface_new_image
 static NUS_result nus_presentation_surface_build_swapchain
 (NUS_presentation_surface *);
 static NUS_result nus_presentation_surface_build_swapchain_info
-(VkPhysicalDevice, NUS_presentation_surface *);
+(NUS_presentation_surface *);
+static NUS_result nus_presentation_surface_update
+(NUS_presentation_surface *);
 static NUS_result nus_presentation_surface_build_swapchain_length
 (NUS_presentation_surface *);
 static NUS_result nus_presentation_surface_build_surface_formats
-(VkPhysicalDevice, NUS_presentation_surface *);
+(NUS_presentation_surface *);
 static NUS_result nus_presentation_surface_build_surface_present_modes
-(VkPhysicalDevice, NUS_presentation_surface *);
+(NUS_presentation_surface *);
 static NUS_result nus_presentation_surface_build_surface_extent
 (NUS_presentation_surface *);
 static NUS_result nus_presentation_surface_build_surface_transform_bits
@@ -29,7 +31,6 @@ NUS_result nus_presentation_surface_build
  NUS_multi_gpu *NUS_multi_gpu_,
  NUS_presentation_surface *NUS_presentation_surface_)
 {
-
 #if defined(NUS_OS_WINDOWS)
   VkWin32SurfaceCreateInfoKHR surface_create_info;
   surface_create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
@@ -43,6 +44,7 @@ NUS_result nus_presentation_surface_build
     return NUS_FAILURE;
   }
 #elif defined(NUS_OS_UNIX)
+  printf("pre surface create\n");
   VkXcbSurfaceCreateInfoKHR surface_create_info;
   surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
   surface_create_info.pNext = NULL;
@@ -54,6 +56,7 @@ NUS_result nus_presentation_surface_build
     printf("ERROR::unable to create XCB vulkan surface\n");
     return NUS_FAILURE;
   }
+  printf("post surface create\n");
 #endif
   nus_multi_gpu_check_surface_support(NUS_presentation_surface_->surface,
 				      NUS_multi_gpu_);
@@ -66,16 +69,12 @@ NUS_result nus_presentation_surface_build
     printf("ERROR::failed to find presentation surface suitable gpu index\n");
     return NUS_FAILURE;
   }
-  NUS_gpu * const suitable_gpu = NUS_multi_gpu_->gpus + suitable_gpu_index;
-  NUS_presentation_surface_->presenting_gpu = suitable_gpu;
-  NUS_presentation_surface_->physical_device =
-    NUS_multi_gpu_->physical_devices[suitable_gpu_index];
+  NUS_presentation_surface_->presenting_gpu =
+    NUS_multi_gpu_->gpus + suitable_gpu_index;
   
-  nus_bind_device_vulkan_library(suitable_gpu->functions);
+  nus_bind_device_vulkan_library(NUS_presentation_surface_->presenting_gpu->functions);
 
-  if(nus_presentation_surface_build_swapchain_info(NUS_presentation_surface_->
-						   physical_device,
-						   NUS_presentation_surface_) !=
+  if(nus_presentation_surface_build_swapchain_info(NUS_presentation_surface_) !=
      NUS_SUCCESS){
     printf("ERROR::failed to build presentation surface swapchain info\n");
     return NUS_FAILURE;
@@ -145,16 +144,7 @@ NUS_result nus_presentation_surface_present
   case VK_SUBOPTIMAL_KHR:
     break;
   case VK_ERROR_OUT_OF_DATE_KHR:
-    // Recreate swapchain and command buffers, window has been resized
-    //(or something similar)
-
-    //TODO why is the below not working?
-    vkDeviceWaitIdle(NUS_presentation_surface_->presenting_gpu->logical_device);
-    nus_presentation_surface_build_swapchain_info(NUS_presentation_surface_->
-						  physical_device,
-						  NUS_presentation_surface_);
-    nus_presentation_surface_build_swapchain(NUS_presentation_surface_);
-    printf("khr out of date\n");
+    nus_presentation_surface_update(NUS_presentation_surface_);
     break;
   default:
     printf("ERROR::failed to present image\n");
@@ -171,6 +161,7 @@ NUS_result nus_presentation_surface_present
 static NUS_result nus_presentation_surface_new_image
 (NUS_presentation_surface *NUS_presentation_surface_)
 {
+  printf("pre vkAcquire\n");
   switch(vkAcquireNextImageKHR(NUS_presentation_surface_->presenting_gpu->
 			       logical_device,
 			       NUS_presentation_surface_->swapchain,
@@ -182,12 +173,8 @@ static NUS_result nus_presentation_surface_new_image
     break;
   case VK_SUBOPTIMAL_KHR:
   case VK_ERROR_OUT_OF_DATE_KHR:
-    printf("khr out of date or suboptimal\n");
-    vkDeviceWaitIdle(NUS_presentation_surface_->presenting_gpu->logical_device);
-    nus_presentation_surface_build_swapchain_info(NUS_presentation_surface_->
-						  physical_device,
-						  NUS_presentation_surface_);
-    nus_presentation_surface_build_swapchain(NUS_presentation_surface_);
+    printf("asd???\n");
+    nus_presentation_surface_update(NUS_presentation_surface_);
     break;
   default:
     printf("ERROR::failed to acquire image\n");
@@ -202,6 +189,7 @@ static NUS_result nus_presentation_surface_new_image
     printf("ERROR::failed to obtain swapchain images\n");
     return NUS_FAILURE;
   }
+  printf("post vkAcquire\n");
   NUS_presentation_surface_->render_image =
     swapchain_images[NUS_presentation_surface_->image_index];
   return NUS_SUCCESS;
@@ -236,9 +224,12 @@ static NUS_result nus_presentation_surface_build_swapchain
     return NUS_FAILURE;
   }
   
-  nus_presentation_surface_new_image(NUS_presentation_surface_);
-  
   VkSemaphoreCreateInfo image_available_create_info = {
+    .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+    .pNext = NULL,
+    .flags = 0
+  };
+  VkSemaphoreCreateInfo image_rendered_create_info = {
     .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0
@@ -247,17 +238,28 @@ static NUS_result nus_presentation_surface_build_swapchain
 		       &image_available_create_info, NULL,
 		       &NUS_presentation_surface_->image_available) !=
      VK_SUCCESS){
-    printf("ERROR::failed to create surface semaphore\n");
+    printf("ERROR::failed to create surface semaphore: image_available\n");
     return NUS_FAILURE;
   }
+  if(vkCreateSemaphore(NUS_presentation_surface_->presenting_gpu->logical_device,
+		       &image_rendered_create_info, NULL,
+		       &NUS_presentation_surface_->image_rendered) !=
+     VK_SUCCESS){
+    printf("ERROR::failed to create surface semaphore: image_rendered\n");
+    return NUS_FAILURE;
+  }
+  
+  printf("pre new image\n");
+  nus_presentation_surface_new_image(NUS_presentation_surface_);
+  printf("post new image\n");
+  // code never gets here cause of segfault
   return NUS_SUCCESS;
 }
 static NUS_result nus_presentation_surface_build_swapchain_info
-(VkPhysicalDevice suitable_physical_device,
- NUS_presentation_surface *NUS_presentation_surface_)
+(NUS_presentation_surface *NUS_presentation_surface_)
 {
-  
-  if(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(suitable_physical_device,
+  if(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(NUS_presentation_surface_->
+					       presenting_gpu->physical_device,
 					       NUS_presentation_surface_->surface,
 					       &NUS_presentation_surface_->
 					       capabilities) !=
@@ -265,20 +267,17 @@ static NUS_result nus_presentation_surface_build_swapchain_info
     printf("ERROR::failed to obtain surface capabilities\n");
     return -1;
   }
-  
   if(nus_presentation_surface_build_swapchain_length(NUS_presentation_surface_) !=
      NUS_SUCCESS){
     printf("ERROR::failed to build swapchain length\n");
     return NUS_FAILURE;
   }
-  if(nus_presentation_surface_build_surface_formats(suitable_physical_device,
-						    NUS_presentation_surface_) !=
+  if(nus_presentation_surface_build_surface_formats(NUS_presentation_surface_) !=
      NUS_SUCCESS){
     printf("ERROR::failed to build surface formats\n");
     return NUS_FAILURE;
   }
-  if(nus_presentation_surface_build_surface_present_modes(suitable_physical_device,
-							  NUS_presentation_surface_) !=
+  if(nus_presentation_surface_build_surface_present_modes(NUS_presentation_surface_) !=
      NUS_SUCCESS){
     printf("ERROR::failed to build surface present modes\n");
     return NUS_FAILURE;
@@ -295,6 +294,22 @@ static NUS_result nus_presentation_surface_build_swapchain_info
   }
   return NUS_SUCCESS;
 }
+static NUS_result nus_presentation_surface_update
+(NUS_presentation_surface *NUS_presentation_surface_)
+{
+  vkDeviceWaitIdle(NUS_presentation_surface_->presenting_gpu->logical_device);
+  if(nus_presentation_surface_build_swapchain_info(NUS_presentation_surface_) !=
+     NUS_SUCCESS){
+    printf("ERROR::failed to build presentation surface swapchain info\n");
+    return NUS_FAILURE;
+  }
+  if(nus_presentation_surface_build_swapchain(NUS_presentation_surface_) !=
+     NUS_SUCCESS){
+    printf("ERROR::failed to build presentation surface swapchain\n");
+    return NUS_FAILURE;
+  }
+  return NUS_SUCCESS;
+}
 static NUS_result nus_presentation_surface_build_swapchain_length
 (NUS_presentation_surface *NUS_presentation_surface_)
 {
@@ -302,10 +317,10 @@ static NUS_result nus_presentation_surface_build_swapchain_length
     // If there is no max limit on number of images
 
     // 3 is our optimal length for mailbox present mode
-    NUS_presentation_surface_->swapchain_length = 4;
+    NUS_presentation_surface_->swapchain_length = 3;
   }else if((4 > NUS_presentation_surface_->capabilities.minImageCount) &&
 	   (4 < NUS_presentation_surface_->capabilities.maxImageCount)){
-    NUS_presentation_surface_->swapchain_length = 4;
+    NUS_presentation_surface_->swapchain_length = 3;
   }else{
     NUS_presentation_surface_->swapchain_length =
       NUS_presentation_surface_->capabilities.minImageCount + 1;
@@ -313,13 +328,13 @@ static NUS_result nus_presentation_surface_build_swapchain_length
   return NUS_SUCCESS;
 }
 static NUS_result nus_presentation_surface_build_surface_formats
-(VkPhysicalDevice physical_device,
- NUS_presentation_surface *NUS_presentation_surface_)
+(NUS_presentation_surface *NUS_presentation_surface_)
 {
   unsigned int i,
     format_count;
   
-  if((vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device,
+  if((vkGetPhysicalDeviceSurfaceFormatsKHR(NUS_presentation_surface_->
+					   presenting_gpu->physical_device,
 					   NUS_presentation_surface_->surface,
 					   &format_count,
 					   NULL) != VK_SUCCESS) ||
@@ -328,7 +343,8 @@ static NUS_result nus_presentation_surface_build_surface_formats
     return NUS_FAILURE;
   }
   VkSurfaceFormatKHR available_formats[format_count];
-  if((vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device,
+  if((vkGetPhysicalDeviceSurfaceFormatsKHR(NUS_presentation_surface_->
+					   presenting_gpu->physical_device,
 					   NUS_presentation_surface_->surface,
 					   &format_count,
 					   available_formats) != VK_SUCCESS)){
@@ -357,12 +373,12 @@ static NUS_result nus_presentation_surface_build_surface_formats
 }
 
 static NUS_result nus_presentation_surface_build_surface_present_modes
-(VkPhysicalDevice physical_device,
- NUS_presentation_surface *NUS_presentation_surface_)
+(NUS_presentation_surface *NUS_presentation_surface_)
 {
   unsigned int i,
     present_mode_count;
-  if((vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device,
+  if((vkGetPhysicalDeviceSurfacePresentModesKHR(NUS_presentation_surface_->
+						presenting_gpu->physical_device,
 						NUS_presentation_surface_->surface,
 						&present_mode_count,
 						NULL) != VK_SUCCESS) ||
@@ -371,7 +387,8 @@ static NUS_result nus_presentation_surface_build_surface_present_modes
     return NUS_FAILURE;
   }
   VkPresentModeKHR available_present_modes[present_mode_count];
-  if(vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device,
+  if(vkGetPhysicalDeviceSurfacePresentModesKHR(NUS_presentation_surface_->
+					       presenting_gpu->physical_device,
 					       NUS_presentation_surface_->surface,
 					       &present_mode_count,
 					       available_present_modes) !=
