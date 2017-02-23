@@ -20,7 +20,7 @@ LFLAGS= -lNUS_library -lxcb -ldl -lm \
 
 SHADERS:= hello_triangle/triangle_shader/vert.spv hello_triangle/triangle_shader/frag.spv
 
-TEST?=3d_math/ xcb_window/ gpu_detection/ vulkan_clear/ hello_triangle/
+TEST?=3d_math/ basic_window/ gpu_detection/ vulkan_clear/ hello_triangle/
 
 VALGRIND_RUN= valgrind --tool=memcheck --leak-check=yes --track-origins=yes
 

@@ -3,7 +3,7 @@
 #define NUS_SYSTEM_WINDOW
 #include <NUS/NUS_library.h>
 
-#define PROGRAM_NAME "unit_test-xcb_window"
+#define PROGRAM_NAME "unit_test-basic_window"
 
 char run;
 
