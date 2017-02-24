@@ -75,13 +75,26 @@
       <hr>
       <h3>DETAILS</h3>
       <ul>
-	<li>the resulting x value will the sum of the 2 x-values of the parameters</li>
-	<li>...y values...</li>
-	<li>...z values...</li>
+	<li>no details of note</li>
       </ul>
       <hr>
+      <h3>EXAMPLE</h3>
+      Code:
+      <pre><code>
+	  NUS_vector test_vector_0 = nus_build_vector(0.0, 2.0, 6.0);
+	  NUS_vector test_vector_1 = nus_build_vector(3.0, 0.5, 6.0);
+	  NUS_vector test_result = nus_vector_add(test_vector_0, test_vector_1);
+	  nus_vector_print(test_result);
+      </code></pre>
+      Output:
+      <pre><code>
+	  {3.0, 2.5, 12.0}
+      </code></pre>
+      <hr>
       <h3>RELATED</h3>
-      <a href="/NUS_library/documentation/NUS_vector.html#main">NUS_vector</a>
+      <a href="/NUS_library/documentation/NUS_vector.html#main">NUS_vector</a>,
+      <a href="/NUS_library/documentation/nus_vector_build.html#main">nus_vector_build</a>,
+      <a href="/NUS_library/documentation/nus_vector_print.html#main">nus_vector_print</a>
     </main>
     <footer>
       <hr>
