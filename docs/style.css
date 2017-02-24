@@ -1,17 +1,20 @@
 html {
     background-color:hsla(285, 45%, 85%, 0.3);
-    font-family:Arial, Helvetica, sans-serif;
+    font-family:Georgia, Helvetica, sans-serif;
     font-size:20px;
 }
 hr {
-    border-color:hsla(300, 60%, 90%, 0.4);
-    background-color:hsla(300, 60%, 80%, 0.4);
+    margin-top:40px;
+    margin-bottom:50px;
+    border-color:hsla(300, 60%, 90%, 0.2);
+    background-color:hsla(300, 60%, 80%, 0.0);
 }
 li {
     margin:7px 0px;
 }
 h1, h2, h3, h4, h5, h6{
     color:hsla(240, 50%, 60%, 0.9);
+    font-weight:normal;
     margin-top:10px;
     margin-bottom:20px;
 }
@@ -32,10 +35,6 @@ nav {
     width:100%;
     height:auto;
     overflow:auto;
-}
-nav > a{
-    width:auto;
-    height:auto;
 }
 nav > a > div {
     width:100px;
@@ -59,6 +58,9 @@ footer {
     font-style:italic;
     font-size:12px;
     text-align:center;
+}
+footer > hr {
+    margin:20px 40px;
 }
 .should {
     color:hsla(255, 60%, 70%, 1.0);

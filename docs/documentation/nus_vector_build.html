@@ -6,14 +6,20 @@
     <link rel="stylesheet" href="/NUS_library/style.css" type="text/css">
     <link rel="icon" href="images/fire.png" type="image/x-icon">
     <style>
-      body > main a {
+      dl {
+      text-indent:25px;
+      }
+      main > div {
+      padding-left:30px;
+      }
+      a {
       text-decoration:none;
       }
     </style>
   </head>
   <body>
     <header>
-	<h1>Documentation</h1>
+	<h1>nus_vector_build documentation</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -48,14 +54,34 @@
       </a>
     </nav>
     <main>
-      <a name="main"></a>
-      To interface with the user outside of the terminal, the application must create a window with <a href="/NUS_library/documentation/nus_window_build.html#main">nus_window_build</a><br>
+      <a name="main"></a><h3>NAME</h3>
+      nus_vector_build - builds a vector
       <hr>
-      NUS_library includes files for common 3d-mathematics calculations
+      <h3>C SPECIFICATION</h3>
+      NUS_vector nus_vector_build(<br>
+      <div>
+	double x,<br>
+	double y,<br>
+	double z);
+      </div>
+      <hr>
+      <h3>PARAMETERS</h3>
       <ul>
-	<li><a href="/NUS_library/documentation/nus_vector_build.html#main">nus_vector_build</a></li>
-	<li>other</li>
+	<li><span class="highlight">x</span> is where the vector points along the x-axis</li>
+	<li><span class="highlight">y</span> is where the vector points along the y-axis</li>
+	<li><span class="highlight">z</span> is where the vector points along the z-axis</li>
       </ul>
+      <hr>
+      <h3>RETURN VALUE</h3>
+      returns a NUS_vector struct populated with the passed floats
+      <hr>
+      <h3>DETAILS</h3>
+      <ul>
+	<li>no details of note</li>
+      </ul>
+      <hr>
+      <h3>RELATED</h3>
+      <a href="/NUS_library/documentation/nus_vector_.html#main">nus_vector_</a>
     </main>
     <footer>
       <hr>
