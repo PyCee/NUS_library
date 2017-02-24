@@ -1,5 +1,3 @@
 
-run:
-	firefox -new-window index.html
-push:
-	./push_files
+test:
+	firefox -new-window test_page.html
