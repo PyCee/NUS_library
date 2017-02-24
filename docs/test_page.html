@@ -19,7 +19,7 @@
   </head>
   <body>
     <header>
-	<h1>nus_window_free documentation</h1>
+	<h1>nus_window_build documentation</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -55,26 +55,45 @@
     </nav>
     <main>
       <h3>NAME</h3>
-      nus_window_free - frees a window
+      nus_window_build - creates and displays a window
       <hr>
       <h3>C SPECIFICATION</h3>
-      void nus_window_free(NUS_window *p_NUS_window_);
+      NUS_result nus_window_build(<br>
+      <div>
+	char *title,<br>
+	unsigned short width,<br>
+	unsigned short height,<br>
+	NUS_window *p_NUS_window_);<br>
+      </div>
       <hr>
       <h3>PARAMETERS</h3>
       <ul>
-	<li>p_NUS_window_ tells the address of the window to free</li>
+	<li>title is a sring that will appear in the title bar of the created window</li>
+	<li>width is the starting horizontal dimension for window</li>
+	<li>height is the starting vertical dimension for window</li>
+	<li>p_NUS_window_ tells where in memory to create the window</li>
       </ul>
       <hr>
       <h3>RETURN VALUE</h3>
-      does not return a value
+      On Success
+      <ul><li>returns NUS_SUCCESS</li></ul>
+      On Failure
+      <ul><li>returns NUS_FAILURE</li></ul>
       <hr>
       <h3>DETAILS</h3>
       <ul>
-	<li>a window <span class="must">must</span> have been previously built with <a href="/NUS_library/documentation/nus_window_build.html">nus_window_build</a></li>
+	<li>title <span class="must">must</span> be a null-terminated c-string</li>
+	<li>title <span class="should">should</span> be a unique name to the application</li>
+	<li>width <span class="must">must</span> be the starting horizontal dimension for window</li>
+	<li>height <span class="must">must</span> the starting vertical dimension for window</li>
+	<li>p_NUS_window_ <span class="must">must</span> be a pointer to an allocated block of memory of size NUS_window</li>
+	<li>a window <span class="must">must</span> be created before user event handling</li>
+	<li>a window <span class="must">must</span> be created before creation of a presentation surface</li>
+	<li>this funciton is os-agnostic, with os-specific code enclosed in os-specific macros</li>
       </ul>
       <hr>
       <h3>RELATED</h3>
-      <a href="/NUS_library/documentation/nus_window_build.html">nus_window_build</a>
+      <a href="/NUS_library/documentation/nus_window_free.html">nus_window_free</a>, <a href="/NUS_library/documentation/nus_event_handler_build.html">nus_event_handler_build</a>
     </main>
     <footer>
       <hr>
