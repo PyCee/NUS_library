@@ -58,10 +58,7 @@
       nus_window_free - frees a window
       <hr>
       <h3>C SPECIFICATION</h3>
-      NUS_result nus_window_free(<br>
-      <div>
-	NUS_window *p_NUS_window_);<br>
-      </div>
+      void nus_window_free(NUS_window *p_NUS_window_);
       <hr>
       <h3>PARAMETERS</h3>
       <ul>
@@ -73,14 +70,7 @@
       <hr>
       <h3>DETAILS</h3>
       <ul>
-	<li>title <span class="must">must</span> be a null-terminated c-string</li>
-	<li>title <span class="should">should</span> be a unique name to the application</li>
-	<li>width <span class="must">must</span> be the starting horizontal dimension for window</li>
-	<li>height <span class="must">must</span> the starting vertical dimension for window</li>
-	<li>p_NUS_window_ <span class="must">must</span> be a pointer to an allocated block of memory of size NUS_window</li>
-	<li>a window <span class="must">must</span> be created before user event handling</li>
-	<li>a window <span class="must">must</span> be created before creation of a presentation surface</li>
-	<li>this funciton is os-agnostic, with os-specific code enclosed in os-specific macros</li>
+	<li>a window <span class="must">must</span> have been previously built with <a href="/NUS_library/documentation/nus_window_build.html">nus_window_build</a></li>
       </ul>
       <hr>
       <h3>RELATED</h3>
