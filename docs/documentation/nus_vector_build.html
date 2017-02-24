@@ -19,7 +19,7 @@
   </head>
   <body>
     <header>
-	<h1>nus_vector_build documentation</h1>
+	<h1>NUS_vector documentation</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -55,33 +55,34 @@
     </nav>
     <main>
       <a name="main"></a><h3>NAME</h3>
-      nus_vector_build - builds a vector
+      NUS_vector - a 3d vector struct
       <hr>
       <h3>C SPECIFICATION</h3>
-      NUS_vector nus_vector_build(<br>
+      typedef struct NUS_vector{
       <div>
-	double x,<br>
-	double y,<br>
-	double z);
+	double x, y, z;
+      </div>
+      } NUS_vector;
       </div>
       <hr>
-      <h3>PARAMETERS</h3>
+      <h3>STRUCT MEMBERS</h3>
       <ul>
-	<li><span class="highlight">x</span> is where the vector points along the x-axis</li>
-	<li><span class="highlight">y</span> is where the vector points along the y-axis</li>
-	<li><span class="highlight">z</span> is where the vector points along the z-axis</li>
+	<li><span class="highlight">x</span> is value along the x-axis</li>
+	<li><span class="highlight">y</span> is value along the y-axis</li>
+	<li><span class="highlight">z</span> is value along the z-axis</li>
       </ul>
-      <hr>
-      <h3>RETURN VALUE</h3>
-      returns a NUS_vector struct populated with the passed floats
       <hr>
       <h3>DETAILS</h3>
       <ul>
 	<li>no details of note</li>
       </ul>
       <hr>
-      <h3>RELATED</h3>
-      <a href="/NUS_library/documentation/nus_vector_.html#main">nus_vector_</a>
+      <h3>FUNCTIONS</h3>
+      <div>
+	<a href="/NUS_library/documentation/nus_vector_build.html#main">nus_vector_build</a>
+	<br>
+	<a href="/NUS_library/documentation/nus_vector_add.html#main">nus_vector_add</a>
+      </div>
     </main>
     <footer>
       <hr>

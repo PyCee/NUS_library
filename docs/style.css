@@ -4,7 +4,7 @@ html {
     font-size:20px;
 }
 hr {
-    margin-top:40px;
+    margin-top:20px;
     margin-bottom:50px;
     border-color:hsla(300, 60%, 90%, 0.2);
     background-color:hsla(300, 60%, 80%, 0.0);
@@ -23,6 +23,7 @@ body {
     height:100%;
     margin-top:0px;
     margin-left:10vw;
+    padding-left:50px;
     background-color:hsla(0, 0%, 100%, 0.5);
 }
 header {
