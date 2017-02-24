@@ -19,7 +19,7 @@
   </head>
   <body>
     <header>
-	<h1>nus_vector_add documentation</h1>
+	<h1>nus_vector_cmp documentation</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -55,27 +55,33 @@
     </nav>
     <main>
       <a name="main"></a><h3>NAME</h3>
-      nus_vector_add - adds 2 vectors together
+      nus_vector_cmp - tests if 2 vectors are within a certain range of eachother
       <hr>
       <h3>C SPECIFICATION</h3>
-      NUS_vector nus_vector_add(
+      NUS_vector nus_vector_cmp(
       <div>
 	NUS_vector NUS_vector_0,<br>
-	NUS_vector NUS_vector_1);
+	NUS_vector NUS_vector_1<br>
+	double range);
       </div>
       <hr>
       <h3>PARAMETERS</h3>
       <ul>
-	<li><span class="highlight">NUS_vector_0</span> is the first of 2 vectors to be added together</li>
-	<li><span class="highlight">NUS_vector_1</span> is the second of 2 vectors to be added together</li>
+	<li><span class="highlight">NUS_vector_0</span> is the first vector of the comparison</li>
+	<li><span class="highlight">NUS_vector_1</span> is the second vector of the comparison</li>
+	<li><span class="highlight">range</span> is the value the distance will be compared to</li>
       </ul>
       <hr>
       <h3>RETURN VALUE</h3>
-      returns the sum of the 2 vectors passed as parameters
+      If the distance between the 2 vectors < range
+      <ul><li>returns 1</li></ul>
+      If the distance between the 2 vectors >= range
+      <ul><li>returns 0</li></ul>
       <hr>
       <h3>DETAILS</h3>
       <ul>
-	<li>no details of note</li>
+	<li>the range <span class="should">should</span> be positive, else there is no chance for a result of 1</li>
+	<li>the range <span class="should">should</span> be more than 0 unless the vectors are constant, as floting-point number comparisons can be tricky</li>
       </ul>
       <hr>
       <h3>RELATED</h3>

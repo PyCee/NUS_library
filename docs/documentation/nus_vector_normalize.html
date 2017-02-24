@@ -19,7 +19,7 @@
   </head>
   <body>
     <header>
-	<h1>nus_vector_add documentation</h1>
+	<h1>nus_vector_normalize documentation</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -55,27 +55,26 @@
     </nav>
     <main>
       <a name="main"></a><h3>NAME</h3>
-      nus_vector_add - adds 2 vectors together
+      nus_vector_normalize - normalizes a vector
       <hr>
       <h3>C SPECIFICATION</h3>
-      NUS_vector nus_vector_add(
+      NUS_vector nus_vector_normalize(
       <div>
-	NUS_vector NUS_vector_0,<br>
-	NUS_vector NUS_vector_1);
+	NUS_vector NUS_vector_);
       </div>
       <hr>
       <h3>PARAMETERS</h3>
       <ul>
-	<li><span class="highlight">NUS_vector_0</span> is the first of 2 vectors to be added together</li>
-	<li><span class="highlight">NUS_vector_1</span> is the second of 2 vectors to be added together</li>
+	<li><span class="highlight">NUS_vector_</span> is the vector to be normalized</li>
       </ul>
       <hr>
       <h3>RETURN VALUE</h3>
-      returns the sum of the 2 vectors passed as parameters
+      returns the input vector, normalized
       <hr>
       <h3>DETAILS</h3>
       <ul>
-	<li>no details of note</li>
+	<li>the input vector <span class="must">must</span> have a magnitude greater than 0.0</li>
+	<li> creates a <a href="https://en.wikipedia.org/wiki/Unit_vector">Unit Vector</a></li>
       </ul>
       <hr>
       <h3>RELATED</h3>

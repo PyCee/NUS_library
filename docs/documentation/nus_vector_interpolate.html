@@ -19,7 +19,7 @@
   </head>
   <body>
     <header>
-	<h1>NUS_vector documentation</h1>
+	<h1>nus_vector_interpolate documentation</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -55,33 +55,34 @@
     </nav>
     <main>
       <a name="main"></a><h3>NAME</h3>
-      NUS_vector - builds a vector
+      nus_vector_interpolate - interpolates between 2 vectors
       <hr>
       <h3>C SPECIFICATION</h3>
-      NUS_vector nus_vector_build(<br>
+      NUS_vector nus_vector_interpolate(
       <div>
-	double x,<br>
-	double y,<br>
-	double z);
+	NUS_vector NUS_vector_0,<br>
+	NUS_vector NUS_vector_1,<br>
+	double t);
       </div>
       <hr>
       <h3>PARAMETERS</h3>
       <ul>
-	<li><span class="highlight">x</span> is where the vector points along the x-axis</li>
-	<li><span class="highlight">y</span> is where the vector points along the y-axis</li>
-	<li><span class="highlight">z</span> is where the vector points along the z-axis</li>
+	<li><span class="highlight">NUS_vector_0</span> is the vector to interpolate from</li>
+	<li><span class="highlight">NUS_vector_1</span> is the vector to interpolate too</li>
+	<li><span class="highlight">t</span> determines the interpolation between the 2 vectors</li>
       </ul>
       <hr>
       <h3>RETURN VALUE</h3>
-      returns a NUS_vector struct populated with the passed floats
+      returns a vector interpolated between the 2 vectors by t
       <hr>
       <h3>DETAILS</h3>
       <ul>
-	<li>no details of note</li>
+	<li>a t <= 0.0 will return NUS_vector_0</li>
+	<li>a t >= 1.0 will return NUS_vector_1</li>
       </ul>
       <hr>
       <h3>RELATED</h3>
-      <a href="/NUS_library/documentation/nus_vector_.html#main">nus_vector_</a>
+      <a href="/NUS_library/documentation/NUS_vector.html#main">NUS_vector</a>
     </main>
     <footer>
       <hr>

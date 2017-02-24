@@ -19,7 +19,7 @@
   </head>
   <body>
     <header>
-	<h1>nus_vector_add documentation</h1>
+	<h1>nus_vector_subtract documentation</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -55,10 +55,10 @@
     </nav>
     <main>
       <a name="main"></a><h3>NAME</h3>
-      nus_vector_add - adds 2 vectors together
+      nus_vector_add - subtracts a vector from another vector
       <hr>
       <h3>C SPECIFICATION</h3>
-      NUS_vector nus_vector_add(
+      NUS_vector nus_vector_subtract(
       <div>
 	NUS_vector NUS_vector_0,<br>
 	NUS_vector NUS_vector_1);
@@ -66,12 +66,12 @@
       <hr>
       <h3>PARAMETERS</h3>
       <ul>
-	<li><span class="highlight">NUS_vector_0</span> is the first of 2 vectors to be added together</li>
-	<li><span class="highlight">NUS_vector_1</span> is the second of 2 vectors to be added together</li>
+	<li><span class="highlight">NUS_vector_0</span> is the first vector</li>
+	<li><span class="highlight">NUS_vector_1</span> is subtracted from the first vector</li>
       </ul>
       <hr>
       <h3>RETURN VALUE</h3>
-      returns the sum of the 2 vectors passed as parameters
+      returns the first vector - the second vector
       <hr>
       <h3>DETAILS</h3>
       <ul>
@@ -79,7 +79,8 @@
       </ul>
       <hr>
       <h3>RELATED</h3>
-      <a href="/NUS_library/documentation/NUS_vector.html#main">NUS_vector</a>
+      <a href="/NUS_library/documentation/NUS_vector.html#main">NUS_vector</a>,
+      <a href="/NUS_library/documentation/nus_vector_add.html#main">nus_vector_add</a>
     </main>
     <footer>
       <hr>

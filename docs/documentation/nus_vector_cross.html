@@ -19,7 +19,7 @@
   </head>
   <body>
     <header>
-	<h1>nus_vector_add documentation</h1>
+	<h1>nus_vector_cross documentation</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -55,10 +55,10 @@
     </nav>
     <main>
       <a name="main"></a><h3>NAME</h3>
-      nus_vector_add - adds 2 vectors together
+      nus_vector_cross - computes the cross product of 2 vectors
       <hr>
       <h3>C SPECIFICATION</h3>
-      NUS_vector nus_vector_add(
+      NUS_vector nus_vector_cross(
       <div>
 	NUS_vector NUS_vector_0,<br>
 	NUS_vector NUS_vector_1);
@@ -66,21 +66,21 @@
       <hr>
       <h3>PARAMETERS</h3>
       <ul>
-	<li><span class="highlight">x</span> is where the vector points along the x-axis</li>
-	<li><span class="highlight">y</span> is where the vector points along the y-axis</li>
-	<li><span class="highlight">z</span> is where the vector points along the z-axis</li>
+	<li><span class="highlight">NUS_vector_0</span> is the first argument to the cross product</li>
+	<li><span class="highlight">NUS_vector_1</span> is the second argument to the cross product</li>
       </ul>
       <hr>
       <h3>RETURN VALUE</h3>
-      returns a NUS_vector struct populated with the passed floats
+      returns the cross product of the 2 vectors
       <hr>
       <h3>DETAILS</h3>
       <ul>
-	<li>no details of note</li>
+	<li>both parameters <span class="must">must</span> have a magnnitude greater than 0.0</li>
+	<li><a href="https://en.wikipedia.org/wiki/Cross_product">Cross Product</a></li>
       </ul>
       <hr>
       <h3>RELATED</h3>
-      <a href="/NUS_library/documentation/nus_vector_.html#main">nus_vector_</a>
+      <a href="/NUS_library/documentation/NUS_vector.html#main">NUS_vector</a>
     </main>
     <footer>
       <hr>

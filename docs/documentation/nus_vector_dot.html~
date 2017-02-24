@@ -19,7 +19,7 @@
   </head>
   <body>
     <header>
-	<h1>nus_vector_add documentation</h1>
+	<h1>nus_vector_dot documentation</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -55,10 +55,10 @@
     </nav>
     <main>
       <a name="main"></a><h3>NAME</h3>
-      nus_vector_add - adds 2 vectors together
+      nus_vector_dot - computes the dot product of 2 vectors
       <hr>
       <h3>C SPECIFICATION</h3>
-      NUS_vector nus_vector_add(
+      NUS_vector nus_vector_dot(
       <div>
 	NUS_vector NUS_vector_0,<br>
 	NUS_vector NUS_vector_1);
