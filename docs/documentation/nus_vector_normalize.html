@@ -58,10 +58,8 @@
       nus_vector_normalize - normalizes a vector
       <hr>
       <h3>C SPECIFICATION</h3>
-      NUS_vector nus_vector_normalize(
-      <div>
-	NUS_vector NUS_vector_);
-      </div>
+      <div class="code_example">NUS_vector nus_vector_normalize(
+    NUS_vector NUS_vector_);</div>
       <hr>
       <h3>PARAMETERS</h3>
       <ul>
@@ -74,11 +72,25 @@
       <h3>DETAILS</h3>
       <ul>
 	<li>the input vector <span class="must">must</span> have a magnitude greater than 0.0</li>
-	<li> creates a <a href="https://en.wikipedia.org/wiki/Unit_vector">Unit Vector</a></li>
+	<li> creates a <a target="_blank" href="https://en.wikipedia.org/wiki/Unit_vector">Unit Vector</a></li>
       </ul>
       <hr>
+      <h3>EXAMPLE</h3>
+      Code:
+      <div class="code_example">  NUS_vector test_vector = nus_vector_build(1.0, 1.0, 0.0);
+  NUS_vector result = nus_vector_normalize(test_vector);
+  nus_vector_print(result);</div>
+      Output:
+      <div class="code_example">  {0.7071, 0.7071, 0.0}</div>
+      <hr>
       <h3>RELATED</h3>
-      <a href="/NUS_library/documentation/NUS_vector.html#main">NUS_vector</a>
+      <div>
+	<a href="/NUS_library/documentation/NUS_vector.html#main">NUS_vector</a>
+	<br>
+	<a href="/NUS_library/documentation/nus_vector_print.html#main">nus_vector_print</a>
+	<br>
+	<a href="/NUS_library/documentation/nus_vector_build.html#main">nus_vector_build</a>
+      </div>
     </main>
     <footer>
       <hr>

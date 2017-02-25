@@ -58,12 +58,10 @@
       nus_vector_cmp - tests if 2 vectors are within a certain range of eachother
       <hr>
       <h3>C SPECIFICATION</h3>
-      NUS_vector nus_vector_cmp(
-      <div>
-	NUS_vector NUS_vector_0,<br>
-	NUS_vector NUS_vector_1<br>
-	double range);
-      </div>
+      <div class="code_example">  NUS_vector nus_vector_cmp(
+      NUS_vector NUS_vector_0,
+      NUS_vector NUS_vector_1,
+      double range);</div>
       <hr>
       <h3>PARAMETERS</h3>
       <ul>
@@ -84,8 +82,21 @@
 	<li>the range <span class="should">should</span> be more than 0 unless the vectors are constant, as floting-point number comparisons can be tricky</li>
       </ul>
       <hr>
+      <h3>EXAMPLE</h3>
+      Code:
+      <div class="code_example">  NUS_vector test_vector_0 = nus_vector_build(1.0, 0.0, 0.0);
+  NUS_vector test_vector_1 = nus_vector_build(2.0, 0.0, 0.0);
+  char within_0_5 = nus_vector_cmp(test_vector_0, test_vector_1, 0.5);
+  char within_2 = nus_vector_cmp(test_vector_0, test_vector_1, 2.0);
+  printf("within 0.5 = %d\nwithin 2.0 = %d", within_0_5, within_2);</div>
+      Output:
+      <div class="code_example">  0
+  1</div>
+      <hr>
       <h3>RELATED</h3>
-      <a href="/NUS_library/documentation/NUS_vector.html#main">NUS_vector</a>
+      <div>
+	<a href="/NUS_library/documentation/NUS_vector.html#main">NUS_vector</a>
+      </div>
     </main>
     <footer>
       <hr>
