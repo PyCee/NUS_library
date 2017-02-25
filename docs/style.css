@@ -12,9 +12,6 @@ hr {
 li {
     margin:7px 0px;
 }
-code {
-    background-color:hsla(315, 40%, 30%, 1.0);
-}
 h1, h2, h3, h4, h5, h6{
     color:hsla(240, 50%, 60%, 0.9);
     font-weight:normal;
