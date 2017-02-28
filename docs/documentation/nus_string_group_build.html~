@@ -3,7 +3,7 @@
   <head>
     <title>nus library</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="/NUS_library/style.css" type="text/css">
+    <link rel="stylesheet" href="style.css" type="text/css">
     <link rel="icon" href="images/fire.png" type="image/x-icon">
     <style>
       dl {
