@@ -11,6 +11,8 @@
 /* Include files that should be present in any instance of this engine*/
 #include "NUS_result.h"
 #include "NUS_string_group.h"
+#include "NUS_save.h"
+#include "NUS_executable_path.h"
 
 #include "time/NUS_clock.h"
 
@@ -24,7 +26,6 @@
 #if defined(NUS_SYSTEM_WINDOW)
 #include "io/NUS_window.h"
 #include "io/NUS_system_events.h"
-#include "io/NUS_executable_path.h"
 #endif /* NUS_SYSTEM_WINDOW */
 
 /*  NUS_SYSTEM_GPU must be defined in the application to enable gpu usage */

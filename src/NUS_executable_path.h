@@ -9,9 +9,9 @@ Such as:
   save files
 */
 
-char * nus_executable_path_prefix(char *);
+char * nus_executable_path_prefix(char const * const);
 // In-Application:
-// pass a malloced string
+// returns a malloced string
 // free returned string after use
 
 #endif /* NUS_EXECUTABLE_PATH_H */

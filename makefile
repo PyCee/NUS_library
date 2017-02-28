@@ -13,7 +13,7 @@ GPU_SRC_FILES=NUS_multi_gpu.c NUS_gpu.c NUS_queue_family.c NUS_command_queue.c \
 	NUS_vulkan_instance.c
 GPU_DIR=gpu
 
-IO_SRC_FILES=NUS_window.c NUS_system_events.c NUS_executable_path.c
+IO_SRC_FILES=NUS_window.c NUS_system_events.c
 IO_DIR=io
 
 MATH_SRC_FILES=NUS_vector.c NUS_octree.c NUS_matrix.c NUS_axes.c NUS_quaternion.c \
@@ -39,7 +39,7 @@ MOD_SRC=$(addprefix $(MOD_DIR)/, $(MOD_SRC_FILES))
 PHY_SRC=$(addprefix $(PHY_DIR)/, $(PHY_SRC_FILES))
 REN_SRC=$(addprefix $(REN_DIR)/, $(REN_SRC_FILES))
 TIME_SRC=$(addprefix $(TIME_DIR)/, $(TIME_SRC_FILES))
-OTH_SRC=NUS_vulkan.c NUS_string_group.c
+OTH_SRC=NUS_vulkan.c NUS_string_group.c NUS_save.c NUS_executable_path.c
 
 GPU_HEA=$(GPU_SRC:.c=.h)
 IO_HEA=$(IO_SRC:.c=.h)
@@ -96,7 +96,6 @@ rebuild: clean all
 
 debug: CFLAGS += -D NUS_DEBUG
 debug: rebuild
-	echo $(CFLAGS)
 clean:
 	find . -type f \( -name '*.o' -o -name '*~' \) -delete
 install:

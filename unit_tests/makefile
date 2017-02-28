@@ -11,7 +11,7 @@ CFLAGS=-g -Wextra \
 	-Wmissing-prototypes \
 	-Wconversion \
 	-Wunreachable-code \
-	-I/home/kims/VulkanSDK/1.0.39.0/x86_64/include -D NUS_DEBUG
+	-I/home/kims/VulkanSDK/1.0.39.0/x86_64/include
 
 LFLAGS= -lNUS_library -lxcb -ldl -lm \
 	-L/home/kims/VulkanSDK/1.0.39.0/x86_64/lib -lVkLayer_unique_objects \
@@ -20,7 +20,7 @@ LFLAGS= -lNUS_library -lxcb -ldl -lm \
 
 SHADERS:= hello_triangle/triangle_shader/vert.spv hello_triangle/triangle_shader/frag.spv
 
-TEST?=3d_math/ basic_window/ gpu_detection/ vulkan_clear/ hello_triangle/
+TEST?=3d_math/ save_file/ basic_window/ gpu_detection/ vulkan_clear/ hello_triangle/
 
 VALGRIND_RUN= valgrind --tool=memcheck --leak-check=yes --track-origins=yes
 
@@ -33,9 +33,10 @@ all: recompile
 
 run: compile $(SHADERS)
 	for test in $(TEST:/=/unit_test); do ./$$test; done
-valgrind:
+valgrind: $(SHADERS)
 	for test in $(TEST:/=/unit_test); do $(VALGRIND_RUN) ./$$test; done
-
+debug: CFLAGS += -D NUS_DEBUG
+debug: recompile run
 compile: $(TEST:/=/unit_test)
 recompile: clean compile
 %/unit_test: %/main.o

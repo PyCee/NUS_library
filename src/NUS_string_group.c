@@ -1,6 +1,7 @@
 #include "NUS_string_group.h"
 
 #include <stdio.h>
+#include <limits.h>
 
 void nus_string_group_init(NUS_string_group *p_NUS_string_group_)
 {
@@ -29,6 +30,29 @@ void nus_string_group_append
     malloc(sizeof(*string) * (strlen(string) + 1));
   strcpy(p_NUS_string_group_->strings[p_NUS_string_group_->count - 1], string);
 }
+NUS_result nus_string_group_set
+(NUS_string_group *p_NUS_string_group_, unsigned int index, const char * const string)
+{
+  if(index >= p_NUS_string_group_->count){
+    printf("ERROR::cannot set string with index >= count");
+    return NUS_FAILURE;
+  }
+  p_NUS_string_group_->strings[index] = realloc(p_NUS_string_group_->strings[index],
+						strlen(string) + 1);
+  strcpy(p_NUS_string_group_->strings[index], string);
+  return NUS_SUCCESS;
+}
+NUS_result nus_string_group_get
+(NUS_string_group NUS_string_group_, unsigned int index, char **result)
+{
+  if(index >= NUS_string_group_.count){
+    printf("ERROR::failed to resolve string group index %d::greater than count\n",
+	   index);
+    return NUS_FAILURE;
+  }
+  *result = NUS_string_group_.strings[index];
+  return NUS_SUCCESS;
+}
 void nus_string_group_print(NUS_string_group NUS_string_group_)
 {
   unsigned int i;
@@ -49,14 +73,14 @@ void nus_string_group_copy
 			    NUS_string_group_src.strings[i]);
   }
 }
-char nus_string_group_contains
+unsigned int nus_string_group_string_index
 (NUS_string_group NUS_string_group_, const char *string)
 {
   unsigned int i;
   for(i = 0; i < NUS_string_group_.count; ++i){
     if(0 == strcmp(NUS_string_group_.strings[i], string)){
-      return 1;
+      return i;
     }
   }
-  return 0;
+  return UINT_MAX;
 }

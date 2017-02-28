@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../NUS_os.h"
+#include "NUS_os.h"
 
 #if defined(NUS_OS_WINDOWS)
 
@@ -11,11 +11,11 @@
 #include <libgen.h>
 #endif
 
-char *nus_executable_path_prefix(char *relative_path)
+char *nus_executable_path_prefix(char const * const relative_path)
 {
-  char buffer[100] = {0},
-    *dir_path,
-      *absolute_path;
+  char *dir_path,
+    *absolute_path,
+    buffer[100] = {0};
   
   // Obtain absolute path up to but not including the executable for each os
 #if defined(NUS_OS_WINDOWS)

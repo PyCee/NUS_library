@@ -1,0 +1,5 @@
+NUS_save_file
+attribute:element
+game:good
+counter:1
+whatis:myname

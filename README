@@ -1,8 +1,19 @@
-NUS_engine
+NUS_library
 
-A 3d game engine
+Documentation can be found at https://pycee.github.io/NUS_library/
+
+A 3d game library writted in c.
+Provides code for:
+-3d math
+-window management
+-user input
+-vulkan function loader
+-gpu management
 
 planned to impliment:
+-window presentation
+-save files
+-ui creation/management
 -collisions
 -animations
 -3rd person camera
