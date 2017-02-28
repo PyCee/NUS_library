@@ -3,7 +3,7 @@
   <head>
     <title>nus library</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="style.css" type="text/css">
+    <link rel="stylesheet" href="/NUS_library/style.css" type="text/css">
     <link rel="icon" href="images/fire.png" type="image/x-icon">
     <style>
       dl {
@@ -13,12 +13,13 @@
       padding-left:30px;
       }
       a {
+      text-decoration:none;
       }
     </style>
   </head>
   <body>
     <header>
-	<h1>nus_vector_print documentation</h1>
+	<h1>NUS_string_group documentation</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -54,38 +55,29 @@
     </nav>
     <main>
       <a name="main"></a><h3>NAME</h3>
-      nus_window_print - prints vector values
+      NUS_string_group - a modifiable collection of c-strings
       <hr>
       <h3>C SPECIFICATION</h3>
-      <div class="code_example">void nus_vector_print(NUS_vector NUS_vector_);</div>
+      <div class="code_example">  typedef struct NUS_string_group{
+      char **strings;
+      unsigned int count;
+  } NUS_string_group;</div>
       <hr>
-      <h3>PARAMETERS</h3>
+      <h3>MEMBERS</h3>
       <ul>
-	<li><span class="highlight">NUS_vector_</span> is the vector which the printed information will originate</li>
+	<li><span class="highlight">strings</span> is a dynamicly sized c-string array</li>
+	<li><span class="highlight">count</span> is the number of strings in the string group</li>
       </ul>
-      <hr>
-      <h3>RETURN VALUE</h3>
-      does not return a value
       <hr>
       <h3>DETAILS</h3>
       <ul>
 	<li>no details of note</li>
       </ul>
       <hr>
-      <h3>EXAMPLE</h3>
-      Code:
-      <div class="code_example">NUS_vector test_vector = {
-    .x = 1.0,
-    .y = 0.0,
-    .z = -1.0
-};
-nus_vector_print(test_vector);</div>
-      Output:
-      <div class="code_example">{1.0, 0.0, -1.0}</div>
-      <hr>
-      <h3>RELATED</h3>
+      <h3>FUNCTIONS</h3>
       <div>
-	<a href="/NUS_library/documentation/NUS_vector.html#main">NUS_vector</a>
+	<a href="/NUS_library/documentation/nus_string_group_build.html#main">nus_string_group_build</a>
+	<br>
       </div>
     </main>
     <footer>
@@ -95,3 +87,4 @@ nus_vector_print(test_vector);</div>
     </footer>
   </body>
 </html>
+

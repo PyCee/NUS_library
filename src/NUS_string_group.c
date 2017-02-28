@@ -56,9 +56,9 @@ NUS_result nus_string_group_get
 void nus_string_group_print(NUS_string_group NUS_string_group_)
 {
   unsigned int i;
-  printf("NUS_string_group contains %d strings:\n", NUS_string_group_.count);
+  printf("NUS_string_group contains %d string(s):\n", NUS_string_group_.count);
   for(i = 0; i < NUS_string_group_.count; ++i){
-    printf("  string %d: %s\n", i, NUS_string_group_.strings[i]);
+    printf("\tstring %d: %s\n", i, NUS_string_group_.strings[i]);
   }
 }
 void nus_string_group_copy
