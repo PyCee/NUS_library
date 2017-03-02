@@ -13,7 +13,6 @@ NUS_vector nus_vector_normalize(NUS_vector);
 double nus_vector_dot(NUS_vector, NUS_vector);
 NUS_vector nus_vector_cross(NUS_vector, NUS_vector);
 NUS_vector nus_vector_interpolate(NUS_vector, NUS_vector, double);
-double nus_vector_mag_sq(NUS_vector);
 char nus_vector_cmp(NUS_vector, NUS_vector, double);
 void nus_vector_print(NUS_vector);
 
