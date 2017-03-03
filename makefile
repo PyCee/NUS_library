@@ -1,5 +1,7 @@
 CC=gcc
 CFLAGS=-g -Wall \
+	-Wfloat-equal \
+	-Wundef \
 	-Wshadow \
 	-Wpointer-arith \
 	-Wcast-qual \
@@ -7,6 +9,7 @@ CFLAGS=-g -Wall \
 	-Wstrict-prototypes \
 	-Wmissing-prototypes \
 	-Wconversion \
+	-Wunreachable-code \
 	-I/home/kims/VulkanSDK/1.0.39.0/x86_64/include
 
 GPU_SRC_FILES=NUS_multi_gpu.c NUS_gpu.c NUS_queue_family.c NUS_command_queue.c \
@@ -20,10 +23,11 @@ MATH_SRC_FILES=NUS_vector.c NUS_octree.c NUS_matrix.c NUS_axes.c NUS_quaternion.
 	NUS_frustum.c
 MATH_DIR=math
 
-MOD_SRC_FILES=vertex.c triangle.c texture.c mesh.c model.c joint.c skeleton.c
+MOD_SRC_FILES=NUS_model.c NUS_vertex.c
 MOD_DIR=model
 
-PHY_SRC_FILES=center.c physics_state.c movement.c orientation.c kinematic_property.c
+PHY_SRC_FILES=NUS_kinematic_property.c NUS_physics_state.c NUS_orientation.c \
+	NUS_movement.c NUS_mass.c
 PHY_DIR=physics
 
 REN_SRC_FILES=NUS_presentation_surface.c NUS_image_clear.c NUS_shaders.c
@@ -48,10 +52,10 @@ MOD_HEA=$(MOD_SRC:.c=.h)
 PHY_HEA=$(PHY_SRC:.c=.h)
 REN_HEA=$(REN_SRC:.c=.h)
 TIME_HEA=$(TIME_SRC:.c=.h)
-OTH_HEA=NUS_library.h NUS_result.h NUS_os.h $(OTH_SRC:.c=.h)
+OTH_HEA=NUS_library.h NUS_result.h NUS_os.h NUS_component_key.h $(OTH_SRC:.c=.h)
 
 #NUS_SRC_FILES=$(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(PHY_SRC) $(REN_SRC)
-NUS_SRC_FILES=$(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(REN_SRC) $(OTH_SRC) $(TIME_SRC)
+NUS_SRC_FILES=$(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(PHY_SRC) $(REN_SRC) $(OTH_SRC) $(TIME_SRC)
 NUS_HEA_PRE_PREFIX=$(OTH_HEA) $(NUS_SRC_FILES:.c=.h)
 SRC_DIR=src
 NUS_SRC=$(addprefix $(SRC_DIR)/, $(NUS_SRC_FILES))
@@ -89,13 +93,14 @@ compile: $(NUS_OBJ)
 	@sudo cp $(addprefix $(SRC_DIR)/, $(REN_HEA)) /usr/local/include/NUS/$(REN_DIR)/
 	@sudo cp $(addprefix $(SRC_DIR)/, $(TIME_HEA)) /usr/local/include/NUS/$(TIME_DIR)/
 	@sudo cp $(addprefix $(SRC_DIR)/, $(OTH_HEA)) /usr/local/include/NUS/
-rebuild: clean all
+recompile: clean all
 .c.o:
+	@echo "Compiling File: $<"
 	$(CC) $(CFLAGS) -c $<  -o $@
 .PHONY: clean
 
 debug: CFLAGS += -D NUS_DEBUG
-debug: rebuild
+debug: recompile
 clean:
 	find . -type f \( -name '*.o' -o -name '*~' \) -delete
 install:
