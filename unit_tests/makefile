@@ -20,7 +20,8 @@ LFLAGS= -lNUS_library -lxcb -ldl -lm \
 
 SHADERS:= hello_triangle/triangle_shader/vert.spv hello_triangle/triangle_shader/frag.spv
 
-TEST?=3d_math/ save_file/ basic_window/ gpu_detection/ vulkan_clear/ hello_triangle/
+TEST?=3d_math/ gravity_simulation/ save_file/ basic_window/ gpu_detection/ \
+	vulkan_clear/ hello_triangle/
 
 VALGRIND_RUN= valgrind --tool=memcheck --leak-check=yes --track-origins=yes
 
@@ -36,14 +37,14 @@ run: compile $(SHADERS)
 valgrind: $(SHADERS)
 	for test in $(TEST:/=/unit_test); do $(VALGRIND_RUN) ./$$test; done
 debug: CFLAGS += -D NUS_DEBUG
-debug: recompile run
+debug: recompile
 compile: $(TEST:/=/unit_test)
 recompile: clean compile
 %/unit_test: %/main.o
-	@echo
-	gcc $< $(LFLAGS) -o $@
+	@$(CC) $< $(LFLAGS) -o $@
 %.o: %.c
-	$(CC) $(CFLAGS) -c $<  -o $@
+	@$(CC) $(CFLAGS) -c $<  -o $@
+	@echo "Compiling File: $<"
 %.spv:
 	@touch $@
 	@glslangValidator -V $$(dirname $@)/shader.$$(basename --suffix=.spv $@)
