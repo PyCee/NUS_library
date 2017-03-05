@@ -13,13 +13,12 @@
       padding-left:30px;
       }
       a {
-      text-decoration:none;
       }
     </style>
   </head>
   <body>
     <header>
-	<h1>NUS_string_group documentation</h1>
+	<h1>nus_string_group_init documentation</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -55,45 +54,37 @@
     </nav>
     <main>
       <a name="main"></a><h3>NAME</h3>
-      NUS_string_group - a modifiable collection of c-strings
+      nus_string_group_init - initializes a string group
       <hr>
       <h3>C SPECIFICATION</h3>
-      <div class="code_example">  typedef struct NUS_string_group{
-      char **strings;
-      unsigned int count;
-  } NUS_string_group;</div>
+      <div class="code_example">void nus_string_group_init(NUS_string_group *p_string_group);</div>
       <hr>
-      <h3>MEMBERS</h3>
+      <h3>PARAMETERS</h3>
       <ul>
-	<li><span class="highlight">strings</span> is a dynamicly sized c-string array</li>
-	<li><span class="highlight">count</span> is the number of strings in the string group</li>
+	<li><span class="highlight">p_string_group</span> is a pointer to the string group that will be initialized</li>
       </ul>
+      <hr>
+      <h3>RETURN VALUE</h3>
+      does not return a value
       <hr>
       <h3>DETAILS</h3>
       <ul>
-	<li>no details of note</li>
+	<li>p_string_group <span class="highlight">should</span> not have been initialized or <a href="/NUS_library/documentation/nus_string_group_build.html#main">built</a> before</li>
       </ul>
       <hr>
-      <h3>FUNCTIONS</h3>
+      <h3>EXAMPLE</h3>
+      Code:
+      <div class="code_example">NUS_string_group string_group;
+nus_string_group_init(&string_group);
+nus_string_group_print(string_group);</div>
+      Output:
+      <div class="code_example">NUS_string_group contains 0 string(s):</div>
+      <hr>
+      <h3>RELATED</h3>
       <div>
-	<a href="/NUS_library/documentation/nus_string_group_build.html#main">nus_string_group_build</a>
+	<a href="/NUS_library/documentation/NUS_string_group.html#main">NUS_string_group</a>
 	<br>
 	<a href="/NUS_library/documentation/nus_string_group_print.html#main">nus_string_group_print</a>
-	<br>
-	<a href="/NUS_library/documentation/nus_string_group_init.html#main">nus_string_group_init</a>
-	<br>
-	<a href="/NUS_library/documentation/nus_string_group_free.html#main">nus_string_group_free</a>
-	<br>
-	<a href="/NUS_library/documentation/nus_string_group_append.html#main">nus_string_group_append</a>
-	<br>
-	<a href="/NUS_library/documentation/nus_string_group_set.html#main">nus_string_group_set</a>
-	<br>
-	<a href="/NUS_library/documentation/nus_string_group_get.html#main">nus_string_group_get</a>
-	<br>
-	<a href="/NUS_library/documentation/nus_string_group_copy.html#main">nus_string_group_copy</a>
-	<br>
-	<a href="/NUS_library/documentation/nus_string_group_string_index.html#main">nus_string_group_string_index</a>
-	<br>
       </div>
     </main>
     <footer>
@@ -103,4 +94,3 @@
     </footer>
   </body>
 </html>
-

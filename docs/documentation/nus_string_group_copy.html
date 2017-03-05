@@ -18,7 +18,7 @@
   </head>
   <body>
     <header>
-	<h1>nus_string_group_build documentation</h1>
+	<h1>nus_string_group_copy documentation</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -54,15 +54,17 @@
     </nav>
     <main>
       <a name="main"></a><h3>NAME</h3>
-      nus_string_group_build - build string group from a variable number of input
+      nus_string_group_copy - builds a copy of a string group
       <hr>
       <h3>C SPECIFICATION</h3>
-      <div class="code_example">#define nus_string_group_build(NUS_string_group_, ...);</div>
+      <div class="code_example">void nus_string_group_copy(
+    NUS_string_group *p_string_group_dest,
+    NUS_string_group string_group_src);</div>
       <hr>
       <h3>PARAMETERS</h3>
       <ul>
-	<li><span class="highlight">NUS_string_group_</span> is the string group that will be built</li>
-	<li>any aditional parameters <span class="highlight">must</span> be c-strings</li>
+	<li><span class="highlight">p_string_group_dest</span> is a pointer to a string group</li>
+	<li><span class="highlight">string_group_src</span> a string group. It's strings will be appended to p_string_group_dest</li>
       </ul>
       <hr>
       <h3>RETURN VALUE</h3>
@@ -70,24 +72,32 @@
       <hr>
       <h3>DETAILS</h3>
       <ul>
-	<li><span class="highlight">must</span> take at least 1 aditional parameter to NUS_string_group_</li>
+	<li>p_string_group_dest <span class="highlight">must</span> have been <a href="/NUS_library/documentation/nus_string_group_init.html#main">initialized</a> or <a href="/NUS_library/documentation/nus_string_group_build.html#main">built</a></li>
+	<li>string_group_src <span class="highlight">must</span> have been <a href="/NUS_library/documentation/nus_string_group_init.html#main">initialized</a> or <a href="/NUS_library/documentation/nus_string_group_build.html#main">built</a></li>
       </ul>
       <hr>
       <h3>EXAMPLE</h3>
       Code:
-      <div class="code_example">NUS_string_group string_group;
-nus_string_group_build(string_group, "string", "another_string");
-nus_string_group_print(string_group);</div>
+      <div class="code_example">NUS_string_group string_group_0;
+NUS_string_group string_group_1;
+nus_string_group_build(&string_group_0, "this is originally in string_group_0");
+nus_string_group_init(&string_group_1);
+nus_string_group_copy(&string_group_1, string_group_0);
+nus_string_group_print(string_group_1);</div>
       Output:
-      <div class="code_example">NUS_string_group contains 2 string(s):
-  string 0: string
-  string 1: another_string</div>
+      <div class="code_example">NUS_string_group contains 1 string(s):
+    string 0: this is originally in string_group_0</div>
+      
       <hr>
       <h3>RELATED</h3>
       <div>
 	<a href="/NUS_library/documentation/NUS_string_group.html#main">NUS_string_group</a>
 	<br>
 	<a href="/NUS_library/documentation/nus_string_group_print.html#main">nus_string_group_print</a>
+	<br>
+	<a href="/NUS_library/documentation/nus_string_group_build.html#main">nus_string_group_build</a>
+	<br>
+	<a href="/NUS_library/documentation/nus_string_group_init.html#main">nus_string_group_init</a>
       </div>
     </main>
     <footer>
