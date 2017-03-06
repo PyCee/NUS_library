@@ -13,6 +13,7 @@
 #include "NUS_string_group.h"
 #include "NUS_save.h"
 #include "NUS_executable_path.h"
+#include "NUS_component_key.h"
 
 #include "time/NUS_clock.h"
 
@@ -21,6 +22,16 @@
 #include "math/NUS_axes.h"
 #include "math/NUS_quaternion.h"
 #include "math/NUS_frustum.h"
+#include "math/NUS_reference_vector.h"
+
+#include "physics/NUS_kinematic_property.h"
+#include "physics/NUS_mass.h"
+#include "physics/NUS_physics_state.h"
+#include "physics/NUS_movement.h"
+#include "physics/NUS_orientation.h"
+
+#include "model/NUS_model.h"
+#include "model/NUS_vertex.h"
 
 /*  NUS_SYSTEM_WINDOW must be defined in the application to enable windowing */
 #if defined(NUS_SYSTEM_WINDOW)

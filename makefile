@@ -20,7 +20,7 @@ IO_SRC_FILES=NUS_window.c NUS_system_events.c
 IO_DIR=io
 
 MATH_SRC_FILES=NUS_vector.c NUS_octree.c NUS_matrix.c NUS_axes.c NUS_quaternion.c \
-	NUS_frustum.c
+	NUS_frustum.c NUS_reference_vector.c
 MATH_DIR=math
 
 MOD_SRC_FILES=NUS_model.c NUS_vertex.c
@@ -66,8 +66,7 @@ NUS_OBJ=$(NUS_SRC:.c=.o)
 all: $(NUS_SRC) compile
 
 compile: $(NUS_OBJ)
-	@echo $(CFLAGS)
-	echo
+	@echo "Files are compiled with flags: $(CFLAGS)"
 	@sudo ar rcs /usr/local/lib/libNUS_library.a $(NUS_OBJ)
 	@if [ ! -d "/usr/local/include/NUS" ]; then \
 		sudo mkdir /usr/local/include/NUS; fi
@@ -96,7 +95,7 @@ compile: $(NUS_OBJ)
 recompile: clean all
 .c.o:
 	@echo "Compiling File: $<"
-	$(CC) $(CFLAGS) -c $<  -o $@
+	@$(CC) $(CFLAGS) -c $<  -o $@
 .PHONY: clean
 
 debug: CFLAGS += -D NUS_DEBUG
