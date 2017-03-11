@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <limits.h>
 
-static NUS_result nus_presentation_surface_new_image
-(NUS_presentation_surface *);
 static NUS_result nus_presentation_surface_build_swapchain
+(NUS_presentation_surface *);
+static NUS_result nus_presentation_surface_new_image
 (NUS_presentation_surface *);
 static NUS_result nus_presentation_surface_build_swapchain_info
 (NUS_presentation_surface *);
@@ -158,42 +158,6 @@ NUS_result nus_presentation_surface_present
   }
   return NUS_SUCCESS;
 }
-static NUS_result nus_presentation_surface_new_image
-(NUS_presentation_surface *NUS_presentation_surface_)
-{
-  printf("pre vkAcquire\n");
-  switch(vkAcquireNextImageKHR(NUS_presentation_surface_->presenting_gpu->
-			       logical_device,
-			       NUS_presentation_surface_->swapchain,
-			       UINT_MAX,
-			       NUS_presentation_surface_->image_available,
-			       VK_NULL_HANDLE,
-			       &NUS_presentation_surface_->image_index)){
-  case VK_SUCCESS:
-    break;
-  case VK_SUBOPTIMAL_KHR:
-  case VK_ERROR_OUT_OF_DATE_KHR:
-    printf("asd???\n");
-    nus_presentation_surface_update(NUS_presentation_surface_);
-    break;
-  default:
-    printf("ERROR::failed to acquire image\n");
-    return NUS_FAILURE;
-    break;
-  }
-  VkImage swapchain_images[NUS_presentation_surface_->swapchain_length];
-  if(vkGetSwapchainImagesKHR(NUS_presentation_surface_->presenting_gpu->logical_device,
-			     NUS_presentation_surface_->swapchain,
-			     &NUS_presentation_surface_->swapchain_length,
-			     swapchain_images) != VK_SUCCESS){
-    printf("ERROR::failed to obtain swapchain images\n");
-    return NUS_FAILURE;
-  }
-  printf("post vkAcquire\n");
-  NUS_presentation_surface_->render_image =
-    swapchain_images[NUS_presentation_surface_->image_index];
-  return NUS_SUCCESS;
-}
 static NUS_result nus_presentation_surface_build_swapchain
 (NUS_presentation_surface *NUS_presentation_surface_)
 {
@@ -249,10 +213,49 @@ static NUS_result nus_presentation_surface_build_swapchain
     return NUS_FAILURE;
   }
   
-  printf("pre new image\n");
   nus_presentation_surface_new_image(NUS_presentation_surface_);
-  printf("post new image\n");
-  // code never gets here cause of segfault
+  return NUS_SUCCESS;
+}
+static NUS_result nus_presentation_surface_new_image
+(NUS_presentation_surface *NUS_presentation_surface_)
+{
+  unsigned int swapchain_image_count;
+  if(vkGetSwapchainImagesKHR(NUS_presentation_surface_->presenting_gpu->logical_device,
+			     NUS_presentation_surface_->swapchain,
+			     &swapchain_image_count,
+			     NULL) != VK_SUCCESS || swapchain_image_count == 0){
+    printf("ERROR::failed to obtain swapchain images: count = %d\n",
+	   swapchain_image_count);
+    return NUS_FAILURE;
+  }
+  VkImage swapchain_images[swapchain_image_count];
+  if(vkGetSwapchainImagesKHR(NUS_presentation_surface_->presenting_gpu->logical_device,
+			     NUS_presentation_surface_->swapchain,
+			     &swapchain_image_count,
+			     swapchain_images) != VK_SUCCESS){
+    printf("ERROR::failed to obtain swapchain images\n");
+    return NUS_FAILURE;
+  }
+  switch(vkAcquireNextImageKHR(NUS_presentation_surface_->presenting_gpu->
+			       logical_device,
+			       NUS_presentation_surface_->swapchain,
+			       UINT_MAX,
+			       NUS_presentation_surface_->image_available,
+			       VK_NULL_HANDLE,
+			       &NUS_presentation_surface_->image_index)){
+  case VK_SUCCESS:
+    break;
+  case VK_SUBOPTIMAL_KHR:
+  case VK_ERROR_OUT_OF_DATE_KHR:
+    nus_presentation_surface_update(NUS_presentation_surface_);
+    break;
+  default:
+    printf("ERROR::failed to acquire image\n");
+    return NUS_FAILURE;
+    break;
+  }
+  NUS_presentation_surface_->render_image =
+    swapchain_images[NUS_presentation_surface_->image_index];
   return NUS_SUCCESS;
 }
 static NUS_result nus_presentation_surface_build_swapchain_info
@@ -366,7 +369,8 @@ static NUS_result nus_presentation_surface_build_surface_formats
 	break;
       }
     }
-    // If desired format is not found the format at index 0 is used
+    // In the situation that the desired format is not found
+    //   the format at index 0 is used
     NUS_presentation_surface_->format = available_formats[desired_format_index];
   }
   return NUS_SUCCESS;
@@ -429,7 +433,7 @@ static NUS_result nus_presentation_surface_build_surface_present_modes
 static NUS_result nus_presentation_surface_build_surface_extent
 (NUS_presentation_surface *NUS_presentation_surface_)
 {
-  /* Obtain desired size of swapchain images */
+  // Obtain desired size of swapchain images
   if(-1 != NUS_presentation_surface_->capabilities.currentExtent.width){
     // If there is no limit on the surface extent
     NUS_presentation_surface_->extent =
