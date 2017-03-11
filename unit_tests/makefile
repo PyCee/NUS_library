@@ -18,7 +18,7 @@ LFLAGS= -lNUS_library -lxcb -ldl -lm \
 	-lVkLayer_swapchain -lVkLayer_core_validation -lVkLayer_image \
 	-lVkLayer_object_tracker -lVkLayer_parameter_validation -lVkLayer_threading
 
-SHADERS:= hello_triangle/triangle_shader/vert.spv hello_triangle/triangle_shader/frag.spv
+SHADERS:= hello_triangle/triangle_shader/shader.vert.spv hello_triangle/triangle_shader/shader.frag.spv
 
 TEST?=3d_math_vector/ 3d_math_matrix/ 3d_math_axes/ 3d_math_reference_vector/ gravity_simulation/ save_file/ basic_window/ gpu_detection/ \
 	vulkan_clear/ hello_triangle/
@@ -47,7 +47,6 @@ recompile: clean compile
 	@echo "Compiling File: $<"
 %.spv:
 	@touch $@
-	@glslangValidator -V $$(dirname $@)/shader.$$(basename --suffix=.spv $@)
-	@mv $$(basename $@) $@
+	@glslangValidator -V $(@:.spv=$(SPACE)) -o $@
 clean:
-	find . -type f \( -name 'unit_test' -o -name '*.o' -o -name '*.spv' \) -delete
+	@find . -type f \( -name 'unit_test' -o -name '*.o' -o -name '*.spv' \) -delete

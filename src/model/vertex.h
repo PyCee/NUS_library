@@ -8,7 +8,7 @@
 struct vector;
 
 typedef struct vertex{
-	float attribute[3/*position*/ + 3/*normal*/ + 2/*texture coordinates*/];
+  float attribute[3/*position*/ + 3/*normal*/ + 2/*texture coordinates*/];
 } vertex;
 
 vertex gen_vertex(void);
