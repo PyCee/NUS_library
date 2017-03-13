@@ -28,12 +28,11 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to create window\n");
     return -1;
   }
-  
 
   nus_load_global_vulkan_library();
   
   NUS_string_group instance_extensions;
-  nus_string_group_build(instance_extensions, 
+  nus_string_group_build(&instance_extensions, 
 			 VK_KHR_SURFACE_EXTENSION_NAME,
 #if defined(NUS_OS_WINDOWS)
 			 VK_KHR_WIN32_SURFACE_EXTENSION_NAME
@@ -45,23 +44,19 @@ int main(int argc, char *argv[])
   nus_string_group_init(&instance_layers);
   
   NUS_vulkan_instance vulkan_instance;
-  
   if(nus_vulkan_instance_build(&vulkan_instance, instance_extensions,
 			       instance_layers) != NUS_SUCCESS){
     printf("ERROR::failed to create vulkan instance info\n");
     return -1;
   }
-  
   nus_string_group_free(&instance_extensions);
   nus_string_group_free(&instance_layers);
-  
   
   NUS_multi_gpu multi_gpu;
   if(nus_multi_gpu_build(vulkan_instance, &multi_gpu) != NUS_SUCCESS){
     printf("ERROR::build multi gpu returned NUS_FAILURE\n");
     return -1;
   }
-  
   
   NUS_presentation_surface present;
   if(nus_presentation_surface_build(win, vulkan_instance, &multi_gpu, &present)
@@ -70,18 +65,14 @@ int main(int argc, char *argv[])
     return -1;
   }
   
-  
   nus_multi_gpu_print(multi_gpu);
   
   printf("freeing unit test %s\n", PROGRAM_NAME);
   
   nus_presentation_surface_free(vulkan_instance, &present);
-  
   nus_multi_gpu_free(&multi_gpu);
-  
   nus_vulkan_instance_free(&vulkan_instance);
   nus_free_vulkan_library();
-
   nus_window_free(&win);
   
   printf("unit test %s completed\n", PROGRAM_NAME);

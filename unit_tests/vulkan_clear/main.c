@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   
   NUS_vulkan_instance vulkan_instance;
   NUS_string_group extensions;
-  nus_string_group_build(extensions, 
+  nus_string_group_build(&extensions, 
 			 VK_KHR_SURFACE_EXTENSION_NAME,
 #if defined(NUS_OS_WINDOWS)
 			 VK_KHR_WIN32_SURFACE_EXTENSION_NAME
@@ -67,7 +67,6 @@ int main(int argc, char *argv[])
     printf("ERROR::build multi gpu returned NUS_FAILURE\n");
     return -1;
   }
-  
   NUS_presentation_surface present;
   if(nus_presentation_surface_build(win, vulkan_instance, &multi_gpu, &present)
      != NUS_SUCCESS){
@@ -75,19 +74,27 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  
   run = 1;
+
+  NUS_clock timekeeper;
+  nus_clock_build(&timekeeper);
+  double t;
+  float b = 0.0;
   while(run){
     nus_system_events_handle(win);
-
-
+    
+    printf("delta s: %f\n", nus_clock_update(&timekeeper));
     //TODO: fix
     //  if I change the clear color at runtime, the window flickers black
-    //    this only happens If i updateat a certain speed
+    //    this only happens If I update quickly
+    t = nus_clock_elapsed(timekeeper);
+    while(t > 2) t -= 2;
+    if(t > 1) t = 2 - t;
+    b = (float)t;
     
     if(nus_image_clear(present.image_available,
 		       present.image_rendered,
-		       (VkClearColorValue){{0.0f, 0.0f, 0.0f, 0.0f}},
+		       (VkClearColorValue){{0.0f, 0.0f, b, 0.0f}},
 		       multi_gpu.gpus[0], present.render_image) !=
        NUS_SUCCESS){
       printf("ERROR::failed to clear window\n");
@@ -101,6 +108,7 @@ int main(int argc, char *argv[])
       printf("ERROR::failed to present window\n");
       return -1;
     }
+    
   }
   
   printf("freeing unit test %s\n", PROGRAM_NAME);
