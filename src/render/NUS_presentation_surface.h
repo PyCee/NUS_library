@@ -18,7 +18,8 @@ typedef struct NUS_presentation_surface{
   VkPresentModeKHR present_mode;
   VkSurfaceTransformFlagBitsKHR transform_bits;
   VkExtent2D extent;
-  VkImage render_image;
+  VkImage render_image,
+    *swapchain_images;
   VkSemaphore image_available,
     image_rendered;
   unsigned int swapchain_length,
