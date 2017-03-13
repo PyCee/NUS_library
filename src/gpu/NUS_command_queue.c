@@ -34,27 +34,6 @@ void nus_command_queue_free(NUS_command_queue *NUS_command_queue_)
     NUS_command_queue_->signal = NULL;
   }
 }
-NUS_result nus_command_queue_submit(NUS_command_queue *NUS_command_queue_)
-{
-  VkPipelineStageFlags wait_dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-  VkSubmitInfo submit_info = {
-    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-    .pNext = NULL,
-    .waitSemaphoreCount = NUS_command_queue_->wait_count,
-    .pWaitSemaphores = NUS_command_queue_->wait,
-    .pWaitDstStageMask = &wait_dst_stage_mask,
-    .commandBufferCount = NUS_command_queue_->command_buffer_count,
-    .pCommandBuffers = NUS_command_queue_->command_buffers,
-    .signalSemaphoreCount = NUS_command_queue_->signal_count,
-    .pSignalSemaphores = NUS_command_queue_->signal
-  };
-  if(vkQueueSubmit(NUS_command_queue_->queue, 1,
-		   &submit_info, VK_NULL_HANDLE) != VK_SUCCESS){
-    printf("ERROR::failed to submit queue\n");
-    return NUS_FAILURE;
-  }
-  return NUS_SUCCESS;
-}
 NUS_result nus_command_queue_add_semaphores
 (NUS_command_queue *NUS_command_queue_,
  unsigned int wait_count, VkSemaphore *wait,
@@ -105,7 +84,7 @@ NUS_result nus_command_queue_add_buffer
 		      NUS_command_queue_->command_buffer_count - 1);
   return NUS_SUCCESS;
 }
-NUS_result nus_command_queue_submit_commands
+NUS_result nus_command_queue_submit
 (NUS_command_queue *NUS_command_queue_, VkDevice logical_device,
  VkCommandPool command_pool)
 {
@@ -113,13 +92,13 @@ NUS_result nus_command_queue_submit_commands
   VkSubmitInfo submit_info = {
     .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
     .pNext = NULL,
-    .waitSemaphoreCount = 0,
-    .pWaitSemaphores = NULL,
+    .waitSemaphoreCount = NUS_command_queue_->wait_count,
+    .pWaitSemaphores = NUS_command_queue_->wait,
     .pWaitDstStageMask = &wait_dst_stage_mask,
     .commandBufferCount = NUS_command_queue_->command_buffer_count,
     .pCommandBuffers = NUS_command_queue_->command_buffers,
-    .signalSemaphoreCount = 0,
-    .pSignalSemaphores = NULL
+    .signalSemaphoreCount = NUS_command_queue_->signal_count,
+    .pSignalSemaphores = NUS_command_queue_->signal
   };
   if(vkQueueSubmit(NUS_command_queue_->queue, 1,
 		     &submit_info, VK_NULL_HANDLE) != VK_SUCCESS){
@@ -137,23 +116,21 @@ static NUS_result nus_command_queue_reset_buffers
 (NUS_command_queue *NUS_command_queue_, VkDevice logical_device,
  VkCommandPool command_pool)
 {
-  //TODO what should I clean up here?
-  
+  //TODO: submit fences with commands so I know when it is safe to free command butters
+  // TODO priority to the TODO above
   /*
   vkFreeCommandBuffers(logical_device, command_pool,
 		       NUS_command_queue_->command_buffer_count,
 		       NUS_command_queue_->command_buffers);
   
   free(NUS_command_queue_->command_buffers);
-  
+  */
   NUS_command_queue_->command_buffers = NULL;
   NUS_command_queue_->command_buffer_count = 0;
-  */
   
-  //free(NUS_command_queue_->wait);
+  
   NUS_command_queue_->wait = NULL;
   NUS_command_queue_->wait_count = 0;
-  //free(NUS_command_queue_->signal);
   NUS_command_queue_->signal = NULL;
   NUS_command_queue_->signal_count = 0;
   

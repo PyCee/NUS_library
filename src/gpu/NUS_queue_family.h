@@ -14,8 +14,6 @@
 
 typedef struct NUS_queue_family{
   NUS_command_queue *queues;
-  float *priorities;
-  VkDeviceQueueCreateInfo queue_create_info;
   VkCommandPool command_pool;
   unsigned int queue_count,
     family_index,
