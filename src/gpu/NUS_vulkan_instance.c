@@ -2,13 +2,16 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 static NUS_result nus_vulkan_instance_build_instance
 (NUS_vulkan_instance *, NUS_string_group, NUS_string_group);
 static NUS_result nus_vulkan_instance_extension_support(NUS_string_group);
 static NUS_result nus_vulkan_instance_layer_support(NUS_string_group);
 
+#if defined(NUS_DEBUG)
 VkDebugReportCallbackEXT NUS_vulkan_debug_report_callback;
+#endif
 
 NUS_result nus_vulkan_instance_build
 (NUS_vulkan_instance *p_NUS_vulkan_instance_,
@@ -39,7 +42,7 @@ NUS_result nus_vulkan_instance_build
   };
   if(vkCreateDebugReportCallbackEXT(p_NUS_vulkan_instance_->instance,
 				    &callback_create_info, NULL,
-				    &p_NUS_vulkan_instance_->debug_report_callback) !=
+				    &NUS_vulkan_debug_report_callback) !=
      VK_SUCCESS){
     printf("ERROR::failed to create vulkan instance debug report\n");
     return NUS_FAILURE;
@@ -51,9 +54,12 @@ NUS_result nus_vulkan_instance_build
 void nus_vulkan_instance_free(NUS_vulkan_instance *p_NUS_vulkan_instance_)
 {
 #if defined(NUS_DEBUG)
-  vkDestroyDebugReportCallbackEXT(p_NUS_vulkan_instance_->instance,
-				  p_NUS_vulkan_instance_->debug_report_callback,
-				  VK_NULL_HANDLE);
+  if(VK_NULL_HANDLE != NUS_vulkan_debug_report_callback){
+    vkDestroyDebugReportCallbackEXT(p_NUS_vulkan_instance_->instance,
+				    NUS_vulkan_debug_report_callback,
+				    VK_NULL_HANDLE);
+    NUS_vulkan_debug_report_callback = VK_NULL_HANDLE;
+  }
 #endif
   if(VK_NULL_HANDLE != p_NUS_vulkan_instance_->instance){
     vkDestroyInstance(p_NUS_vulkan_instance_->instance, NULL);
@@ -66,6 +72,8 @@ static NUS_result nus_vulkan_instance_build_instance
 #if defined(NUS_DEBUG)
   NUS_string_group tmp_extensions,
     tmp_layers;
+  nus_string_group_init(&tmp_extensions);
+  nus_string_group_init(&tmp_layers);
   nus_string_group_copy(&tmp_extensions, extensions);
   nus_string_group_copy(&tmp_layers, layers);
   nus_string_group_append(&tmp_extensions, "VK_EXT_debug_report");
@@ -141,8 +149,10 @@ static NUS_result nus_vulkan_instance_extension_support
   // we want this to be equal to the length of the string group
   for(i = 0, supported_wanted_extension_count = 0;
       i < supported_extension_count; ++i){
-    if(nus_string_group_contains(NUS_string_group_,
-				 supported_extensions[i].extensionName)){
+    
+    if(nus_string_group_string_index(NUS_string_group_,
+				     supported_extensions[i].extensionName) !=
+       UINT_MAX){
       ++supported_wanted_extension_count;
     }
   }
@@ -175,10 +185,10 @@ static NUS_result nus_vulkan_instance_layer_support
   
   // "count" tracks how many of the supported layers are in the string group
   // we want this to be equal to the length of the string group
-  
   for(i = 0, supported_wanted_layer_count = 0; i < supported_layer_count; ++i){
-    if(nus_string_group_contains(NUS_string_group_,
-				 supported_layers[i].layerName)){
+    if(nus_string_group_string_index(NUS_string_group_,
+				     supported_layers[i].layerName) !=
+       UINT_MAX){
       ++supported_wanted_layer_count;
     }
   }
@@ -189,7 +199,6 @@ static NUS_result nus_vulkan_instance_layer_support
   return NUS_SUCCESS;
 }
 #if defined(NUS_DEBUG)
-
 VKAPI_ATTR VkBool32 VKAPI_CALL nus_vulkan_validation_callback
 (VkDebugReportFlagsEXT flags,
  VkDebugReportObjectTypeEXT objectType,
@@ -200,8 +209,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL nus_vulkan_validation_callback
  const char* pMessage,
  void* pUserData)
 {
-  printf("VALIDATION::ERROR:: %s\n", pMessage);
+  printf("VALIDATION::WARNING::%s\n", pMessage);
   return VK_FALSE;
 }
-
 #endif

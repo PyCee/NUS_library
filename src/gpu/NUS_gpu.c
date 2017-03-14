@@ -131,7 +131,7 @@ NUS_result nus_gpu_submit_commands(NUS_gpu NUS_gpu_)
 {
   unsigned int i;
   for(i = 0; i < NUS_gpu_.queue_family_count; ++i){
-    if(nus_queue_family_submit_commands(NUS_gpu_.queue_families[i],
+    if(nus_queue_family_submit_commands(NUS_gpu_.queue_families + i,
 					NUS_gpu_.logical_device) !=
        NUS_SUCCESS){
       printf("ERROR::failed to submit queue family command queues\n");
@@ -143,10 +143,24 @@ NUS_result nus_gpu_submit_commands(NUS_gpu NUS_gpu_)
 static NUS_result nus_gpu_build_logical_device
 (NUS_gpu *NUS_gpu_)
 {
-  unsigned int i;
+  unsigned int i,
+    j;
   VkDeviceQueueCreateInfo queue_create_info[NUS_gpu_->queue_family_count];
+  float *queue_priorities[NUS_gpu_->queue_family_count];
   for(i = 0; i < NUS_gpu_->queue_family_count; ++i){
-    queue_create_info[i] = NUS_gpu_->queue_families[i].queue_create_info;
+    queue_priorities[i] = malloc(sizeof(*queue_priorities[i]) *
+				 NUS_gpu_->queue_families[i].queue_count);
+    for(j = 0; j < NUS_gpu_->queue_families[i].queue_count; ++j){
+      queue_priorities[i][j] = 1.0;
+    }
+    queue_create_info[i] = (VkDeviceQueueCreateInfo){
+      .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+      .pNext = NULL,
+      .flags = 0,
+      .queueFamilyIndex = i,
+      .queueCount = NUS_gpu_->queue_families[i].queue_count,
+      .pQueuePriorities = queue_priorities[i]
+    };
   }
   const char *extensions[] = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -177,6 +191,11 @@ static NUS_result nus_gpu_build_logical_device
     printf("ERROR::failed to create logical device\n");
     return NUS_FAILURE;
   }
+  
+  for(i = 0; i < NUS_gpu_->queue_family_count; ++i){
+    free(queue_priorities[i]);
+  }
+  
   nus_load_device_vulkan_library(NUS_gpu_->logical_device, &NUS_gpu_->functions);
   return NUS_SUCCESS;
 }

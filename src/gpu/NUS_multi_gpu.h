@@ -8,6 +8,7 @@
 struct NUS_vulkan_instance;
 
 typedef struct NUS_multi_gpu{
+  VkPhysicalDevice *physical_devices;
   NUS_gpu *gpus;
   unsigned int gpu_count;
 } NUS_multi_gpu;

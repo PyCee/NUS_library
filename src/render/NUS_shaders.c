@@ -6,7 +6,7 @@
 #include <string.h>
 
 NUS_result nus_shader_build
-(NUS_gpu NUS_gpu_, char *source_file_path, NUS_shader *NUS_shader_)
+(NUS_gpu NUS_gpu_, char *source_file_path, NUS_shader *p_shader)
 {
   int i,
     shader_length;
@@ -43,7 +43,7 @@ NUS_result nus_shader_build
   };
 
   if(vkCreateShaderModule(NUS_gpu_.logical_device, &shader_module_create_info,
-			  NULL, &NUS_shader_->module) != VK_SUCCESS){
+			  NULL, &p_shader->module) != VK_SUCCESS){
     printf("ERROR::failed to create shader module from \"%s\"\n",
 	   absolute_source_file_path);
     return NUS_FAILURE;
@@ -52,4 +52,8 @@ NUS_result nus_shader_build
   free(absolute_source_file_path);
   
   return NUS_SUCCESS;
+}
+void nus_shader_free(NUS_gpu gpu, NUS_shader *p_shader)
+{
+  vkDestroyShaderModule(gpu.logical_device, p_shader->module, NULL);
 }

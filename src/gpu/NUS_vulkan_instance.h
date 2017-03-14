@@ -11,9 +11,6 @@
 typedef struct NUS_vulkan_instance{
   NUS_vk_instance_functions functions;
   VkInstance instance;
-#if defined(NUS_DEBUG)
-  VkDebugReportCallbackEXT debug_report_callback;
-#endif
 } NUS_vulkan_instance;
 
 NUS_result nus_vulkan_instance_build
@@ -24,6 +21,8 @@ void nus_vulkan_instance_free(NUS_vulkan_instance *);
 VKAPI_ATTR VkBool32 VKAPI_CALL nus_vulkan_validation_callback
 (VkDebugReportFlagsEXT, VkDebugReportObjectTypeEXT, uint64_t, size_t, int32_t,
  const char *, const char *, void *);
+
+extern VkDebugReportCallbackEXT debug_report_callback;
 #endif
 
 #endif /* NUS_VULKAN_INSTANCE_H */

@@ -32,11 +32,25 @@ NUS_result nus_queue_family_build
 void nus_queue_family_free
 (NUS_queue_family *NUS_queue_family_, VkDevice logical_device)
 {
+  unsigned int i,
+    j;
   if(NUS_queue_family_->queues){
+    for(i = 0; i < NUS_queue_family_->queue_count; ++i){
+      nus_command_queue_free(NUS_queue_family_->queues + i);
+    }
     free(NUS_queue_family_->queues);
     NUS_queue_family_->queues = NULL;
   }
-  vkDestroyCommandPool(logical_device, NUS_queue_family_->command_pool, NULL);
+  
+  for(i = 0; i < NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT; ++i){
+    vkDestroyCommandPool(logical_device, NUS_queue_family_->command_pool[i], NULL);
+  }
+  for(i = 0; i < NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT; ++i){
+    for(j = 0; j < NUS_queue_family_->queue_count; ++j){
+      vkDestroyFence(logical_device, NUS_queue_family_->buffer_fences[i][j], NULL);
+    }
+    free(NUS_queue_family_->buffer_fences[i]);
+  }
 }
 void nus_queue_family_print(NUS_queue_family NUS_queue_family_)
 {
@@ -55,19 +69,41 @@ void nus_queue_family_print(NUS_queue_family NUS_queue_family_)
 NUS_result nus_queue_family_build_queues
 (VkDevice logical_device, NUS_queue_family *NUS_queue_family_)
 {
-  unsigned int i;
+  unsigned int i,
+    j;
 
   VkCommandPoolCreateInfo command_pool_create_info = {
     .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
     .pNext = NULL,
-    .flags = 0,
+    .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
     .queueFamilyIndex = NUS_queue_family_->family_index
   };
-  if(vkCreateCommandPool(logical_device, &command_pool_create_info,
-			 NULL, &NUS_queue_family_->command_pool) != VK_SUCCESS){
-    printf("ERROR::failed to create command pool\n");
+  for(i = 0; i < NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT; ++i){
+    if(vkCreateCommandPool(logical_device, &command_pool_create_info,
+			   NULL, &NUS_queue_family_->command_pool[i]) != VK_SUCCESS){
+    printf("ERROR::failed to create queue family command pool\n");
     return NUS_FAILURE;
+    }
   }
+  
+  VkFenceCreateInfo fence_create_info = {
+    .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+    .pNext = 0,
+    .flags = 0
+  };
+  for(i = 0; i < NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT; ++i){
+    NUS_queue_family_->buffer_fences[i] =
+      malloc(sizeof(*NUS_queue_family_->buffer_fences[i]) *
+	     NUS_queue_family_->queue_count);
+    for(j = 0; j < NUS_queue_family_->queue_count; ++j){
+      if(vkCreateFence(logical_device, &fence_create_info, NULL,
+		       &NUS_queue_family_->buffer_fences[i][j]) != VK_SUCCESS){
+	printf("ERROR::failed to create queue family fence\n");
+	return NUS_FAILURE;
+      }
+    }
+  }
+  NUS_queue_family_->active_command_pool_index = 0;
   
   NUS_queue_family_->queues = malloc(sizeof(*NUS_queue_family_->queues)
 				       * NUS_queue_family_->queue_count);
@@ -120,7 +156,9 @@ NUS_result nus_queue_family_add_command_buffer
     return NUS_FAILURE;
   }
   if(nus_command_queue_add_buffer(NUS_queue_family_.queues + command_queue_index,
-				  logical_device, NUS_queue_family_.command_pool,
+				  logical_device,
+				  NUS_queue_family_.command_pool
+				  [NUS_queue_family_.active_command_pool_index],
 				  command_buffer) != NUS_SUCCESS){
     printf("ERROR::failed to add queue family command buffer\n");
     return NUS_FAILURE;
@@ -128,17 +166,48 @@ NUS_result nus_queue_family_add_command_buffer
   return NUS_SUCCESS;
 }
 NUS_result nus_queue_family_submit_commands
-(NUS_queue_family NUS_queue_family_, VkDevice logical_device)
+(NUS_queue_family *NUS_queue_family_, VkDevice logical_device)
 {
   unsigned int i;
-  for(i = 0; i < NUS_queue_family_.queue_count; ++i){
-    if(nus_command_queue_submit(NUS_queue_family_.queues + i,
-					 logical_device,
-					 NUS_queue_family_.command_pool) !=
-       NUS_SUCCESS){
+  
+  static unsigned int call_count = 0;
+  
+  for(i = 0; i < NUS_queue_family_->queue_count; ++i){
+    if(nus_command_queue_submit(NUS_queue_family_->queues + i,
+				logical_device,
+				NUS_queue_family_->buffer_fences
+				[NUS_queue_family_->active_command_pool_index][i])
+       != NUS_SUCCESS){
       printf("ERROR::failed to submit command queues\n");
       return NUS_FAILURE;
     }
+  }
+  
+  // Increment active command pool index
+  NUS_queue_family_->active_command_pool_index += 1;
+  if(NUS_queue_family_->active_command_pool_index >=
+     NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT){
+    NUS_queue_family_->active_command_pool_index -=
+      NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT;
+  }
+  if(call_count >= NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT - 1){
+    // If all command pools to have been used
+    // Reset next active command pool and fences
+    
+    // Wait for up to 1 millisecond for comand buffers to finish
+    vkWaitForFences(logical_device, NUS_queue_family_->queue_count,
+		    NUS_queue_family_->buffer_fences
+		    [NUS_queue_family_->active_command_pool_index],
+		    VK_TRUE, 1000000);
+    vkResetFences(logical_device, NUS_queue_family_->queue_count,
+		  NUS_queue_family_->buffer_fences
+		  [NUS_queue_family_->active_command_pool_index]);
+    vkResetCommandPool(logical_device,
+		       NUS_queue_family_->command_pool
+		       [NUS_queue_family_->active_command_pool_index],
+		       VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
+  } else{
+    ++call_count;
   }
   return NUS_SUCCESS;
 }

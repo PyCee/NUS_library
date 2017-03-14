@@ -1,5 +1,5 @@
-#ifndef _NUS_VULKAN_H_
-#define _NUS_VULKAN_H_
+#ifndef NUS_VULKAN_H
+#define NUS_VULKAN_H
 
 #include "NUS_result.h"
 #include "NUS_os.h"
@@ -87,6 +87,7 @@
   function( vkEndCommandBuffer, ##__VA_ARGS__ );			\
   function( vkQueueSubmit, ##__VA_ARGS__ );				\
   function( vkDestroySemaphore, ##__VA_ARGS__ );			\
+  function( vkCreateFence, ##__VA_ARGS__ );				\
   function( vkFreeCommandBuffers, ##__VA_ARGS__ );			\
   function( vkDestroyCommandPool, ##__VA_ARGS__ );			\
   function( vkCreateShaderModule, ##__VA_ARGS__ );			\
@@ -94,7 +95,22 @@
   function( vkCreateImageView, ##__VA_ARGS__ );				\
   function( vkCreateFramebuffer, ##__VA_ARGS__ );			\
   function( vkCreatePipelineLayout, ##__VA_ARGS__ );			\
-  function( vkCreateGraphicsPipelines, ##__VA_ARGS__ )
+  function( vkCreateGraphicsPipelines, ##__VA_ARGS__ );			\
+  function( vkCmdBeginRenderPass, ##__VA_ARGS__ );			\
+  function( vkCmdBindPipeline, ##__VA_ARGS__ );				\
+  function( vkCmdDraw, ##__VA_ARGS__ );					\
+  function( vkCmdEndRenderPass, ##__VA_ARGS__ );			\
+  function( vkWaitForFences, ##__VA_ARGS__ );				\
+  function( vkDestroyFence, ##__VA_ARGS__ );				\
+  function( vkResetCommandPool, ##__VA_ARGS__ );			\
+  function( vkResetFences, ##__VA_ARGS__ );				\
+  function( vkDestroyPipeline, ##__VA_ARGS__ );				\
+  function( vkDestroyRenderPass, ##__VA_ARGS__ );			\
+  function( vkDestroyFramebuffer, ##__VA_ARGS__ );			\
+  function( vkDestroyImageView, ##__VA_ARGS__ );			\
+  function( vkDestroyPipelineLayout, ##__VA_ARGS__ );			\
+  function( vkDestroyShaderModule, ##__VA_ARGS__ );			\
+  function( vkGetFenceStatus, ##__VA_ARGS__ )
 
 
 #define NUS_VK_FUNCTION_DECLARATION(fun)	\
@@ -122,4 +138,4 @@ void nus_load_device_vulkan_library(VkDevice, NUS_vk_device_functions *);
 void nus_bind_instance_vulkan_library(NUS_vk_instance_functions);
 void nus_bind_device_vulkan_library(NUS_vk_device_functions);
 
-#endif /* _NUS_VULKAN_H_ */
+#endif /* NUS_VULKAN_H */

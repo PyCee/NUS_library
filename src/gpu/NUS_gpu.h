@@ -4,7 +4,7 @@
 #include "../NUS_vulkan.h"
 #include "NUS_queue_family.h"
 
-typedef struct NUS_gpu{//TODO: make unit tests work with physical device in this, rather than in multi gpu
+typedef struct NUS_gpu{
   NUS_queue_family *queue_families;
   VkExtensionProperties *extension_properties;
   VkQueueFamilyProperties *family_properties;

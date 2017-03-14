@@ -206,27 +206,26 @@ static NUS_result nus_presentation_surface_build_swapchain
      VK_SUCCESS){
     printf("ERROR::failed to obtain swapchain images\n");
     return NUS_FAILURE;
-  } 
+  }
+  // set images to layout VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+
+  
+  
   // Create semaphores vital to managing render_image access
-  VkSemaphoreCreateInfo image_available_create_info = {
-    .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-    .pNext = NULL,
-    .flags = 0
-  };
-  VkSemaphoreCreateInfo image_rendered_create_info = {
+  VkSemaphoreCreateInfo presentation_semaphore_create_info = {
     .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0
   };
   if(vkCreateSemaphore(p_presentation_surface->presenting_gpu->logical_device,
-		       &image_available_create_info, NULL,
+		       &presentation_semaphore_create_info, NULL,
 		       &p_presentation_surface->image_available) !=
      VK_SUCCESS){
     printf("ERROR::failed to create surface semaphore: image_available\n");
     return NUS_FAILURE;
   }
   if(vkCreateSemaphore(p_presentation_surface->presenting_gpu->logical_device,
-		       &image_rendered_create_info, NULL,
+		       &presentation_semaphore_create_info, NULL,
 		       &p_presentation_surface->image_rendered) !=
      VK_SUCCESS){
     printf("ERROR::failed to create surface semaphore: image_rendered\n");

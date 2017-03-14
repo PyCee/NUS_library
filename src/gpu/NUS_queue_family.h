@@ -12,12 +12,16 @@
 #define NUS_QUEUE_FAMILY_SUPPORT_SPARSE 0x08 /* supports sparse operations */
 #define NUS_QUEUE_FAMILY_SUPPORT_PRESENT 0x10 /* supports present/surface  operations */
 
+#define NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT 3
+
 typedef struct NUS_queue_family{
   NUS_command_queue *queues;
-  VkCommandPool command_pool;
+  VkCommandPool command_pool[NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT];
+  VkFence *buffer_fences[NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT];
   unsigned int queue_count,
     family_index,
-    flags;
+    flags,
+    active_command_pool_index;
 } NUS_queue_family;
 
 NUS_result nus_queue_family_build
@@ -31,6 +35,6 @@ NUS_result nus_queue_family_find_suitable_queue
 (NUS_queue_family, unsigned int *);
 NUS_result nus_queue_family_add_command_buffer
 (NUS_queue_family, VkDevice, VkCommandBuffer *);
-NUS_result nus_queue_family_submit_commands(NUS_queue_family, VkDevice);
+NUS_result nus_queue_family_submit_commands(NUS_queue_family *, VkDevice);
 
 #endif /* NUS_QUEUE_FAMILY_H */

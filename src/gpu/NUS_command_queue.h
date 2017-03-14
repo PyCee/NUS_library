@@ -23,6 +23,6 @@ NUS_result nus_command_queue_add_semaphores
 NUS_result nus_command_queue_add_buffer
 (NUS_command_queue *, VkDevice, VkCommandPool, VkCommandBuffer *);
 NUS_result nus_command_queue_submit
-(NUS_command_queue *, VkDevice, VkCommandPool);
+(NUS_command_queue *, VkDevice, VkFence);
 
 #endif /* NUS_COMMAND_QUEUE_H */

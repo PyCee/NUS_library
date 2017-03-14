@@ -27,12 +27,10 @@ NUS_result nus_image_clear
   }
   NUS_command_queue *command_queue =
     NUS_gpu_.queue_families[queue_family_index].queues + queue_index;
-  
-  if(nus_command_queue_add_buffer(command_queue,
-				  NUS_gpu_.logical_device,
-				  NUS_gpu_.queue_families
-				  [queue_family_index].command_pool,
-				  &command_buffer) != NUS_SUCCESS){
+
+  if(nus_queue_family_add_command_buffer(NUS_gpu_.queue_families[queue_family_index],
+					 NUS_gpu_.logical_device,
+					 &command_buffer) != NUS_SUCCESS){
     printf("ERROR::failed to add command queue buffer\n");
     return NUS_FAILURE;
   }
@@ -58,7 +56,7 @@ NUS_result nus_image_clear
   VkImageMemoryBarrier barrier_from_present_to_clear = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
     .pNext = NULL,
-    .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+    .srcAccessMask = 0,
     .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
     .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
     .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -79,6 +77,7 @@ NUS_result nus_image_clear
     .image = image_to_clear,
     .subresourceRange = image_subresource_range
   };
+  
   vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
   
   vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -94,7 +93,7 @@ NUS_result nus_image_clear
 		       0, NULL, 1, &barrier_from_clear_to_present);
   
   if(vkEndCommandBuffer(command_buffer) != VK_SUCCESS){
-      printf("ERROR::Could not record command buffers!\n");
+      printf("ERROR::Could not record command buffer!\n");
       return NUS_FAILURE;
   }
   return NUS_SUCCESS;
