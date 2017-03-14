@@ -39,6 +39,7 @@ valgrind: $(SHADERS)
 debug: CFLAGS += -D NUS_DEBUG
 debug: recompile
 compile: $(TEST:/=/unit_test)
+	@echo "Files are compiled with flags: $(CFLAGS)"
 recompile: clean compile
 %/unit_test: %/main.o
 	@$(CC) $< $(LFLAGS) -o $@

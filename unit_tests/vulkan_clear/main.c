@@ -84,14 +84,12 @@ int main(int argc, char *argv[])
     nus_system_events_handle(win);
     
     printf("delta s: %f\n", nus_clock_update(&timekeeper));
-    //TODO: fix
-    //  if I change the clear color at runtime, the window flickers black
-    //    this only happens If I update quickly
+    
     t = nus_clock_elapsed(timekeeper);
     while(t > 2) t -= 2;
     if(t > 1) t = 2 - t;
     b = (float)t;
-    
+
     if(nus_image_clear(present.image_available,
 		       present.image_rendered,
 		       (VkClearColorValue){{0.0f, 0.0f, b, 0.0f}},
@@ -108,7 +106,6 @@ int main(int argc, char *argv[])
       printf("ERROR::failed to present window\n");
       return -1;
     }
-    
   }
   
   printf("freeing unit test %s\n", PROGRAM_NAME);

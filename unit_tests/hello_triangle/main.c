@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   
   NUS_vulkan_instance vulkan_instance;
   NUS_string_group extensions;
-  nus_string_group_build(extensions, 
+  nus_string_group_build(&extensions, 
 			 VK_KHR_SURFACE_EXTENSION_NAME,
 #if defined(NUS_OS_WINDOWS)
 			 VK_KHR_WIN32_SURFACE_EXTENSION_NAME
@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
   }
   
   // temp init code
-  
-  
+
+  // code to create renderpass
   VkAttachmentDescription attachment_descriptions[] = {
     {
       .flags = 0,
@@ -88,19 +88,16 @@ int main(int argc, char *argv[])
       .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
       .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
       .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
       .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
     }
   };
-
-
   VkAttachmentReference color_attachment_references[] = {
     {
       .attachment = 0,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
     }
   };
-
   VkSubpassDescription subpass_descriptions[] = {
     {
       .flags = 0,
@@ -115,7 +112,6 @@ int main(int argc, char *argv[])
       .pPreserveAttachments = NULL
     }
   };
-  
   VkRenderPassCreateInfo render_pass_create_info = {
     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
     .pNext = NULL,
@@ -135,8 +131,12 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to create render pass\n");
     return -1;
   }
+
+
+
+
   
-  
+  // code to create framebuffer
   VkImageViewCreateInfo image_view_create_info = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
     .pNext = NULL,
@@ -158,9 +158,7 @@ int main(int argc, char *argv[])
       .layerCount = 1
     }
   };
-
   VkImageView image_view;
-  
   if(vkCreateImageView(present.presenting_gpu->logical_device,
 		       &image_view_create_info, NULL,
 		       &image_view) != VK_SUCCESS){
@@ -179,9 +177,7 @@ int main(int argc, char *argv[])
     .height = 400,
     .layers = 1
   };
-  
   VkFramebuffer framebuffer;
-  
   if(vkCreateFramebuffer(present.presenting_gpu->logical_device,
 			 &framebuffer_create_info, NULL,
 			 &framebuffer) != VK_SUCCESS){
@@ -189,15 +185,14 @@ int main(int argc, char *argv[])
     return -1;
   }
   
-  
   NUS_shader vertex_shader,
     fragment_shader;
-  if(nus_shader_build(multi_gpu.gpus[0], "triangle_shader/vert.spv",
+  if(nus_shader_build(multi_gpu.gpus[0], "triangle_shader/shader.vert.spv",
 		      &vertex_shader) != NUS_SUCCESS){
     printf("ERROR::failed to build vertex shader\n");
     return -1;
   }
-  if(nus_shader_build(multi_gpu.gpus[0], "triangle_shader/frag.spv",
+  if(nus_shader_build(multi_gpu.gpus[0], "triangle_shader/shader.frag.spv",
 		      &fragment_shader) != NUS_SUCCESS){
     printf("ERROR::failed to build fragment shader\n");
     return -1;
@@ -359,60 +354,214 @@ int main(int argc, char *argv[])
     .basePipelineHandle = VK_NULL_HANDLE,
     .basePipelineIndex = -1
   };
-  printf("pre create graphics pipeline\n");
-  VkPipeline graphics_pipeline;
   
+  VkPipeline graphics_pipeline;
   if(vkCreateGraphicsPipelines(present.presenting_gpu->logical_device,
 			       VK_NULL_HANDLE, 1, &graphics_pipeline_create_info,
 			       NULL, &graphics_pipeline) != VK_SUCCESS){
     printf("ERROR::failed to create graphics pipelines\n");
     return -1;
   }
-  printf("post create graphics pipeline\n");
+  printf("post pipeline\n");
+  
+  
+  
+  
+  unsigned int queue_family_index = UINT_MAX,
+    queue_index = UINT_MAX;
+  VkCommandBuffer command_buffer;
+  
+  if((nus_gpu_find_suitable_queue_family(*present.presenting_gpu,
+					 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
+					 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
+					 &queue_family_index) !=
+      NUS_SUCCESS) || (UINT_MAX == queue_family_index)){
+    printf("ERROR::failed to find presentation surface suitable queue family\n");
+    return NUS_FAILURE;
+  }
+  if((nus_queue_family_find_suitable_queue(present.presenting_gpu->
+					   queue_families[queue_family_index],
+					   &queue_index) !=
+      NUS_SUCCESS) || (UINT_MAX == queue_index)){
+    printf("ERROR::failed to find presentation surface suitable queue\n");
+    return NUS_FAILURE;
+  }
+  NUS_command_queue *command_queue =
+    present.presenting_gpu->queue_families[queue_family_index].queues + queue_index;
+  
+  VkCommandBufferBeginInfo command_buffer_begin_info = {
+    VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    NULL,
+    VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
+    NULL
+  };
+  VkImageSubresourceRange image_subresource_range = {
+    VK_IMAGE_ASPECT_COLOR_BIT,
+    0,
+    1,
+    0,
+    1
+  };
+  VkClearValue clear_value = { .color = {{0.0f, 0.4f, 0.0f, 0.0f}} };
+
+  VkRenderPassBeginInfo render_pass_begin_info = {
+    .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+    .pNext = NULL,
+    .renderPass = render_pass,
+    .framebuffer = framebuffer,
+    .renderArea = {
+      .offset = {
+	.x = 0,
+	.y = 0
+      },
+      .extent = present.extent
+    },
+    .clearValueCount = 1,
+    .pClearValues = &clear_value
+  };
   
   
   printf("finished init\n");
+  
   // end of temp init code
   
   run = 1;
   while(run){
+
+    
     nus_system_events_handle(win);
 
     // temp loop code
-
-
-
-
-
-
-    // end of temp loop code
-    
-    
-    //TODO: fix
-    //  if I change the clear color at runtime, the window flickers black
-    //    this only happens If i updateat a certain speed
-    /*
-    if(nus_image_clear(present.image_available,
-		       present.image_rendered,
-		       (VkClearColorValue){{0.0f, 0.0f, 0.0f, 0.0f}},
-		       multi_gpu.gpus[0], present.render_image) !=
-       NUS_SUCCESS){
-      printf("ERROR::failed to clear window\n");
-      return -1;
+    if(nus_queue_family_add_command_buffer(present.presenting_gpu->queue_families
+					   [queue_family_index],
+					   present.presenting_gpu->logical_device,
+					   &command_buffer) != NUS_SUCCESS){
+      printf("ERROR::failed to add command queue buffer\n");
+      return NUS_FAILURE;
     }
+    
+    if(nus_command_queue_add_semaphores(command_queue, 1, &present.image_available,
+					1, &present.image_rendered) !=
+       NUS_SUCCESS){
+      printf("ERROR::failed to add semaphores in clear presentation surface\n");
+      return NUS_FAILURE;
+    }
+    VkImageMemoryBarrier barrier_from_undefined_to_present = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+      .pNext = NULL,
+      .srcAccessMask = 0,
+      .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+      .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+      .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+      .srcQueueFamilyIndex = queue_family_index,
+      .dstQueueFamilyIndex = queue_family_index,
+      .image = present.render_image,
+      .subresourceRange = image_subresource_range
+    };
+    VkImageMemoryBarrier barrier_from_present_to_draw = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+      .pNext = NULL,
+      .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+      .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+      .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+      .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+      .srcQueueFamilyIndex = queue_family_index,
+      .dstQueueFamilyIndex = queue_family_index,
+      .image = present.render_image,
+      .subresourceRange = image_subresource_range
+    };
+    VkImageMemoryBarrier barrier_from_draw_to_present = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+      .pNext = NULL,
+      .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+      .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+      .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+      .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+      .srcQueueFamilyIndex = queue_family_index,
+      .dstQueueFamilyIndex = queue_family_index,
+      .image = present.render_image,
+      .subresourceRange = image_subresource_range
+    };
+    
+    vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
+    vkCmdPipelineBarrier(command_buffer,
+			 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			 0, 0, NULL, 0, NULL, 1, &barrier_from_undefined_to_present);
+    vkCmdPipelineBarrier(command_buffer,
+			 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			 0, 0, NULL, 0, NULL, 1, &barrier_from_present_to_draw);
+    
+    vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info,
+			 VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+    		      graphics_pipeline);
+    vkCmdDraw(command_buffer, 3, 1, 0, 0);
+    vkCmdEndRenderPass(command_buffer);
+    
+    vkCmdPipelineBarrier(command_buffer,
+			 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			 VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+			 0, 0, NULL, 0, NULL, 1, &barrier_from_draw_to_present);
+    
+    if(vkEndCommandBuffer(command_buffer) != VK_SUCCESS){
+      printf("ERROR::Could not record command buffers!\n");
+      return NUS_FAILURE;
+    }
+
+    //
+
+    
     if(nus_multi_gpu_submit_commands(multi_gpu) != NUS_SUCCESS){
       printf("ERROR::failed to submit multi gpu command queues\n");
       return -1;
     }
+    
     if(nus_presentation_surface_present(&present) != NUS_SUCCESS){
       printf("ERROR::failed to present window\n");
       return -1;
     }
-    */
+    
+    sleep(1);
+    // end of temp loop code
+    
   }
   
   printf("freeing unit test %s\n", PROGRAM_NAME);
-   
+
+  vkDeviceWaitIdle(present.presenting_gpu->logical_device);
+
+  nus_shader_free(*present.presenting_gpu, &vertex_shader);
+  nus_shader_free(*present.presenting_gpu, &fragment_shader);
+
+  if(pipeline_layout != VK_NULL_HANDLE){
+    vkDestroyPipelineLayout(present.presenting_gpu->logical_device,
+			    pipeline_layout, NULL);
+    pipeline_layout = VK_NULL_HANDLE;
+  }
+  if(graphics_pipeline != VK_NULL_HANDLE){
+    vkDestroyPipeline(present.presenting_gpu->logical_device,
+		      graphics_pipeline, NULL);
+    graphics_pipeline = VK_NULL_HANDLE;
+  }
+  if(render_pass != VK_NULL_HANDLE){
+    vkDestroyRenderPass(present.presenting_gpu->logical_device,
+		      render_pass, NULL);
+    render_pass = VK_NULL_HANDLE;
+  }
+  if(framebuffer != VK_NULL_HANDLE){
+    vkDestroyFramebuffer(present.presenting_gpu->logical_device,
+		      framebuffer, NULL);
+    framebuffer = VK_NULL_HANDLE;
+  }
+  if(image_view != VK_NULL_HANDLE){
+    vkDestroyImageView(present.presenting_gpu->logical_device,
+		      image_view, NULL);
+    image_view = VK_NULL_HANDLE;
+  }
+  
+  
   nus_presentation_surface_free(vulkan_instance, &present);
   nus_multi_gpu_free(&multi_gpu);
   nus_vulkan_instance_free(&vulkan_instance);
