@@ -3,6 +3,11 @@
 
 #include "NUS_vector.h"
 
+#define NUS_AXES_DEFAULT_FORWARD		\
+  (NUS_axes){nus_vector_build(-1.0, 0.0, 0.0),	\
+      nus_vector_build(0.0, 1.0, 0.0),		\
+      nus_vector_build(0.0, 0.0, -1.0)}
+
 struct NUS_quaternion;
 
 typedef struct NUS_axes{

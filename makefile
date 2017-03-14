@@ -23,7 +23,8 @@ MATH_SRC_FILES=NUS_vector.c NUS_octree.c NUS_matrix.c NUS_axes.c NUS_quaternion.
 	NUS_frustum.c NUS_reference_vector.c
 MATH_DIR=math
 
-MOD_SRC_FILES=NUS_model.c NUS_vertex.c
+MOD_SRC_FILES=NUS_model.c NUS_vertex.c NUS_skeleton.c NUS_joint.c \
+	NUS_pose_skeleton.c NUS_pose_joint.c
 MOD_DIR=model
 
 PHY_SRC_FILES=NUS_kinematic_property.c NUS_physics_state.c NUS_orientation.c \
@@ -102,6 +103,7 @@ debug: CFLAGS += -D NUS_DEBUG
 debug: recompile
 clean:
 	find . -type f \( -name '*.o' -o -name '*~' \) -delete
+	cd unit_tests/; make clean
 install:
 	sudo apt-get install libx11-xcb-dev libx11-dev libxi-dev \
 	libglm-dev graphviz libxcb-dri3-0 libxcb-present0 libpciaccess0 cmake \

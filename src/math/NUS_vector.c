@@ -25,7 +25,7 @@ NUS_vector nus_vector_subtract(NUS_vector NUS_vector_0, NUS_vector NUS_vector_1)
 NUS_vector nus_vector_normalize(NUS_vector NUS_vector_)
 {
   double mag_sq = nus_vector_dot(NUS_vector_, NUS_vector_);
-  if(0.0 == mag_sq){
+  if(0.00000001 > mag_sq){
     return NUS_vector_;
   }
   return nus_vector_scale(NUS_vector_, 1.0 / sqrt(mag_sq));

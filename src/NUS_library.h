@@ -32,6 +32,10 @@
 
 #include "model/NUS_model.h"
 #include "model/NUS_vertex.h"
+#include "model/NUS_skeleton.h"
+#include "model/NUS_joint.h"
+#include "model/NUS_pose_skeleton.h"
+#include "model/NUS_pose_joint.h"
 
 /*  NUS_SYSTEM_WINDOW must be defined in the application to enable windowing */
 #if defined(NUS_SYSTEM_WINDOW)

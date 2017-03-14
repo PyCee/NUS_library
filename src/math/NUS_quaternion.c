@@ -109,7 +109,7 @@ NUS_quaternion nus_quaternion_normalize(NUS_quaternion NUS_quaternion_)
   double mag_sq = NUS_quaternion_.w * NUS_quaternion_.w +
     NUS_quaternion_.x * NUS_quaternion_.x + NUS_quaternion_.y * NUS_quaternion_.y +
     NUS_quaternion_.z * NUS_quaternion_.z;
-  if(0.0 == mag_sq){
+  if(0.00000001 >= mag_sq){
     return NUS_quaternion_;
   }
   double inv_mag = 1.0 / sqrt(mag_sq);
