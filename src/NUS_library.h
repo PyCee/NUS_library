@@ -1,5 +1,5 @@
-#ifndef NUS_ENGINE_H
-#define NUS_ENGINE_H
+#ifndef NUS_LIBRARY_H
+#define NUS_LIBRARY_H
 
 /* Includes files needed for engine use */
 
@@ -48,8 +48,9 @@
 #include "gpu/NUS_multi_gpu.h"
 #include "gpu/NUS_gpu.h"
 #include "gpu/NUS_queue_family.h"
-#include "gpu/NUS_command_queue.h"
+#include "gpu/NUS_command_group.h"
 #include "gpu/NUS_vulkan_instance.h"
+#include "gpu/NUS_suitable_queue_info.h"
 #endif /* NUS_SYSTEM_GPU */
 
 /*  NUS_SYSTEM_RENDER must be defined in the application to enable rendering */
@@ -59,4 +60,4 @@
 #include "render/NUS_shaders.h"
 #endif /* NUS_SYSTEM_RENDER */
 
-#endif /* NUS_ENGINE_H */
+#endif /* NUS_LIBRARY_H */

@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
     if(nus_image_clear(present.image_available,
 		       present.image_rendered,
 		       (VkClearColorValue){{0.0f, 0.0f, b, 0.0f}},
-		       multi_gpu.gpus[0], present.render_image) !=
+		       multi_gpu.gpus + 0, present.render_image) !=
        NUS_SUCCESS){
       printf("ERROR::failed to clear window\n");
       return -1;

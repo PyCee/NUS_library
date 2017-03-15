@@ -1,6 +1,7 @@
 #include "NUS_presentation_surface.h"
 #include "../io/NUS_window.h"
 #include "../gpu/NUS_multi_gpu.h"
+#include "../gpu/NUS_suitable_queue_info.h"
 #include "../gpu/NUS_vulkan_instance.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,17 +60,11 @@ NUS_result nus_presentation_surface_build
   nus_multi_gpu_check_surface_support(p_presentation_surface->surface,
 				      NUS_multi_gpu_);
 
-  unsigned int suitable_gpu_index;
-  if(nus_multi_gpu_find_suitable_gpu(*NUS_multi_gpu_,
-				     NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
-				     NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
-				     &suitable_gpu_index) != NUS_SUCCESS){
-    printf("ERROR::failed to find presentation surface suitable gpu index\n");
-    return NUS_FAILURE;
-  }
-  p_presentation_surface->presenting_gpu =
-    NUS_multi_gpu_->gpus + suitable_gpu_index;
-  
+  NUS_suitable_queue_info info;
+  nus_multi_gpu_find_suitable_queue(*NUS_multi_gpu_,
+					    NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
+					    &info);
+  p_presentation_surface->presenting_gpu = info.p_gpu;
   nus_bind_device_vulkan_library(p_presentation_surface->presenting_gpu->functions);
 
   if(nus_presentation_surface_build_swapchain_info(p_presentation_surface) !=
@@ -109,22 +104,10 @@ void nus_presentation_surface_free
 NUS_result nus_presentation_surface_present
 (NUS_presentation_surface *p_presentation_surface)
 {
-  unsigned int queue_family_index = UINT_MAX,
-    queue_index = UINT_MAX;
-  if((nus_gpu_find_suitable_queue_family(*p_presentation_surface->presenting_gpu,
-					 NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
-					 &queue_family_index) != NUS_SUCCESS) ||
-     UINT_MAX == queue_family_index){
-    printf("ERROR::failed to find suitable queue family for presentation\n");
-    return NUS_FAILURE;
-  }
-  if((nus_queue_family_find_suitable_queue(p_presentation_surface->presenting_gpu->
-					   queue_families[queue_family_index],
-					   &queue_index) != NUS_SUCCESS) ||
-     UINT_MAX == queue_index){
-    printf("ERROR::failed to find suitable queue for presentation\n");
-    return NUS_FAILURE;
-  }
+  NUS_suitable_queue_info info;
+  nus_gpu_find_suitable_queue(p_presentation_surface->presenting_gpu,
+				      NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
+				      &info);
   VkPresentInfoKHR present_info = {
     .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
     .pNext = NULL,
@@ -135,9 +118,7 @@ NUS_result nus_presentation_surface_present
     .pImageIndices = &p_presentation_surface->image_index,
     .pResults = NULL
   };
-  switch(vkQueuePresentKHR(p_presentation_surface->presenting_gpu->
-			   queue_families[queue_family_index].
-			   queues[queue_index].queue, &present_info)){
+  switch(vkQueuePresentKHR(info.p_command_group->queue, &present_info)){
   case VK_SUCCESS:
   case VK_SUBOPTIMAL_KHR:
     break;

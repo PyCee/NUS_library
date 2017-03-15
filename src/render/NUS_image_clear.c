@@ -2,40 +2,23 @@
 #include "../gpu/NUS_gpu.h"
 #include <limits.h>
 #include <stdio.h>
+#include "../gpu/NUS_suitable_queue_info.h"
+#include "../gpu/NUS_command_group.h"
 
 NUS_result nus_image_clear
 (VkSemaphore wait, VkSemaphore signal, VkClearColorValue clear_color,
- NUS_gpu NUS_gpu_, VkImage image_to_clear)
+ NUS_gpu *NUS_gpu_, VkImage image_to_clear)
 {
-  unsigned int queue_family_index = UINT_MAX,
-    queue_index = UINT_MAX;
   VkCommandBuffer command_buffer;
-  
-  if((nus_gpu_find_suitable_queue_family(NUS_gpu_,
-					 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
-					 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
-					 &queue_family_index) !=
-      NUS_SUCCESS) || (UINT_MAX == queue_family_index)){
-    printf("ERROR::failed to find presentation surface suitable queue family\n");
-    return NUS_FAILURE;
-  }
-  if((nus_queue_family_find_suitable_queue(NUS_gpu_.queue_families[queue_family_index],
-					   &queue_index) !=
-      NUS_SUCCESS) || (UINT_MAX == queue_index)){
-    printf("ERROR::failed to find presentation surface suitable queue\n");
-    return NUS_FAILURE;
-  }
-  NUS_command_queue *command_queue =
-    NUS_gpu_.queue_families[queue_family_index].queues + queue_index;
 
-  if(nus_queue_family_add_command_buffer(NUS_gpu_.queue_families[queue_family_index],
-					 NUS_gpu_.logical_device,
-					 &command_buffer) != NUS_SUCCESS){
-    printf("ERROR::failed to add command queue buffer\n");
-    return NUS_FAILURE;
-  }
+  NUS_suitable_queue_info info;
+  nus_gpu_find_suitable_queue(NUS_gpu_,
+				      NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
+				      &info);
   
-  if(nus_command_queue_add_semaphores(command_queue, 1, &wait, 1, &signal) !=
+  nus_suitable_queue_info_add_buffer(info, &command_buffer);
+  
+  if(nus_command_group_add_semaphores(info.p_command_group, 1, &wait, 1, &signal) !=
      NUS_SUCCESS){
     printf("ERROR::failed to add semaphores in clear presentation surface\n");
     return NUS_FAILURE;
@@ -60,8 +43,8 @@ NUS_result nus_image_clear
     .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
     .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
     .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-    .srcQueueFamilyIndex = queue_family_index,
-    .dstQueueFamilyIndex = queue_family_index,
+    .srcQueueFamilyIndex = info.queue_family_index,
+    .dstQueueFamilyIndex = info.queue_family_index,
     .image = image_to_clear,
     .subresourceRange = image_subresource_range
   };
@@ -72,8 +55,8 @@ NUS_result nus_image_clear
     .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
     .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    .srcQueueFamilyIndex = queue_family_index,
-    .dstQueueFamilyIndex = queue_family_index,
+    .srcQueueFamilyIndex = info.queue_family_index,
+    .dstQueueFamilyIndex = info.queue_family_index,
     .image = image_to_clear,
     .subresourceRange = image_subresource_range
   };

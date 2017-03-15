@@ -367,27 +367,19 @@ int main(int argc, char *argv[])
   
   
   
-  unsigned int queue_family_index = UINT_MAX,
-    queue_index = UINT_MAX;
-  VkCommandBuffer command_buffer;
   
-  if((nus_gpu_find_suitable_queue_family(*present.presenting_gpu,
-					 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
-					 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
-					 &queue_family_index) !=
-      NUS_SUCCESS) || (UINT_MAX == queue_family_index)){
-    printf("ERROR::failed to find presentation surface suitable queue family\n");
+  VkCommandBuffer command_buffer;
+
+  NUS_suitable_queue_info info;
+  
+  if(nus_gpu_find_suitable_queue(present.presenting_gpu,
+				 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
+				 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
+				 &info) !=
+     NUS_SUCCESS){
+    printf("ERROR::failed to find suitable gou info\n");
     return NUS_FAILURE;
   }
-  if((nus_queue_family_find_suitable_queue(present.presenting_gpu->
-					   queue_families[queue_family_index],
-					   &queue_index) !=
-      NUS_SUCCESS) || (UINT_MAX == queue_index)){
-    printf("ERROR::failed to find presentation surface suitable queue\n");
-    return NUS_FAILURE;
-  }
-  NUS_command_queue *command_queue =
-    present.presenting_gpu->queue_families[queue_family_index].queues + queue_index;
   
   VkCommandBufferBeginInfo command_buffer_begin_info = {
     VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -432,15 +424,14 @@ int main(int argc, char *argv[])
     nus_system_events_handle(win);
 
     // temp loop code
-    if(nus_queue_family_add_command_buffer(present.presenting_gpu->queue_families
-					   [queue_family_index],
-					   present.presenting_gpu->logical_device,
-					   &command_buffer) != NUS_SUCCESS){
+    if(nus_suitable_queue_info_add_buffer(info, &command_buffer) !=
+       NUS_SUCCESS){
       printf("ERROR::failed to add command queue buffer\n");
       return NUS_FAILURE;
     }
     
-    if(nus_command_queue_add_semaphores(command_queue, 1, &present.image_available,
+    if(nus_command_group_add_semaphores(info.p_command_group, 1,
+					&present.image_available,
 					1, &present.image_rendered) !=
        NUS_SUCCESS){
       printf("ERROR::failed to add semaphores in clear presentation surface\n");
@@ -453,8 +444,8 @@ int main(int argc, char *argv[])
       .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
       .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
       .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-      .srcQueueFamilyIndex = queue_family_index,
-      .dstQueueFamilyIndex = queue_family_index,
+      .srcQueueFamilyIndex = info.queue_family_index,
+      .dstQueueFamilyIndex = info.queue_family_index,
       .image = present.render_image,
       .subresourceRange = image_subresource_range
     };
@@ -465,8 +456,8 @@ int main(int argc, char *argv[])
       .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
       .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
       .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-      .srcQueueFamilyIndex = queue_family_index,
-      .dstQueueFamilyIndex = queue_family_index,
+      .srcQueueFamilyIndex = info.queue_family_index,
+      .dstQueueFamilyIndex = info.queue_family_index,
       .image = present.render_image,
       .subresourceRange = image_subresource_range
     };
@@ -477,8 +468,8 @@ int main(int argc, char *argv[])
       .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
       .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
       .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-      .srcQueueFamilyIndex = queue_family_index,
-      .dstQueueFamilyIndex = queue_family_index,
+      .srcQueueFamilyIndex = info.queue_family_index,
+      .dstQueueFamilyIndex = info.queue_family_index,
       .image = present.render_image,
       .subresourceRange = image_subresource_range
     };

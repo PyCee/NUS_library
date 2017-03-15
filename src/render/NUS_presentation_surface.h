@@ -21,7 +21,8 @@ typedef struct NUS_presentation_surface{
   VkImage render_image,
     *swapchain_images;
   VkSemaphore image_available,
-    image_rendered;
+    image_rendered,
+    render_copy;
   unsigned int swapchain_length,
     image_index;
 } NUS_presentation_surface;
