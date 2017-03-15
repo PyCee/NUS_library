@@ -50,7 +50,7 @@
 #include "gpu/NUS_queue_family.h"
 #include "gpu/NUS_command_group.h"
 #include "gpu/NUS_vulkan_instance.h"
-#include "gpu/NUS_suitable_queue_info.h"
+#include "gpu/NUS_suitable_queue.h"
 #endif /* NUS_SYSTEM_GPU */
 
 /*  NUS_SYSTEM_RENDER must be defined in the application to enable rendering */

@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include "NUS_gpu.h"
-#include "NUS_suitable_queue_info.h"
+#include "NUS_suitable_queue.h"
 
 NUS_result nus_queue_family_build
 (VkQueueFamilyProperties queue_family_properties, unsigned int queue_family_index,
@@ -49,9 +49,9 @@ void nus_queue_family_free
   }
   for(i = 0; i < NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT; ++i){
     for(j = 0; j < p_queue_family->command_group_count; ++j){
-      vkDestroyFence(logical_device, p_queue_family->buffer_fences[i][j], NULL);
+      vkDestroyFence(logical_device, p_queue_family->group_fences[i][j], NULL);
     }
-    free(p_queue_family->buffer_fences[i]);
+    free(p_queue_family->group_fences[i]);
   }
 }
 void nus_queue_family_print(NUS_queue_family queue_family)
@@ -94,12 +94,12 @@ NUS_result nus_queue_family_build_command_groups
     .flags = 0
   };
   for(i = 0; i < NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT; ++i){
-    p_queue_family->buffer_fences[i] =
-      malloc(sizeof(*p_queue_family->buffer_fences[i]) *
+    p_queue_family->group_fences[i] =
+      malloc(sizeof(*p_queue_family->group_fences[i]) *
 	     p_queue_family->command_group_count);
     for(j = 0; j < p_queue_family->command_group_count; ++j){
       if(vkCreateFence(logical_device, &fence_create_info, NULL,
-		       &p_queue_family->buffer_fences[i][j]) != VK_SUCCESS){
+		       &p_queue_family->group_fences[i][j]) != VK_SUCCESS){
 	printf("ERROR::failed to create queue family fence\n");
 	return NUS_FAILURE;
       }
@@ -131,7 +131,7 @@ NUS_result nus_queue_family_test_surface_support
   return NUS_SUCCESS;
 }
 NUS_result nus_queue_family_find_suitable_queue
-(NUS_queue_family queue_family, NUS_suitable_queue_info *info)
+(NUS_queue_family queue_family, NUS_suitable_queue *info)
 {
   unsigned int i,
     least_workload = UINT_MAX;
@@ -157,7 +157,7 @@ NUS_result nus_queue_family_submit_commands
   for(i = 0; i < p_queue_family->command_group_count; ++i){
     if(nus_command_group_submit(p_queue_family->command_groups + i,
 				logical_device,
-				p_queue_family->buffer_fences
+				p_queue_family->group_fences
 				[p_queue_family->active_command_pool_index][i])
        != NUS_SUCCESS){
       printf("ERROR::failed to submit command command_groups\n");
@@ -178,11 +178,11 @@ NUS_result nus_queue_family_submit_commands
     
     // Wait for up to 1 millisecond for comand buffers to finish
     vkWaitForFences(logical_device, p_queue_family->command_group_count,
-		    p_queue_family->buffer_fences
+		    p_queue_family->group_fences
 		    [p_queue_family->active_command_pool_index],
 		    VK_TRUE, 1000000);
     vkResetFences(logical_device, p_queue_family->command_group_count,
-		  p_queue_family->buffer_fences
+		  p_queue_family->group_fences
 		  [p_queue_family->active_command_pool_index]);
     vkResetCommandPool(logical_device,
 		       p_queue_family->command_pool
@@ -192,4 +192,8 @@ NUS_result nus_queue_family_submit_commands
     ++call_count;
   }
   return NUS_SUCCESS;
+}
+VkCommandPool nus_queue_family_get_command_pool(NUS_queue_family queue_family)
+{
+  return queue_family.command_pool[queue_family.active_command_pool_index];
 }

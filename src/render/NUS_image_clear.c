@@ -2,7 +2,7 @@
 #include "../gpu/NUS_gpu.h"
 #include <limits.h>
 #include <stdio.h>
-#include "../gpu/NUS_suitable_queue_info.h"
+#include "../gpu/NUS_suitable_queue.h"
 #include "../gpu/NUS_command_group.h"
 
 NUS_result nus_image_clear
@@ -11,12 +11,12 @@ NUS_result nus_image_clear
 {
   VkCommandBuffer command_buffer;
 
-  NUS_suitable_queue_info info;
+  NUS_suitable_queue info;
   nus_gpu_find_suitable_queue(NUS_gpu_,
-				      NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
-				      &info);
+			      NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
+			      &info);
   
-  nus_suitable_queue_info_add_buffer(info, &command_buffer);
+  nus_suitable_queue_add_buffer(info, &command_buffer);
   
   if(nus_command_group_add_semaphores(info.p_command_group, 1, &wait, 1, &signal) !=
      NUS_SUCCESS){

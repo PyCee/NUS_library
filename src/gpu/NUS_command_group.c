@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../NUS_vulkan.h"
-#include "NUS_suitable_queue_info.h"
+#include "NUS_suitable_queue.h"
 
 static NUS_result nus_command_group_reset_buffers
 (NUS_command_group *);

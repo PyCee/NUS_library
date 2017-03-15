@@ -370,7 +370,7 @@ int main(int argc, char *argv[])
   
   VkCommandBuffer command_buffer;
 
-  NUS_suitable_queue_info info;
+  NUS_suitable_queue info;
   
   if(nus_gpu_find_suitable_queue(present.presenting_gpu,
 				 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
@@ -424,7 +424,7 @@ int main(int argc, char *argv[])
     nus_system_events_handle(win);
 
     // temp loop code
-    if(nus_suitable_queue_info_add_buffer(info, &command_buffer) !=
+    if(nus_suitable_queue_add_buffer(info, &command_buffer) !=
        NUS_SUCCESS){
       printf("ERROR::failed to add command queue buffer\n");
       return NUS_FAILURE;

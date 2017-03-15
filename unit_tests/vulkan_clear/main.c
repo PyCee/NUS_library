@@ -89,7 +89,6 @@ int main(int argc, char *argv[])
     while(t > 2) t -= 2;
     if(t > 1) t = 2 - t;
     b = (float)t;
-
     if(nus_image_clear(present.image_available,
 		       present.image_rendered,
 		       (VkClearColorValue){{0.0f, 0.0f, b, 0.0f}},
@@ -98,6 +97,7 @@ int main(int argc, char *argv[])
       printf("ERROR::failed to clear window\n");
       return -1;
     }
+    
     if(nus_multi_gpu_submit_commands(multi_gpu) != NUS_SUCCESS){
       printf("ERROR::failed to submit multi gpu command queues\n");
       return -1;

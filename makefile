@@ -13,7 +13,7 @@ CFLAGS=-g -Wall \
 	-I/home/kims/VulkanSDK/1.0.39.0/x86_64/include
 
 GPU_SRC_FILES=NUS_multi_gpu.c NUS_gpu.c NUS_queue_family.c NUS_command_group.c \
-	NUS_vulkan_instance.c NUS_suitable_queue_info.c
+	NUS_vulkan_instance.c NUS_suitable_queue.c
 GPU_DIR=gpu
 
 IO_SRC_FILES=NUS_window.c NUS_system_events.c

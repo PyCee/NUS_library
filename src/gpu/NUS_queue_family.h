@@ -14,12 +14,12 @@
 
 #define NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT 3
 
-struct NUS_suitable_queue_info;
+struct NUS_suitable_queue;
 
 typedef struct NUS_queue_family{
   NUS_command_group *command_groups;
   VkCommandPool command_pool[NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT];
-  VkFence *buffer_fences[NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT];
+  VkFence *group_fences[NUS_QUEUE_FAMILY_COMMAND_POOL_COUNT];
   unsigned int command_group_count,
     family_index,
     flags,
@@ -34,7 +34,8 @@ NUS_result nus_queue_family_build_command_groups(VkDevice, NUS_queue_family *);
 NUS_result nus_queue_family_test_surface_support
 (VkPhysicalDevice, VkSurfaceKHR, NUS_queue_family *);
 NUS_result nus_queue_family_find_suitable_queue
-(NUS_queue_family, struct NUS_suitable_queue_info *);
+(NUS_queue_family, struct NUS_suitable_queue *);
 NUS_result nus_queue_family_submit_commands(NUS_queue_family *, VkDevice);
+VkCommandPool nus_queue_family_get_command_pool(NUS_queue_family);
 
 #endif /* NUS_QUEUE_FAMILY_H */
