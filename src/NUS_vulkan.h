@@ -112,6 +112,7 @@
   function( vkDestroyShaderModule, ##__VA_ARGS__ );			\
   function( vkCreateImage, ##__VA_ARGS__ );				\
   function( vkCmdCopyImage, ##__VA_ARGS__ );				\
+  function( vkDestroyImage, ##__VA_ARGS__ );				\
   function( vkGetFenceStatus, ##__VA_ARGS__ )
 
 

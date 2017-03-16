@@ -56,6 +56,7 @@
 /*  NUS_SYSTEM_RENDER must be defined in the application to enable rendering */
 #if defined(NUS_SYSTEM_RENDER)
 #include "render/NUS_presentation_surface.h"
+#include "render/NUS_swapchain.h"
 #include "render/NUS_image_clear.h"
 #include "render/NUS_shaders.h"
 #endif /* NUS_SYSTEM_RENDER */

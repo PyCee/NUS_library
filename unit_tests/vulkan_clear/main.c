@@ -90,9 +90,9 @@ int main(int argc, char *argv[])
     if(t > 1) t = 2 - t;
     b = (float)t;
     if(nus_image_clear(present.image_available,
-		       present.image_rendered,
+		       present.image_presentable,
 		       (VkClearColorValue){{0.0f, 0.0f, b, 0.0f}},
-		       multi_gpu.gpus + 0, present.render_image) !=
+		       multi_gpu.gpus + 0, present.render_target) !=
        NUS_SUCCESS){
       printf("ERROR::failed to clear window\n");
       return -1;

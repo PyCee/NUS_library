@@ -31,7 +31,8 @@ PHY_SRC_FILES=NUS_kinematic_property.c NUS_physics_state.c NUS_orientation.c \
 	NUS_movement.c NUS_mass.c
 PHY_DIR=physics
 
-REN_SRC_FILES=NUS_presentation_surface.c NUS_image_clear.c NUS_shaders.c
+REN_SRC_FILES=NUS_presentation_surface.c NUS_image_clear.c NUS_shaders.c \
+	NUS_swapchain.c
 REN_DIR=render
 
 TIME_SRC_FILES=NUS_clock.c

@@ -112,6 +112,29 @@ int main(int argc, char *argv[])
       .pPreserveAttachments = NULL
     }
   };
+  
+  
+  VkSubpassDependency dependencies[] = {
+    {
+      .srcSubpass = VK_SUBPASS_EXTERNAL,
+      .dstSubpass = 0,
+      .srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+      .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+      .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+      .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+      .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+    },
+    {
+      .srcSubpass = 0,
+      .dstSubpass = VK_SUBPASS_EXTERNAL,
+      .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+      .dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+      .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+      .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+      .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+    }
+  };
+  
   VkRenderPassCreateInfo render_pass_create_info = {
     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
     .pNext = NULL,
@@ -120,8 +143,8 @@ int main(int argc, char *argv[])
     .pAttachments = attachment_descriptions,
     .subpassCount = 1,
     .pSubpasses = subpass_descriptions,
-    .dependencyCount = 0,
-    .pDependencies = NULL
+    .dependencyCount = 2,
+    .pDependencies = dependencies
   };
 
   VkRenderPass render_pass;
@@ -131,17 +154,13 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to create render pass\n");
     return -1;
   }
-
-
-
-
   
   // code to create framebuffer
   VkImageViewCreateInfo image_view_create_info = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .image = present.render_image,
+    .image = present.render_target,
     .viewType = VK_IMAGE_VIEW_TYPE_2D,
     .format = present.format.format,
     .components = {
@@ -566,3 +585,6 @@ void close_win(void)
 {
   run = 0;
 }
+/*
+TODO: create system for creating graphicspipeline
+ */

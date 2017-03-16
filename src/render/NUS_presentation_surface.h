@@ -4,6 +4,7 @@
 #include "../NUS_result.h"
 #include "../NUS_vulkan.h"
 #include "../gpu/NUS_gpu.h"
+#include "NUS_swapchain.h"
 
 struct NUS_window;
 struct NUS_vulkan_instance;
@@ -11,20 +12,16 @@ struct NUS_multi_gpu;
 
 typedef struct NUS_presentation_surface{
   VkSurfaceKHR surface;
-  VkSwapchainKHR swapchain;
+  NUS_swapchain swapchain;
   NUS_gpu *presenting_gpu;
-  VkSurfaceFormatKHR format;
-  VkSurfaceCapabilitiesKHR capabilities;
-  VkPresentModeKHR present_mode;
-  VkSurfaceTransformFlagBitsKHR transform_bits;
-  VkExtent2D extent;
-  VkImage render_image,
-    *swapchain_images;
-  VkSemaphore image_available,
-    image_rendered,
-    render_copied;
-  unsigned int swapchain_length,
-    image_index;
+  VkImage render_target;
+  VkSemaphore render_copied,
+    image_available,
+    image_presentable;
+  /*
+    include graphics pipeline for copying render target to swapchain image
+    after appplying after-effects (b&w, color blindness correction, ect)
+  */
 } NUS_presentation_surface;
 
 NUS_result nus_presentation_surface_build
