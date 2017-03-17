@@ -1,7 +1,9 @@
-#version 400
+#version 450
 
-layout(location = 0) out vec4 outColor;
+layout(location = 0) in vec4 vert_color;
+
+layout(location = 0) out vec4 frag_color;
 
 void main() {
-    outColor = vec4(0.2, 0.1, 0.1, 1.0);
+    frag_color = vec4(vert_color.rgb, 1.0);
 }

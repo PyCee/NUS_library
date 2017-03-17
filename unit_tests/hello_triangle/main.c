@@ -77,12 +77,38 @@ int main(int argc, char *argv[])
   }
   
   // temp init code
+  
+  NUS_suitable_queue info;
+  
+  if(nus_gpu_find_suitable_queue(present.presenting_gpu,
+				 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
+				 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
+				 &info) !=
+     NUS_SUCCESS){
+    printf("ERROR::failed to find suitable gou info\n");
+    return NUS_FAILURE;
+  }
+  
+  printf("start model\n");
+  
+  NUS_model model;// temp model for testing purposes
+  // normal is color for this test
+  model.vertex_count = 4;
+  model.vertices = malloc(sizeof(NUS_vertex) * 4);
+  model.vertices[0] = (NUS_vertex){{-0.7, 0.7, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0}};
+  model.vertices[1] = (NUS_vertex){{0.7, 0.7, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0}};
+  model.vertices[2] = (NUS_vertex){{0.7, -0.7, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0}};
+  model.vertices[3] = (NUS_vertex){{-0.7, -0.7, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0}};
+  
+  nus_model_buffer(info, &model);
+  
+  printf("end model stuffz\n");
 
   // code to create renderpass
   VkAttachmentDescription attachment_descriptions[] = {
     {
       .flags = 0,
-      .format = present.format.format,
+      .format = present.swapchain.format.format,
       .samples = VK_SAMPLE_COUNT_1_BIT,
       .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
       .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -162,7 +188,7 @@ int main(int argc, char *argv[])
     .flags = 0,
     .image = present.render_target,
     .viewType = VK_IMAGE_VIEW_TYPE_2D,
-    .format = present.format.format,
+    .format = present.swapchain.format.format,
     .components = {
       .r = VK_COMPONENT_SWIZZLE_IDENTITY,
       .g = VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -203,7 +229,9 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to create framebuffer\n");
     return -1;
   }
-  
+
+
+  // Create Graphics Pipeline
   NUS_shader vertex_shader,
     fragment_shader;
   if(nus_shader_build(multi_gpu.gpus[0], "triangle_shader/shader.vert.spv",
@@ -237,52 +265,71 @@ int main(int argc, char *argv[])
       .pSpecializationInfo = NULL
     }
   };
+
+  
+
+  VkVertexInputBindingDescription vertex_binding_description = {
+    .binding = 0,
+    .stride = (unsigned int)sizeof(*model.vertices) * model.vertex_count,
+    .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+  };
+  
+  VkVertexInputAttributeDescription vertex_attribute_description[] = {
+    {
+      .location = 0,
+      .binding = vertex_binding_description.binding,
+      .format = VK_FORMAT_R16G16B16_SFLOAT,
+      .offset = sizeof(double) * 0
+    },
+    {
+      .location = 1,
+      .binding = vertex_binding_description.binding,
+      .format = VK_FORMAT_R16G16B16_SFLOAT,
+      .offset = sizeof(double) * 3
+    },
+    
+  };
   
   VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .vertexBindingDescriptionCount = 0,
-    .pVertexBindingDescriptions = NULL,
-    .vertexAttributeDescriptionCount = 0,
-    .pVertexAttributeDescriptions = NULL
+    .vertexBindingDescriptionCount = 1,
+    .pVertexBindingDescriptions = &vertex_binding_description,
+    .vertexAttributeDescriptionCount = 2,
+    .pVertexAttributeDescriptions = vertex_attribute_description
   };
   
   VkPipelineInputAssemblyStateCreateInfo input_assembly_state_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+    .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
     .primitiveRestartEnable = VK_FALSE
-  };
-  
-  VkViewport viewport = {
-    .x = 0,
-    .y = 0,
-    .width = 600,
-    .height = 400,
-    .minDepth = 0.0,
-    .maxDepth = 1.0
-  };
-  VkRect2D scissor = {
-    .offset = {
-      .x = 0,
-      .y = 0
-    },
-    .extent = {
-      .width = 600,
-      .height = 400
-    }
   };
   
   VkPipelineViewportStateCreateInfo viewport_state_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
+    // The below variables allow for a dynamic viewport state
     .viewportCount = 1,
-    .pViewports = &viewport,
+    .pViewports = NULL,
     .scissorCount = 1,
-    .pScissors = &scissor
+    .pScissors = NULL
+  };
+  
+  VkDynamicState dynamics_states[] = {
+    VK_DYNAMIC_STATE_VIEWPORT,
+    VK_DYNAMIC_STATE_SCISSOR
+  };
+  
+  VkPipelineDynamicStateCreateInfo dynamic_state_create_info = {
+    .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+    .pNext = NULL,
+    .flags = 0,
+    .dynamicStateCount = 2,
+    .pDynamicStates = dynamics_states
   };
   
   VkPipelineRasterizationStateCreateInfo rasterization_state_create_info = {
@@ -367,7 +414,7 @@ int main(int argc, char *argv[])
     .pMultisampleState = &multisample_state_create_info,
     .pDepthStencilState = NULL,
     .pColorBlendState = &color_blend_state_create_info,
-    .pDynamicState = NULL,
+    .pDynamicState = &dynamic_state_create_info,
     .layout = pipeline_layout,
     .renderPass = render_pass,
     .basePipelineHandle = VK_NULL_HANDLE,
@@ -383,22 +430,7 @@ int main(int argc, char *argv[])
   }
   printf("post pipeline\n");
   
-  
-  
-  
-  
   VkCommandBuffer command_buffer;
-
-  NUS_suitable_queue info;
-  
-  if(nus_gpu_find_suitable_queue(present.presenting_gpu,
-				 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
-				 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
-				 &info) !=
-     NUS_SUCCESS){
-    printf("ERROR::failed to find suitable gou info\n");
-    return NUS_FAILURE;
-  }
   
   VkCommandBufferBeginInfo command_buffer_begin_info = {
     VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -425,7 +457,7 @@ int main(int argc, char *argv[])
 	.x = 0,
 	.y = 0
       },
-      .extent = present.extent
+      .extent = present.swapchain.extent
     },
     .clearValueCount = 1,
     .pClearValues = &clear_value
@@ -451,7 +483,7 @@ int main(int argc, char *argv[])
     
     if(nus_command_group_add_semaphores(info.p_command_group, 1,
 					&present.image_available,
-					1, &present.image_rendered) !=
+					1, &present.image_presentable) !=
        NUS_SUCCESS){
       printf("ERROR::failed to add semaphores in clear presentation surface\n");
       return NUS_FAILURE;
@@ -465,7 +497,7 @@ int main(int argc, char *argv[])
       .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
       .srcQueueFamilyIndex = info.queue_family_index,
       .dstQueueFamilyIndex = info.queue_family_index,
-      .image = present.render_image,
+      .image = present.render_target,
       .subresourceRange = image_subresource_range
     };
     VkImageMemoryBarrier barrier_from_present_to_draw = {
@@ -477,7 +509,7 @@ int main(int argc, char *argv[])
       .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
       .srcQueueFamilyIndex = info.queue_family_index,
       .dstQueueFamilyIndex = info.queue_family_index,
-      .image = present.render_image,
+      .image = present.render_target,
       .subresourceRange = image_subresource_range
     };
     VkImageMemoryBarrier barrier_from_draw_to_present = {
@@ -489,7 +521,7 @@ int main(int argc, char *argv[])
       .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
       .srcQueueFamilyIndex = info.queue_family_index,
       .dstQueueFamilyIndex = info.queue_family_index,
-      .image = present.render_image,
+      .image = present.render_target,
       .subresourceRange = image_subresource_range
     };
     

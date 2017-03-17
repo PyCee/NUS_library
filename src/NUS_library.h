@@ -14,6 +14,7 @@
 #include "NUS_save.h"
 #include "NUS_executable_path.h"
 #include "NUS_component_key.h"
+#include "NUS_memory.h"
 
 #include "time/NUS_clock.h"
 

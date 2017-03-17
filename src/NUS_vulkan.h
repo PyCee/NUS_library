@@ -113,6 +113,17 @@
   function( vkCreateImage, ##__VA_ARGS__ );				\
   function( vkCmdCopyImage, ##__VA_ARGS__ );				\
   function( vkDestroyImage, ##__VA_ARGS__ );				\
+  function( vkCreateBuffer, ##__VA_ARGS__ );				\
+  function( vkGetBufferMemoryRequirements, ##__VA_ARGS__ );		\
+  function( vkGetPhysicalDeviceMemoryProperties, ##__VA_ARGS__ );	\
+  function( vkAllocateMemory, ##__VA_ARGS__ );				\
+  function( vkBindBufferMemory, ##__VA_ARGS__ );			\
+  function( vkMapMemory, ##__VA_ARGS__ );				\
+  function( vkFlushMappedMemoryRanges, ##__VA_ARGS__ );			\
+  function( vkUnmapMemory, ##__VA_ARGS__ );				\
+  function( vkGetImageMemoryRequirements, ##__VA_ARGS__ );		\
+  function( vkBindImageMemory, ##__VA_ARGS__ );				\
+  function( vkFreeMemory, ##__VA_ARGS__ );				\
   function( vkGetFenceStatus, ##__VA_ARGS__ )
 
 

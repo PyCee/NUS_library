@@ -72,6 +72,10 @@ void nus_swapchain_free(NUS_gpu gpu, NUS_swapchain *p_swapchain)
   vkDeviceWaitIdle(gpu.logical_device);
   vkDestroySwapchainKHR(gpu.logical_device, p_swapchain->swapchain, NULL);
 }
+VkImage nus_swapchain_get_image(NUS_swapchain swapchain)
+{
+  return swapchain.images[swapchain.image_index];
+}
 NUS_result nus_swapchain_present
 (NUS_gpu *gpu, VkSurfaceKHR surface, VkSemaphore wait, NUS_swapchain *p_swapchain)
 {

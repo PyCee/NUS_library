@@ -21,6 +21,7 @@ typedef struct NUS_swapchain{
 
 NUS_result nus_swapchain_build(NUS_gpu, VkSurfaceKHR, NUS_swapchain *);
 void nus_swapchain_free(NUS_gpu, NUS_swapchain *);
+VkImage nus_swapchain_get_image(NUS_swapchain);
 NUS_result nus_swapchain_present(NUS_gpu *, VkSurfaceKHR, VkSemaphore, NUS_swapchain *);
 NUS_result nus_swapchain_new_image(NUS_gpu, VkSurfaceKHR, VkSemaphore, NUS_swapchain *);
 
