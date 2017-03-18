@@ -79,5 +79,7 @@ NUS_result nus_image_clear
       printf("ERROR::Could not record command buffer!\n");
       return NUS_FAILURE;
   }
+  nus_command_group_append(info.p_command_group, command_buffer);
+  nus_suitable_queue_submit(info);
   return NUS_SUCCESS;
 }

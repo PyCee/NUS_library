@@ -22,6 +22,7 @@ void nus_command_group_free(NUS_command_group *);
 NUS_result nus_command_group_add_semaphores
 (NUS_command_group *, unsigned int, VkSemaphore *,
  unsigned int, VkSemaphore *);
+void nus_command_group_append(NUS_command_group *, VkCommandBuffer);
 NUS_result nus_command_group_submit
 (NUS_command_group *, VkDevice, VkFence);
 

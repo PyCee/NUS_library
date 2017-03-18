@@ -58,9 +58,18 @@ NUS_result nus_command_group_add_semaphores
   }
   return NUS_SUCCESS;
 }
+void nus_command_group_append
+(NUS_command_group *p_command_group, VkCommandBuffer command_buffer)
+{
+  p_command_group->command_buffers = realloc(p_command_group->command_buffers,
+					     sizeof(*p_command_group->command_buffers) *
+					     ++p_command_group->command_buffer_count);
+  p_command_group->command_buffers[p_command_group->command_buffer_count - 1] =
+    command_buffer;
+}
 NUS_result nus_command_group_submit
 (NUS_command_group *NUS_command_group_, VkDevice logical_device,
- VkFence queue_finished_fence)
+ VkFence commands_finished_fence)
 {
   if(NUS_command_group_->command_buffer_count > 0){
     VkPipelineStageFlags wait_dst_stage_mask = VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -76,7 +85,7 @@ NUS_result nus_command_group_submit
       .pSignalSemaphores = NUS_command_group_->signal
     };
     if(vkQueueSubmit(NUS_command_group_->queue, 1,
-		     &submit_info, queue_finished_fence) != VK_SUCCESS){
+		     &submit_info, commands_finished_fence) != VK_SUCCESS){
       printf("ERROR::failed to submit queue\n");
       return NUS_FAILURE;
     }

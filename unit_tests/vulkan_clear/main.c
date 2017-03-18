@@ -102,13 +102,12 @@ int main(int argc, char *argv[])
       printf("ERROR::failed to submit multi gpu command queues\n");
       return -1;
     }
-    
+    printf("pre pres\n");
     if(nus_presentation_surface_present(&present) != NUS_SUCCESS){
       printf("ERROR::failed to present window\n");
       return -1;
     }
-
-    //run = 0;//tmp, only run loop once
+    //run = 0;
   }
   
   printf("freeing unit test %s\n", PROGRAM_NAME);
