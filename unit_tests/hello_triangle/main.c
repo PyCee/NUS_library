@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
   
   NUS_suitable_queue info;
   
-  if(nus_gpu_find_suitable_queue(present.presenting_gpu,
+  if(nus_gpu_find_suitable_queue(present.queue_info.p_gpu,
 				 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
 				 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
 				 &info) !=
@@ -94,13 +94,15 @@ int main(int argc, char *argv[])
   NUS_model model;// temp model for testing purposes
   // normal is color for this test
   model.vertex_count = 4;
-  model.vertices = malloc(sizeof(NUS_vertex) * 4);
-  model.vertices[0] = (NUS_vertex){{-0.7, 0.7, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0}};
-  model.vertices[1] = (NUS_vertex){{0.7, 0.7, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0}};
-  model.vertices[2] = (NUS_vertex){{0.7, -0.7, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0}};
-  model.vertices[3] = (NUS_vertex){{-0.7, -0.7, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0}};
+  model.vertices = malloc(sizeof(NUS_vertex) * model.vertex_count);
+  model.vertices[0] = (NUS_vertex){{0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0}};
+  model.vertices[1] = (NUS_vertex){{0.0, -0.75, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0}};
+  model.vertices[2] = (NUS_vertex){{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0}};
+  model.vertices[3] = (NUS_vertex){{0.25, 0.25, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0}};
   
   nus_model_buffer(info, &model);
+
+  printf("vertex size is %d\n", sizeof(NUS_vertex));
   
   printf("end model stuffz\n");
 
@@ -174,7 +176,7 @@ int main(int argc, char *argv[])
   };
 
   VkRenderPass render_pass;
-  if(vkCreateRenderPass(present.presenting_gpu->logical_device,
+  if(vkCreateRenderPass(present.queue_info.p_gpu->logical_device,
 			&render_pass_create_info, NULL,
 			&render_pass) != VK_SUCCESS){
     printf("ERROR::failed to create render pass\n");
@@ -204,7 +206,7 @@ int main(int argc, char *argv[])
     }
   };
   VkImageView image_view;
-  if(vkCreateImageView(present.presenting_gpu->logical_device,
+  if(vkCreateImageView(present.queue_info.p_gpu->logical_device,
 		       &image_view_create_info, NULL,
 		       &image_view) != VK_SUCCESS){
     printf("ERROR::failed to create image view\n");
@@ -223,7 +225,7 @@ int main(int argc, char *argv[])
     .layers = 1
   };
   VkFramebuffer framebuffer;
-  if(vkCreateFramebuffer(present.presenting_gpu->logical_device,
+  if(vkCreateFramebuffer(present.queue_info.p_gpu->logical_device,
 			 &framebuffer_create_info, NULL,
 			 &framebuffer) != VK_SUCCESS){
     printf("ERROR::failed to create framebuffer\n");
@@ -266,26 +268,23 @@ int main(int argc, char *argv[])
     }
   };
 
-  
-
   VkVertexInputBindingDescription vertex_binding_description = {
     .binding = 0,
-    .stride = (unsigned int)sizeof(*model.vertices) * model.vertex_count,
+    .stride = (unsigned int)sizeof(*model.vertices),
     .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
   };
-  
   VkVertexInputAttributeDescription vertex_attribute_description[] = {
     {
       .location = 0,
       .binding = vertex_binding_description.binding,
-      .format = VK_FORMAT_R16G16B16_SFLOAT,
-      .offset = sizeof(double) * 0
+      .format = VK_FORMAT_R32G32B32_SFLOAT,
+      .offset = sizeof(float) * 0
     },
     {
       .location = 1,
       .binding = vertex_binding_description.binding,
-      .format = VK_FORMAT_R16G16B16_SFLOAT,
-      .offset = sizeof(double) * 3
+      .format = VK_FORMAT_R32G32B32_SFLOAT,
+      .offset = sizeof(float) * 3
     },
     
   };
@@ -304,6 +303,7 @@ int main(int argc, char *argv[])
     .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
+    //.topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP,
     .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
     .primitiveRestartEnable = VK_FALSE
   };
@@ -393,7 +393,7 @@ int main(int argc, char *argv[])
     .pPushConstantRanges = NULL
   };
   VkPipelineLayout pipeline_layout;
-  if(vkCreatePipelineLayout(present.presenting_gpu->logical_device,
+  if(vkCreatePipelineLayout(present.queue_info.p_gpu->logical_device,
 			    &layout_create_info, NULL,
 			    &pipeline_layout) != VK_SUCCESS){
     printf("ERROR::failed to create pipeline layout\n");
@@ -422,13 +422,12 @@ int main(int argc, char *argv[])
   };
   
   VkPipeline graphics_pipeline;
-  if(vkCreateGraphicsPipelines(present.presenting_gpu->logical_device,
+  if(vkCreateGraphicsPipelines(present.queue_info.p_gpu->logical_device,
 			       VK_NULL_HANDLE, 1, &graphics_pipeline_create_info,
 			       NULL, &graphics_pipeline) != VK_SUCCESS){
     printf("ERROR::failed to create graphics pipelines\n");
     return -1;
   }
-  printf("post pipeline\n");
   
   VkCommandBuffer command_buffer;
   
@@ -445,7 +444,7 @@ int main(int argc, char *argv[])
     0,
     1
   };
-  VkClearValue clear_value = { .color = {{0.0f, 0.4f, 0.0f, 0.0f}} };
+  VkClearValue clear_value = { .color = {{0.4f, 0.1f, 0.3f, 1.0f}} };
 
   VkRenderPassBeginInfo render_pass_begin_info = {
     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -463,6 +462,95 @@ int main(int argc, char *argv[])
     .pClearValues = &clear_value
   };
   
+
+  //
+  
+  VkImageMemoryBarrier barrier_from_undefined_to_present = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    .pNext = NULL,
+    .srcAccessMask = 0,
+    .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+    .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+    .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    .srcQueueFamilyIndex = info.queue_family_index,
+    .dstQueueFamilyIndex = info.queue_family_index,
+    .image = present.render_target,
+    .subresourceRange = image_subresource_range
+  };
+  VkImageMemoryBarrier barrier_from_present_to_draw = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    .pNext = NULL,
+    .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+    .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+    .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    .srcQueueFamilyIndex = info.queue_family_index,
+    .dstQueueFamilyIndex = info.queue_family_index,
+    .image = present.render_target,
+    .subresourceRange = image_subresource_range
+  };
+  VkImageMemoryBarrier barrier_from_draw_to_present = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    .pNext = NULL,
+    .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+    .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+    .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    .srcQueueFamilyIndex = info.queue_family_index,
+    .dstQueueFamilyIndex = info.queue_family_index,
+    .image = present.render_target,
+    .subresourceRange = image_subresource_range
+  };
+
+  VkViewport viewport = {
+    .x = 0,
+    .y = 0,
+    .width = (float)present.swapchain.extent.width,
+    .height = (float)present.swapchain.extent.height,
+    .minDepth = 0.0f,
+    .maxDepth = 1.0f
+  };
+  VkRect2D scissor = {
+    .offset = {
+      .x = 0,
+      .y = 0
+    },
+    .extent = present.swapchain.extent
+  };
+  nus_suitable_queue_add_buffer(info, &command_buffer);
+  vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
+  vkCmdPipelineBarrier(command_buffer,
+		       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		       0, 0, NULL, 0, NULL, 1, &barrier_from_undefined_to_present);
+  vkCmdPipelineBarrier(command_buffer,
+		       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		       0, 0, NULL, 0, NULL, 1, &barrier_from_present_to_draw);
+  
+  vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info,
+		       VK_SUBPASS_CONTENTS_INLINE);
+  vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+		    graphics_pipeline);
+  
+  vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+  vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+  
+  VkDeviceSize offset = 0;
+  vkCmdBindVertexBuffers(command_buffer, 0, 1, &model.vertex_buffer, &offset);
+  
+  vkCmdDraw(command_buffer, model.vertex_count, 1, 0, 0);
+  vkCmdEndRenderPass(command_buffer);
+  
+  vkCmdPipelineBarrier(command_buffer,
+		       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		       VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+		       0, 0, NULL, 0, NULL, 1, &barrier_from_draw_to_present);
+  
+  if(vkEndCommandBuffer(command_buffer) != VK_SUCCESS){
+    printf("ERROR::Could not record command buffers!\n");
+    return NUS_FAILURE;
+  }
   
   printf("finished init\n");
   
@@ -471,15 +559,7 @@ int main(int argc, char *argv[])
   run = 1;
   while(run){
 
-    
     nus_system_events_handle(win);
-
-    // temp loop code
-    if(nus_suitable_queue_add_buffer(info, &command_buffer) !=
-       NUS_SUCCESS){
-      printf("ERROR::failed to add command queue buffer\n");
-      return NUS_FAILURE;
-    }
     
     if(nus_command_group_add_semaphores(info.p_command_group, 1,
 					&present.image_available,
@@ -488,71 +568,9 @@ int main(int argc, char *argv[])
       printf("ERROR::failed to add semaphores in clear presentation surface\n");
       return NUS_FAILURE;
     }
-    VkImageMemoryBarrier barrier_from_undefined_to_present = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-      .pNext = NULL,
-      .srcAccessMask = 0,
-      .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
-      .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-      .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-      .srcQueueFamilyIndex = info.queue_family_index,
-      .dstQueueFamilyIndex = info.queue_family_index,
-      .image = present.render_target,
-      .subresourceRange = image_subresource_range
-    };
-    VkImageMemoryBarrier barrier_from_present_to_draw = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-      .pNext = NULL,
-      .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
-      .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-      .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-      .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-      .srcQueueFamilyIndex = info.queue_family_index,
-      .dstQueueFamilyIndex = info.queue_family_index,
-      .image = present.render_target,
-      .subresourceRange = image_subresource_range
-    };
-    VkImageMemoryBarrier barrier_from_draw_to_present = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-      .pNext = NULL,
-      .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-      .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
-      .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-      .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-      .srcQueueFamilyIndex = info.queue_family_index,
-      .dstQueueFamilyIndex = info.queue_family_index,
-      .image = present.render_target,
-      .subresourceRange = image_subresource_range
-    };
+    nus_command_group_append(info.p_command_group, command_buffer);
+    nus_suitable_queue_submit(info);
     
-    vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
-    vkCmdPipelineBarrier(command_buffer,
-			 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			 0, 0, NULL, 0, NULL, 1, &barrier_from_undefined_to_present);
-    vkCmdPipelineBarrier(command_buffer,
-			 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			 0, 0, NULL, 0, NULL, 1, &barrier_from_present_to_draw);
-    
-    vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info,
-			 VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-    		      graphics_pipeline);
-    vkCmdDraw(command_buffer, 3, 1, 0, 0);
-    vkCmdEndRenderPass(command_buffer);
-    
-    vkCmdPipelineBarrier(command_buffer,
-			 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			 VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-			 0, 0, NULL, 0, NULL, 1, &barrier_from_draw_to_present);
-    
-    if(vkEndCommandBuffer(command_buffer) != VK_SUCCESS){
-      printf("ERROR::Could not record command buffers!\n");
-      return NUS_FAILURE;
-    }
-
-    //
 
     
     if(nus_multi_gpu_submit_commands(multi_gpu) != NUS_SUCCESS){
@@ -564,45 +582,46 @@ int main(int argc, char *argv[])
       printf("ERROR::failed to present window\n");
       return -1;
     }
-    
-    sleep(1);
-    // end of temp loop code
+
+    //run = 0;
     
   }
   
   printf("freeing unit test %s\n", PROGRAM_NAME);
 
-  vkDeviceWaitIdle(present.presenting_gpu->logical_device);
-
-  nus_shader_free(*present.presenting_gpu, &vertex_shader);
-  nus_shader_free(*present.presenting_gpu, &fragment_shader);
+  vkDeviceWaitIdle(present.queue_info.p_gpu->logical_device);
+  
+  
+  nus_model_free(info, &model);
+  
+  nus_shader_free(*present.queue_info.p_gpu, &vertex_shader);
+  nus_shader_free(*present.queue_info.p_gpu, &fragment_shader);
 
   if(pipeline_layout != VK_NULL_HANDLE){
-    vkDestroyPipelineLayout(present.presenting_gpu->logical_device,
+    vkDestroyPipelineLayout(present.queue_info.p_gpu->logical_device,
 			    pipeline_layout, NULL);
     pipeline_layout = VK_NULL_HANDLE;
   }
   if(graphics_pipeline != VK_NULL_HANDLE){
-    vkDestroyPipeline(present.presenting_gpu->logical_device,
+    vkDestroyPipeline(present.queue_info.p_gpu->logical_device,
 		      graphics_pipeline, NULL);
     graphics_pipeline = VK_NULL_HANDLE;
   }
   if(render_pass != VK_NULL_HANDLE){
-    vkDestroyRenderPass(present.presenting_gpu->logical_device,
+    vkDestroyRenderPass(present.queue_info.p_gpu->logical_device,
 		      render_pass, NULL);
     render_pass = VK_NULL_HANDLE;
   }
   if(framebuffer != VK_NULL_HANDLE){
-    vkDestroyFramebuffer(present.presenting_gpu->logical_device,
+    vkDestroyFramebuffer(present.queue_info.p_gpu->logical_device,
 		      framebuffer, NULL);
     framebuffer = VK_NULL_HANDLE;
   }
   if(image_view != VK_NULL_HANDLE){
-    vkDestroyImageView(present.presenting_gpu->logical_device,
+    vkDestroyImageView(present.queue_info.p_gpu->logical_device,
 		      image_view, NULL);
     image_view = VK_NULL_HANDLE;
   }
-  
   
   nus_presentation_surface_free(vulkan_instance, &present);
   nus_multi_gpu_free(&multi_gpu);
@@ -617,6 +636,3 @@ void close_win(void)
 {
   run = 0;
 }
-/*
-TODO: create system for creating graphicspipeline
- */

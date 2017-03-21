@@ -4,7 +4,7 @@
 #include "../math/NUS_vector.h"
 
 typedef struct NUS_vertex{
-  double attributes[3/*position*/ + 3/*normal*/ + 2/*texture coords - uv*/];
+  float attributes[3/*position*/ + 3/*normal*/ + 2/*texture coords - uv*/];
 } NUS_vertex;
 
 NUS_vertex nus_vertex_build(NUS_vector, NUS_vector, NUS_vector);

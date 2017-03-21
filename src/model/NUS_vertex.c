@@ -5,14 +5,14 @@ NUS_vertex nus_vertex_build
 {
   return (NUS_vertex){
     .attributes = {
-      position.x,
-      position.y,
-      position.z,
-      normal.x,
-      normal.y,
-      normal.z,
-      tex_coords.x,
-      tex_coords.y
+      (float)position.x,
+      (float)position.y,
+      (float)position.z,
+      (float)normal.x,
+      (float)normal.y,
+      (float)normal.z,
+      (float)tex_coords.x,
+      (float)tex_coords.y
     }
   };
 }

@@ -124,6 +124,10 @@
   function( vkGetImageMemoryRequirements, ##__VA_ARGS__ );		\
   function( vkBindImageMemory, ##__VA_ARGS__ );				\
   function( vkFreeMemory, ##__VA_ARGS__ );				\
+  function( vkCmdSetViewport, ##__VA_ARGS__ );				\
+  function( vkCmdSetScissor, ##__VA_ARGS__ );				\
+  function( vkCmdBindVertexBuffers, ##__VA_ARGS__ );			\
+  function( vkDestroyBuffer, ##__VA_ARGS__ );			\
   function( vkGetFenceStatus, ##__VA_ARGS__ )
 
 

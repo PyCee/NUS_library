@@ -17,15 +17,15 @@ NUS_result nus_model_build(char const * const model_file, NUS_model *p_model)
   p_model->indices = malloc(sizeof(*p_model->indices) * p_model->index_count)
   */
   for(i = 0; i < p_model->vertex_count; ++i){
-    /* position */
+    /* set position */
     p_model->vertices[i].attributes[0] = 0.0;
     p_model->vertices[i].attributes[1] = 0.0;
     p_model->vertices[i].attributes[2] = 0.0;
-    /* normal */
+    /* set normal */
     p_model->vertices[i].attributes[3] = 0.0;
     p_model->vertices[i].attributes[4] = 0.0;
     p_model->vertices[i].attributes[5] = 0.0;
-    /* tex_coords */
+    /* set tex_coords */
     p_model->vertices[i].attributes[6] = 0.0;
     p_model->vertices[i].attributes[7] = 0.0;
   }
@@ -34,14 +34,18 @@ NUS_result nus_model_build(char const * const model_file, NUS_model *p_model)
   */  
   return NUS_SUCCESS;
 }
-void nus_model_free(NUS_model *p_model)
+void nus_model_free(NUS_suitable_queue queue, NUS_model *p_model)
 {
-  
+  if(p_model->vertex_buffer != VK_NULL_HANDLE){
+    vkDestroyBuffer(queue.p_gpu->logical_device, p_model->vertex_buffer, NULL);
+  }
+  if(p_model->vertex_buffer != VK_NULL_HANDLE){
+    vkFreeMemory(queue.p_gpu->logical_device, p_model->vertex_buffer_memory, NULL);
+  }
 }
 NUS_result nus_model_buffer
 (NUS_suitable_queue queue, NUS_model *p_model)
 {
-  VkDeviceMemory device_memory;
   size_t vertex_memory_size = sizeof(*p_model->vertices) * p_model->vertex_count;
   VkBufferCreateInfo buffer_create_info = {
     .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -74,35 +78,35 @@ NUS_result nus_model_buffer
 						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
   };
   if(vkAllocateMemory(queue.p_gpu->logical_device, &memory_allocate_info,
-		      NULL, &device_memory) != VK_SUCCESS){
+		      NULL, &p_model->vertex_buffer_memory) != VK_SUCCESS){
     printf("ERROR::failed to allocate memory for model\n");
     return NUS_FAILURE;
   }
   
   if(vkBindBufferMemory(queue.p_gpu->logical_device, p_model->vertex_buffer,
-			device_memory, 0) != VK_SUCCESS){
+			p_model->vertex_buffer_memory, 0) != VK_SUCCESS){
     printf("ERROR::failed to bind vertex buffer memory\n");
   }
 
   void *vertex_buffer_memory;
-  if(vkMapMemory(queue.p_gpu->logical_device, device_memory, 0, vertex_memory_size,
-		 0, &vertex_buffer_memory) != VK_SUCCESS){
+  if(vkMapMemory(queue.p_gpu->logical_device, p_model->vertex_buffer_memory, 0,
+		 vertex_memory_size, 0, &vertex_buffer_memory) != VK_SUCCESS){
     printf("ERROR::failed to map vertex buffer memory\n");
     return NUS_FAILURE;
   }
 
   memcpy(vertex_buffer_memory, p_model->vertices, vertex_memory_size);
-  printf("copied memory of size: %zu\n", vertex_memory_size);
+  
   VkMappedMemoryRange memory_range = {
     .sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
     .pNext = NULL,
-    .memory = device_memory,
+    .memory = p_model->vertex_buffer_memory,
     .offset = 0,
     .size = VK_WHOLE_SIZE
   };
   vkFlushMappedMemoryRanges(queue.p_gpu->logical_device, 1, &memory_range);
 
-  vkUnmapMemory(queue.p_gpu->logical_device, device_memory);
+  vkUnmapMemory(queue.p_gpu->logical_device, p_model->vertex_buffer_memory);
   
   return NUS_SUCCESS;
 }
