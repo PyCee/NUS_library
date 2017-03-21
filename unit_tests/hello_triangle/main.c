@@ -92,17 +92,20 @@ int main(int argc, char *argv[])
   printf("start model\n");
   
   NUS_model model;// temp model for testing purposes
-  // normal is color for this test
-  model.vertex_count = 4;
+  // the vertex normal represents color for this unit test
+  model.vertex_count = 3;
   model.vertices = malloc(sizeof(NUS_vertex) * model.vertex_count);
-  model.vertices[0] = (NUS_vertex){{0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0}};
-  model.vertices[1] = (NUS_vertex){{0.0, -0.75, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0}};
-  model.vertices[2] = (NUS_vertex){{0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0}};
-  model.vertices[3] = (NUS_vertex){{0.25, 0.25, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0}};
+  model.vertices[0] = (NUS_vertex){{-0.7, 0.7, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0}};
+  model.vertices[1] = (NUS_vertex){{0.7, 0.7, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0}};
+  model.vertices[2] = (NUS_vertex){{0.0, -0.7, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0}};
+
+  model.index_count = 6;
+  model.indices = malloc(sizeof(*model.indices) * model.index_count);
+  model.indices[0] = 0;
+  model.indices[1] = 1;
+  model.indices[2] = 2;
   
   nus_model_buffer(info, &model);
-
-  printf("vertex size is %d\n", sizeof(NUS_vertex));
   
   printf("end model stuffz\n");
 
@@ -517,6 +520,7 @@ int main(int argc, char *argv[])
     },
     .extent = present.swapchain.extent
   };
+  
   nus_suitable_queue_add_buffer(info, &command_buffer);
   vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
   vkCmdPipelineBarrier(command_buffer,
@@ -536,10 +540,15 @@ int main(int argc, char *argv[])
   vkCmdSetViewport(command_buffer, 0, 1, &viewport);
   vkCmdSetScissor(command_buffer, 0, 1, &scissor);
   
-  VkDeviceSize offset = 0;
-  vkCmdBindVertexBuffers(command_buffer, 0, 1, &model.vertex_buffer, &offset);
-  
-  vkCmdDraw(command_buffer, model.vertex_count, 1, 0, 0);
+  VkDeviceSize vertex_memory_offset = 0,
+    index_memory_offset = 0;
+  vkCmdBindVertexBuffers(command_buffer, 0, 1, &model.vertex_buffer,
+			 &vertex_memory_offset);
+  vkCmdBindIndexBuffer(command_buffer, model.index_buffer, index_memory_offset,
+			VK_INDEX_TYPE_UINT32);
+
+  vkCmdDrawIndexed(command_buffer, model.index_count, 1, 0, 0, 0);
+    
   vkCmdEndRenderPass(command_buffer);
   
   vkCmdPipelineBarrier(command_buffer,
@@ -570,8 +579,6 @@ int main(int argc, char *argv[])
     }
     nus_command_group_append(info.p_command_group, command_buffer);
     nus_suitable_queue_submit(info);
-    
-
     
     if(nus_multi_gpu_submit_commands(multi_gpu) != NUS_SUCCESS){
       printf("ERROR::failed to submit multi gpu command queues\n");

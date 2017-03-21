@@ -127,7 +127,9 @@
   function( vkCmdSetViewport, ##__VA_ARGS__ );				\
   function( vkCmdSetScissor, ##__VA_ARGS__ );				\
   function( vkCmdBindVertexBuffers, ##__VA_ARGS__ );			\
-  function( vkDestroyBuffer, ##__VA_ARGS__ );			\
+  function( vkDestroyBuffer, ##__VA_ARGS__ );				\
+  function( vkCmdBindIndexBuffer, ##__VA_ARGS__ );			\
+  function( vkCmdDrawIndexed, ##__VA_ARGS__ );				\
   function( vkGetFenceStatus, ##__VA_ARGS__ )
 
 
