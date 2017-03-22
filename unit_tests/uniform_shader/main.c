@@ -684,7 +684,7 @@ int main(int argc, char *argv[])
     y += dy;
     x += dx;
     
-    axes = nus_axes_global_roll(axes, 1.0 * 3.14159 / 180.0);
+    //axes = nus_axes_global_roll(axes, 1.0 * 3.14159 / 180.0);
     translation = nus_vector_build(x, y, 0.0);
     tmp = nus_matrix_transformation(translation, axes);
     tmp = nus_matrix_transpose(tmp);
@@ -719,7 +719,13 @@ int main(int argc, char *argv[])
   printf("freeing unit test %s\n", PROGRAM_NAME);
 
   vkDeviceWaitIdle(present.queue_info.p_gpu->logical_device);
-  
+
+  nus_memory_map_free(&uniform_world_memory, present.queue_info);
+
+  vkDestroyDescriptorSetLayout(present.queue_info.p_gpu->logical_device,
+			       descriptor_set_layout, NULL);
+  vkDestroyDescriptorPool(present.queue_info.p_gpu->logical_device,
+			  descriptor_pool, NULL);
   
   nus_model_free(info, &model);
   

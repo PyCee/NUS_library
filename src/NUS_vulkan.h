@@ -135,6 +135,8 @@
   function( vkAllocateDescriptorSets, ##__VA_ARGS__ );			\
   function( vkUpdateDescriptorSets, ##__VA_ARGS__ );			\
   function( vkCmdBindDescriptorSets, ##__VA_ARGS__ );			\
+  function( vkDestroyDescriptorSetLayout, ##__VA_ARGS__ );		\
+  function( vkDestroyDescriptorPool, ##__VA_ARGS__ );			\
   function( vkGetFenceStatus, ##__VA_ARGS__ )
 
 
