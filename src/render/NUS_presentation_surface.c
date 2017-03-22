@@ -3,7 +3,6 @@
 #include "../gpu/NUS_multi_gpu.h"
 #include "../gpu/NUS_suitable_queue.h"
 #include "../gpu/NUS_vulkan_instance.h"
-#include "../NUS_memory.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -91,14 +90,27 @@ NUS_result nus_presentation_surface_build
   vkGetImageMemoryRequirements(p_presentation_surface->queue_info.p_gpu->logical_device,
 			       p_presentation_surface->render_target,
 			       &image_memory_req);
+  
+  unsigned int memory_type_index;
+  VkPhysicalDeviceMemoryProperties mem_properties;
+  vkGetPhysicalDeviceMemoryProperties(p_presentation_surface->queue_info.
+				      p_gpu->physical_device,
+				      &mem_properties);
+  for(memory_type_index = 0; memory_type_index < mem_properties.memoryTypeCount;
+      ++memory_type_index){
+    if((image_memory_req.memoryTypeBits & (uint32_t)(1 << memory_type_index)) &&
+       (mem_properties.memoryTypes[memory_type_index].propertyFlags &
+        (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+	 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))){
+      break;
+    }
+  }
+  
   VkMemoryAllocateInfo memory_alloc_info = {
     .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
     .pNext = NULL,
     .allocationSize = image_memory_req.size,
-    .memoryTypeIndex = nus_vk_memory_type_index(p_presentation_surface->queue_info,
-						image_memory_req,
-						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-						VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+    .memoryTypeIndex = memory_type_index
   };
   
   if(vkAllocateMemory(p_presentation_surface->queue_info.p_gpu->logical_device,

@@ -15,7 +15,9 @@ typedef struct NUS_presentation_surface{
   VkSurfaceKHR surface;
   NUS_swapchain swapchain;
   NUS_suitable_queue queue_info;
+  
   VkDeviceMemory render_target_memory;
+  
   VkImage render_target;
   VkSemaphore render_copied,
     image_available,

@@ -18,11 +18,12 @@ LFLAGS= -lNUS_library -lxcb -ldl -lm \
 	-lVkLayer_swapchain -lVkLayer_core_validation -lVkLayer_image \
 	-lVkLayer_object_tracker -lVkLayer_parameter_validation -lVkLayer_threading
 
-SHADERS:= hello_triangle/triangle_shader/shader.vert.spv hello_triangle/triangle_shader/shader.frag.spv
+SHADERS:= hello_triangle/triangle_shader/shader.vert.spv hello_triangle/triangle_shader/shader.frag.spv \
+	uniform_shader/triangle_shader/shader.vert.spv uniform_shader/triangle_shader/shader.frag.spv
 
 TEST?=3d_math_vector/ 3d_math_matrix/ 3d_math_axes/ 3d_math_reference_vector/ \
 	gravity_simulation/ save_file/ basic_window/ gpu_detection/ vulkan_clear/ \
-	hello_triangle/
+	hello_triangle/ uniform_shader/
 
 VALGRIND_RUN= valgrind --tool=memcheck --leak-check=yes --track-origins=yes
 

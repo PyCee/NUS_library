@@ -11,10 +11,16 @@
 
 #include <unistd.h>
 
-#define PROGRAM_NAME "unit_test-hello_triangle"
+#define PROGRAM_NAME "unit_test-uniform_shader"
 
 void close_win(void);
+void move_up(void);
+void move_left(void);
+void move_down(void);
+void move_right(void);
 char run;
+float dx = 0.0, dy = 0.0;
+float move_speed = 0.01;
 
 int main(int argc, char *argv[])
 {
@@ -38,6 +44,15 @@ int main(int argc, char *argv[])
   
   nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS,
 				    NUS_KEY_ESC, close_win);
+  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_W, move_up);
+  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_A, move_left);
+  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_S, move_down);
+  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_D, move_right);
+  
+  nus_event_handler_function_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_S, move_up);
+  nus_event_handler_function_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_D, move_left);
+  nus_event_handler_function_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_W, move_down);
+  nus_event_handler_function_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_A, move_right);
   nus_event_handler_set(&eve);
   
   NUS_vulkan_instance vulkan_instance;
@@ -95,9 +110,9 @@ int main(int argc, char *argv[])
   // the vertex normal represents color for this unit test
   model.vertex_count = 3;
   model.vertices = malloc(sizeof(NUS_vertex) * model.vertex_count);
-  model.vertices[0] = (NUS_vertex){{-0.7f, 0.7f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}};
-  model.vertices[1] = (NUS_vertex){{0.7f, 0.7f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f}};
-  model.vertices[2] = (NUS_vertex){{0.0f, -0.7f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}};
+  model.vertices[0] = (NUS_vertex){{-0.2f, 0.2f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}};
+  model.vertices[1] = (NUS_vertex){{0.2f, 0.2f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f}};
+  model.vertices[2] = (NUS_vertex){{0.0f, -0.2f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}};
 
   model.index_count = 6;
   model.indices = malloc(sizeof(*model.indices) * model.index_count);
@@ -384,13 +399,72 @@ int main(int argc, char *argv[])
     .pAttachments = &color_blend_attachment_state,
     .blendConstants = { 0.0f, 0.0f, 0.0f, 0.0f }
   };
+
+  // Create descriptor set layout
+  VkDescriptorSetLayoutBinding descriptor_set_layout_binding = {
+    .binding = 0,
+    .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+    .descriptorCount = 1,
+    .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+    .pImmutableSamplers = NULL
+  };
+  VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+    .pNext = NULL,
+    .flags = 0,
+    .bindingCount = 1,
+    .pBindings = &descriptor_set_layout_binding
+  };
+  VkDescriptorSetLayout descriptor_set_layout;
+  if(vkCreateDescriptorSetLayout(present.queue_info.p_gpu->logical_device,
+				 &descriptor_set_layout_create_info, NULL,
+				 &descriptor_set_layout) != VK_SUCCESS){
+    printf("ERROR::failed to create descriptor set layout\n");
+    return -1;
+  }
+
+  // create descriptor pool
+  VkDescriptorPoolSize descriptor_pool_size = {
+    .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+    .descriptorCount = 1
+  };
+  VkDescriptorPoolCreateInfo descriptor_pool_create_info = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+    .pNext = NULL,
+    .flags = 0,
+    .maxSets = 1,
+    .poolSizeCount = 1,
+    .pPoolSizes = &descriptor_pool_size
+  };
+  VkDescriptorPool descriptor_pool;
+  if(vkCreateDescriptorPool(present.queue_info.p_gpu->logical_device,
+			    &descriptor_pool_create_info, NULL, &descriptor_pool) !=
+     VK_SUCCESS){
+    printf("ERROR::failed to create descriptor pool\n");
+    return -1;
+  }
+  
+  VkDescriptorSetAllocateInfo descriptor_set_allocate_info = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+    .pNext = NULL,
+    .descriptorPool = descriptor_pool,
+    .descriptorSetCount = 1,
+    .pSetLayouts = &descriptor_set_layout
+  };
+  VkDescriptorSet descriptor_set;
+  if(vkAllocateDescriptorSets(present.queue_info.p_gpu->logical_device,
+			      &descriptor_set_allocate_info, &descriptor_set) !=
+     VK_SUCCESS){
+    printf("ERROR::failed to allocate descriptor set\n");
+    return -1;
+  }
   
   VkPipelineLayoutCreateInfo pipeline_layout_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .setLayoutCount = 0,
-    .pSetLayouts = NULL,// add descriptor layout to pipeline layout
+    .setLayoutCount = 1,
+    .pSetLayouts = &descriptor_set_layout,
     .pushConstantRangeCount = 0,
     .pPushConstantRanges = NULL
   };
@@ -466,6 +540,38 @@ int main(int argc, char *argv[])
   
 
   //
+  NUS_axes axes = nus_axes_build(nus_vector_build(0.0, 0.0, 1.0),
+				 nus_vector_build(0.0, 1.0, 0.0),
+				 nus_vector_build(1.0, 0.0, 0.0));
+  NUS_vector translation = nus_vector_build(0.0, 0.0, 0.0);
+  NUS_matrix tmp = nus_matrix_transformation(translation, axes);
+  
+  NUS_memory_map uniform_world_memory;
+  nus_memory_map_build(present.queue_info, sizeof(NUS_matrix),
+		       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, &uniform_world_memory);
+  nus_memory_map_flush(uniform_world_memory, present.queue_info, &tmp);
+
+  VkDescriptorBufferInfo descriptor_buffer_info = {
+    .buffer = uniform_world_memory.buffer,
+    .offset = 0,
+    .range = VK_WHOLE_SIZE
+  };
+  VkWriteDescriptorSet write_descriptor_set = {
+    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+    .pNext = NULL,
+    .dstSet = descriptor_set,
+    .dstBinding = 0,
+    .dstArrayElement = 0,
+    .descriptorCount = 1,
+    .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+    .pImageInfo = NULL,
+    .pBufferInfo = &descriptor_buffer_info,
+    .pTexelBufferView = NULL
+  };
+  
+  vkUpdateDescriptorSets(present.queue_info.p_gpu->logical_device, 1,
+			 &write_descriptor_set, 0, NULL);
+  
   
   VkImageMemoryBarrier barrier_from_undefined_to_present = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -536,6 +642,9 @@ int main(int argc, char *argv[])
   vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 		    graphics_pipeline);
   
+  vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+			  pipeline_layout, 0, 1, &descriptor_set, 0, NULL);
+  
   vkCmdSetViewport(command_buffer, 0, 1, &viewport);
   vkCmdSetScissor(command_buffer, 0, 1, &scissor);
   
@@ -564,10 +673,24 @@ int main(int argc, char *argv[])
   
   // end of temp init code
   
+  
   run = 1;
+  float x = 0.0f, y = 0.0f;
   while(run){
 
     nus_system_events_handle(win);
+
+    
+    y += dy;
+    x += dx;
+    
+    axes = nus_axes_global_roll(axes, 1.0 * 3.14159 / 180.0);
+    translation = nus_vector_build(x, y, 0.0);
+    tmp = nus_matrix_transformation(translation, axes);
+    tmp = nus_matrix_transpose(tmp);
+    
+    nus_memory_map_flush(uniform_world_memory, present.queue_info, &tmp);
+
     
     if(nus_command_group_add_semaphores(info.p_command_group, 1,
 					&present.image_available,
@@ -641,4 +764,21 @@ int main(int argc, char *argv[])
 void close_win(void)
 {
   run = 0;
+}
+
+void move_up(void)
+{
+  dy -= move_speed;
+}
+void move_left(void)
+{
+  dx -= move_speed;
+}
+void move_down(void)
+{
+  dy += move_speed;
+}
+void move_right(void)
+{
+  dx += move_speed;
 }

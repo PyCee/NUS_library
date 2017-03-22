@@ -13,7 +13,7 @@ CFLAGS=-g -Wall \
 	-I/home/kims/VulkanSDK/1.0.39.0/x86_64/include
 
 GPU_SRC_FILES=NUS_multi_gpu.c NUS_gpu.c NUS_queue_family.c NUS_command_group.c \
-	NUS_vulkan_instance.c NUS_suitable_queue.c
+	NUS_vulkan_instance.c NUS_suitable_queue.c NUS_memory_map.c
 GPU_DIR=gpu
 
 IO_SRC_FILES=NUS_window.c NUS_system_events.c
@@ -45,8 +45,7 @@ MOD_SRC=$(addprefix $(MOD_DIR)/, $(MOD_SRC_FILES))
 PHY_SRC=$(addprefix $(PHY_DIR)/, $(PHY_SRC_FILES))
 REN_SRC=$(addprefix $(REN_DIR)/, $(REN_SRC_FILES))
 TIME_SRC=$(addprefix $(TIME_DIR)/, $(TIME_SRC_FILES))
-OTH_SRC=NUS_vulkan.c NUS_string_group.c NUS_save.c NUS_executable_path.c \
-	NUS_memory.c
+OTH_SRC=NUS_vulkan.c NUS_string_group.c NUS_save.c NUS_executable_path.c
 
 GPU_HEA=$(GPU_SRC:.c=.h)
 IO_HEA=$(IO_SRC:.c=.h)

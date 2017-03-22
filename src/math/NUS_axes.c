@@ -39,14 +39,14 @@ NUS_axes nus_axes_local_pitch(NUS_axes NUS_axes_, double radians)
 }
 NUS_axes nus_axes_local_yaw(NUS_axes NUS_axes_, double radians)
 {
-  NUS_quaternion rotation = nus_quaternion_unit(NUS_axes_.forward, radians);
+  NUS_quaternion rotation = nus_quaternion_unit(NUS_axes_.upward, radians);
   return nus_axes_build(NUS_axes_.forward,
 			nus_quaternion_apply_rotation(rotation, NUS_axes_.upward),
 			nus_quaternion_apply_rotation(rotation, NUS_axes_.left));
 }
 NUS_axes nus_axes_local_roll(NUS_axes NUS_axes_, double radians)
 {
-  NUS_quaternion rotation = nus_quaternion_unit(NUS_axes_.upward, radians);
+  NUS_quaternion rotation = nus_quaternion_unit(NUS_axes_.forward, radians);
   return nus_axes_build(nus_quaternion_apply_rotation(rotation, NUS_axes_.forward),
 			NUS_axes_.upward,
 			nus_quaternion_apply_rotation(rotation, NUS_axes_.left));
@@ -58,12 +58,12 @@ NUS_axes nus_axes_global_pitch(NUS_axes NUS_axes_, double radians)
 }
 NUS_axes nus_axes_global_yaw(NUS_axes NUS_axes_, double radians)
 {
-  NUS_quaternion rotation = nus_quaternion_unit(NUS_axes_.forward, radians);
+  NUS_quaternion rotation = nus_quaternion_unit(NUS_axes_.upward, radians);
   return nus_axes_global_rotation(NUS_axes_, rotation);
 }
 NUS_axes nus_axes_global_roll(NUS_axes NUS_axes_, double radians)
 {
-  NUS_quaternion rotation = nus_quaternion_unit(NUS_axes_.upward, radians);
+  NUS_quaternion rotation = nus_quaternion_unit(NUS_axes_.forward, radians);
   return nus_axes_global_rotation(NUS_axes_, rotation);
 }
 NUS_axes nus_axes_global_rotation(NUS_axes NUS_axes_, NUS_quaternion NUS_quaternion_)

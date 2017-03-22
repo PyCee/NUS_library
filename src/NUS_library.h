@@ -14,7 +14,6 @@
 #include "NUS_save.h"
 #include "NUS_executable_path.h"
 #include "NUS_component_key.h"
-#include "NUS_memory.h"
 
 #include "time/NUS_clock.h"
 
@@ -52,6 +51,7 @@
 #include "gpu/NUS_command_group.h"
 #include "gpu/NUS_vulkan_instance.h"
 #include "gpu/NUS_suitable_queue.h"
+#include "gpu/NUS_memory_map.h"
 #endif /* NUS_SYSTEM_GPU */
 
 /*  NUS_SYSTEM_RENDER must be defined in the application to enable rendering */

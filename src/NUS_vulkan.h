@@ -130,6 +130,11 @@
   function( vkDestroyBuffer, ##__VA_ARGS__ );				\
   function( vkCmdBindIndexBuffer, ##__VA_ARGS__ );			\
   function( vkCmdDrawIndexed, ##__VA_ARGS__ );				\
+  function( vkCreateDescriptorSetLayout, ##__VA_ARGS__ );		\
+  function( vkCreateDescriptorPool, ##__VA_ARGS__ );			\
+  function( vkAllocateDescriptorSets, ##__VA_ARGS__ );			\
+  function( vkUpdateDescriptorSets, ##__VA_ARGS__ );			\
+  function( vkCmdBindDescriptorSets, ##__VA_ARGS__ );			\
   function( vkGetFenceStatus, ##__VA_ARGS__ )
 
 

@@ -6,7 +6,7 @@ struct NUS_axes;
 struct NUS_quaternion;
 
 typedef struct NUS_matrix{
-  double ele[4][4];
+  float ele[4][4];
 } NUS_matrix;
 
 NUS_matrix nus_matrix_build(double, double, double, double,
