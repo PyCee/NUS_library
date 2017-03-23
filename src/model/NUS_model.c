@@ -1,5 +1,5 @@
 #include "NUS_model.h"
-#include "../gpu/NUS_suitable_queue.h"
+#include "../gpu/NUS_queue_info.h"
 #include <stdlib.h>
 #include <string.h>
 #include "stdio.h"
@@ -33,7 +33,7 @@ NUS_result nus_model_build(char const * const model_file, NUS_model *p_model)
   */  
   return NUS_SUCCESS;
 }
-void nus_model_free(NUS_suitable_queue queue, NUS_model *p_model)
+void nus_model_free(NUS_queue_info queue, NUS_model *p_model)
 {
   nus_memory_map_free(&p_model->vertex_memory, queue);
   nus_memory_map_free(&p_model->index_memory, queue);
@@ -56,7 +56,7 @@ void nus_model_free(NUS_suitable_queue queue, NUS_model *p_model)
   }*/
 }
 NUS_result nus_model_buffer
-(NUS_suitable_queue queue, NUS_model *p_model)
+(NUS_queue_info queue, NUS_model *p_model)
 {
   size_t vertex_memory_size = sizeof(*p_model->vertices) * p_model->vertex_count;
   size_t index_memory_size = sizeof(*p_model->indices) * p_model->index_count;

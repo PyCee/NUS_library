@@ -9,7 +9,6 @@ CFLAGS=-g -Wextra \
 	-Wcast-align \
 	-Wstrict-prototypes \
 	-Wmissing-prototypes \
-	-Wconversion \
 	-Wunreachable-code \
 	-I/home/kims/VulkanSDK/1.0.39.0/x86_64/include
 

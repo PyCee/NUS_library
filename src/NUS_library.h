@@ -50,7 +50,7 @@
 #include "gpu/NUS_queue_family.h"
 #include "gpu/NUS_command_group.h"
 #include "gpu/NUS_vulkan_instance.h"
-#include "gpu/NUS_suitable_queue.h"
+#include "gpu/NUS_queue_info.h"
 #include "gpu/NUS_memory_map.h"
 #endif /* NUS_SYSTEM_GPU */
 
@@ -60,6 +60,7 @@
 #include "render/NUS_swapchain.h"
 #include "render/NUS_image_clear.h"
 #include "render/NUS_shaders.h"
+#include "render/NUS_texture.h"
 #endif /* NUS_SYSTEM_RENDER */
 
 #endif /* NUS_LIBRARY_H */

@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     if(nus_image_clear(present.image_available,
 		       present.image_presentable,
 		       (VkClearColorValue){{0.0f, 0.0f, b, 0.0f}},
-		       multi_gpu.gpus + 0, present.render_target) !=
+		       multi_gpu.gpus + 0, present.render_target.image) !=
        NUS_SUCCESS){
       printf("ERROR::failed to clear window\n");
       return -1;
@@ -102,7 +102,6 @@ int main(int argc, char *argv[])
       printf("ERROR::failed to submit multi gpu command queues\n");
       return -1;
     }
-    printf("pre pres\n");
     if(nus_presentation_surface_present(&present) != NUS_SUCCESS){
       printf("ERROR::failed to present window\n");
       return -1;

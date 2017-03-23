@@ -9,14 +9,14 @@ typedef struct NUS_matrix{
   float ele[4][4];
 } NUS_matrix;
 
-NUS_matrix nus_matrix_build(double, double, double, double,
-			    double, double, double, double,
-			    double, double, double, double,
-			    double, double, double, double);
+NUS_matrix nus_matrix_build(float, float, float, float,
+			    float, float, float, float,
+			    float, float, float, float,
+			    float, float, float, float);
 NUS_matrix nus_matrix_identity(void);
 NUS_matrix nus_matrix_zero(void);
 NUS_matrix nus_matrix_transpose(NUS_matrix);
-NUS_matrix nus_matrix_scale(NUS_matrix, double);
+NUS_matrix nus_matrix_scale(NUS_matrix, float);
 NUS_matrix nus_matrix_multiply(NUS_matrix, NUS_matrix);
 
 NUS_matrix nus_matrix_translation(struct NUS_vector);

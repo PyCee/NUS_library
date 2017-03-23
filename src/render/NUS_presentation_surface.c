@@ -56,73 +56,18 @@ NUS_result nus_presentation_surface_build
     printf("ERROR::failed to build presentation surface swapchain\n");
     return NUS_FAILURE;
   }
-  // Create image application should render to
-  VkImageCreateInfo image_create_info = {
-    .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-    .pNext = NULL,
-    .flags = 0,
-    .imageType = VK_IMAGE_TYPE_2D,
-    .format = p_presentation_surface->swapchain.format.format,
-    .extent = {
-      p_presentation_surface->swapchain.extent.width,
-      p_presentation_surface->swapchain.extent.height,
-      1
-    },
-    .mipLevels = 1,
-    .arrayLayers = 1,
-    .samples = VK_SAMPLE_COUNT_1_BIT,
-    .tiling = VK_IMAGE_TILING_OPTIMAL,
-    .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-    .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-    .queueFamilyIndexCount = 0,
-    .pQueueFamilyIndices = NULL,
-    .initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED
-  };
-  if(vkCreateImage(p_presentation_surface->queue_info.p_gpu->logical_device,
-		   &image_create_info, NULL, &p_presentation_surface->render_target) !=
-     VK_SUCCESS){
-    printf("ERROR::failedto create presentation surface render_target\n");
+
+  if(nus_texture_build(*p_presentation_surface->queue_info.p_gpu,
+		       p_presentation_surface->swapchain.extent.width,
+		       p_presentation_surface->swapchain.extent.height,
+		       p_presentation_surface->swapchain.format.format,
+		       VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+		       VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+		       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		       &p_presentation_surface->render_target) != NUS_SUCCESS){
+    printf("ERROR::failed to build render_target texture\n");
     return NUS_FAILURE;
   }
-  
-  VkMemoryRequirements image_memory_req;
-  vkGetImageMemoryRequirements(p_presentation_surface->queue_info.p_gpu->logical_device,
-			       p_presentation_surface->render_target,
-			       &image_memory_req);
-  
-  unsigned int memory_type_index;
-  VkPhysicalDeviceMemoryProperties mem_properties;
-  vkGetPhysicalDeviceMemoryProperties(p_presentation_surface->queue_info.
-				      p_gpu->physical_device,
-				      &mem_properties);
-  for(memory_type_index = 0; memory_type_index < mem_properties.memoryTypeCount;
-      ++memory_type_index){
-    if((image_memory_req.memoryTypeBits & (uint32_t)(1 << memory_type_index)) &&
-       (mem_properties.memoryTypes[memory_type_index].propertyFlags &
-        (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-	 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))){
-      break;
-    }
-  }
-  
-  VkMemoryAllocateInfo memory_alloc_info = {
-    .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-    .pNext = NULL,
-    .allocationSize = image_memory_req.size,
-    .memoryTypeIndex = memory_type_index
-  };
-  
-  if(vkAllocateMemory(p_presentation_surface->queue_info.p_gpu->logical_device,
-		      &memory_alloc_info, NULL,
-		      &p_presentation_surface->render_target_memory) != VK_SUCCESS){
-    printf("ERROR::failed to allocate memory for render_target\n");
-    return NUS_FAILURE;
-  }
-  
-  vkBindImageMemory(p_presentation_surface->queue_info.p_gpu->logical_device,
-		    p_presentation_surface->render_target,
-		    p_presentation_surface->render_target_memory, 0);
   
   // Create semaphores vital to managing render_target access
   VkSemaphoreCreateInfo semaphore_create_info = {
@@ -167,8 +112,6 @@ void nus_presentation_surface_free
 {
   nus_swapchain_free(*p_presentation_surface->queue_info.p_gpu,
 		     &p_presentation_surface->swapchain);
-  vkFreeMemory(p_presentation_surface->queue_info.p_gpu->logical_device,
-	       p_presentation_surface->render_target_memory, NULL);
   // Free semaphores
   if(p_presentation_surface->render_copied != VK_NULL_HANDLE){
     vkDestroySemaphore(p_presentation_surface->queue_info.p_gpu->logical_device,
@@ -185,12 +128,8 @@ void nus_presentation_surface_free
 		       p_presentation_surface->image_available, NULL);
     p_presentation_surface->image_available = VK_NULL_HANDLE;
   }
-  // Free render target image
-  if(p_presentation_surface->render_target != VK_NULL_HANDLE){
-    vkDestroyImage(p_presentation_surface->queue_info.p_gpu->logical_device,
-		   p_presentation_surface->render_target, NULL);
-    p_presentation_surface->render_target = VK_NULL_HANDLE;
-  }
+  nus_texture_free(*p_presentation_surface->queue_info.p_gpu,
+		   &p_presentation_surface->render_target);
   
   vkDestroySurfaceKHR(NUS_vulkan_instance_.instance,
 		      p_presentation_surface->surface, NULL);
@@ -274,7 +213,7 @@ static void nus_presentation_surface_build_command_buffers
 	.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 	.srcQueueFamilyIndex = p_presentation_surface->queue_info.queue_family_index,
 	.dstQueueFamilyIndex = p_presentation_surface->queue_info.queue_family_index,
-	.image = p_presentation_surface->render_target,
+	.image = p_presentation_surface->render_target.image,
 	.subresourceRange = image_subresource_range
       },
       {
@@ -300,7 +239,7 @@ static void nus_presentation_surface_build_command_buffers
 	.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 	.srcQueueFamilyIndex = p_presentation_surface->queue_info.queue_family_index,
 	.dstQueueFamilyIndex = p_presentation_surface->queue_info.queue_family_index,
-	.image = p_presentation_surface->render_target,
+	.image = p_presentation_surface->render_target.image,
 	.subresourceRange = image_subresource_range
       },
       {
@@ -324,7 +263,7 @@ static void nus_presentation_surface_build_command_buffers
 			 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 			 0, 0, NULL, 0, NULL, 2, setup_barriers);
     vkCmdCopyImage(p_presentation_surface->render_target_copy_command_buffers[i],
-		   p_presentation_surface->render_target,
+		   p_presentation_surface->render_target.image,
 		   VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 		   p_presentation_surface->swapchain.images[i],
 		   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,

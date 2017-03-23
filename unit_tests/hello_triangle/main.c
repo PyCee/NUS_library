@@ -78,9 +78,9 @@ int main(int argc, char *argv[])
   
   // temp init code
   
-  NUS_suitable_queue info;
+  NUS_queue_info info;
   
-  if(nus_gpu_find_suitable_queue(present.queue_info.p_gpu,
+  if(nus_gpu_find_queue_info(present.queue_info.p_gpu,
 				 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
 				 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
 				 &info) !=
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
     .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .image = present.render_target,
+    .image = present.render_target.image,
     .viewType = VK_IMAGE_VIEW_TYPE_2D,
     .format = present.swapchain.format.format,
     .components = {
@@ -476,7 +476,7 @@ int main(int argc, char *argv[])
     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
     .srcQueueFamilyIndex = info.queue_family_index,
     .dstQueueFamilyIndex = info.queue_family_index,
-    .image = present.render_target,
+    .image = present.render_target.image,
     .subresourceRange = image_subresource_range
   };
   VkImageMemoryBarrier barrier_from_present_to_draw = {
@@ -488,7 +488,7 @@ int main(int argc, char *argv[])
     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
     .srcQueueFamilyIndex = info.queue_family_index,
     .dstQueueFamilyIndex = info.queue_family_index,
-    .image = present.render_target,
+    .image = present.render_target.image,
     .subresourceRange = image_subresource_range
   };
   VkImageMemoryBarrier barrier_from_draw_to_present = {
@@ -500,7 +500,7 @@ int main(int argc, char *argv[])
     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
     .srcQueueFamilyIndex = info.queue_family_index,
     .dstQueueFamilyIndex = info.queue_family_index,
-    .image = present.render_target,
+    .image = present.render_target.image,
     .subresourceRange = image_subresource_range
   };
 
@@ -520,7 +520,7 @@ int main(int argc, char *argv[])
     .extent = present.swapchain.extent
   };
   
-  nus_suitable_queue_add_buffer(info, &command_buffer);
+  nus_queue_info_add_buffer(info, &command_buffer);
   vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
   vkCmdPipelineBarrier(command_buffer,
 		       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -577,7 +577,7 @@ int main(int argc, char *argv[])
       return NUS_FAILURE;
     }
     nus_command_group_append(info.p_command_group, command_buffer);
-    nus_suitable_queue_submit(info);
+    nus_queue_info_submit(info);
     
     if(nus_multi_gpu_submit_commands(multi_gpu) != NUS_SUCCESS){
       printf("ERROR::failed to submit multi gpu command queues\n");

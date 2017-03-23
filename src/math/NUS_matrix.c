@@ -3,10 +3,10 @@
 #include "NUS_axes.h"
 #include <stdio.h>
 
-NUS_matrix nus_matrix_build(double m00, double m01, double m02, double m03,
-			    double m10, double m11, double m12, double m13,
-			    double m20, double m21, double m22, double m23,
-			    double m30, double m31, double m32, double m33)
+NUS_matrix nus_matrix_build(float m00, float m01, float m02, float m03,
+			    float m10, float m11, float m12, float m13,
+			    float m20, float m21, float m22, float m23,
+			    float m30, float m31, float m32, float m33)
 {
   return (NUS_matrix){{{m00, m01, m02, m03}, {m10, m11, m12, m13},
 					       {m20, m21, m22, m23},
@@ -37,7 +37,7 @@ NUS_matrix nus_matrix_transpose(const NUS_matrix NUS_matrix_)
 			  NUS_matrix_.ele[0][3], NUS_matrix_.ele[1][3],
 			  NUS_matrix_.ele[2][3], NUS_matrix_.ele[3][3]);
 }
-NUS_matrix nus_matrix_scale(const NUS_matrix NUS_matrix_, const double s)
+NUS_matrix nus_matrix_scale(const NUS_matrix NUS_matrix_, const float s)
 {
   return nus_matrix_build(NUS_matrix_.ele[0][0] * s, NUS_matrix_.ele[0][1] * s,
 			  NUS_matrix_.ele[0][2] * s, NUS_matrix_.ele[0][3] * s,
@@ -164,7 +164,7 @@ NUS_matrix nus_matrix_rotation(NUS_axes NUS_axes_)
 			  0.0, 0.0, 0.0, 1.0);
   /* Below is a quaternion --> rotation matrix algorithm.
    a remnant of a past time */
-  /*double w = NUS_quaternion_.w,
+  /*float w = NUS_quaternion_.w,
     x = NUS_quaternion_.x,
     y = NUS_quaternion_.y,
     z = NUS_quaternion_.z;

@@ -8,12 +8,11 @@ CFLAGS=-g -Wall \
 	-Wcast-align \
 	-Wstrict-prototypes \
 	-Wmissing-prototypes \
-	-Wconversion \
 	-Wunreachable-code \
 	-I/home/kims/VulkanSDK/1.0.39.0/x86_64/include
 
 GPU_SRC_FILES=NUS_multi_gpu.c NUS_gpu.c NUS_queue_family.c NUS_command_group.c \
-	NUS_vulkan_instance.c NUS_suitable_queue.c NUS_memory_map.c
+	NUS_vulkan_instance.c NUS_queue_info.c NUS_memory_map.c
 GPU_DIR=gpu
 
 IO_SRC_FILES=NUS_window.c NUS_system_events.c
@@ -32,7 +31,7 @@ PHY_SRC_FILES=NUS_kinematic_property.c NUS_physics_state.c NUS_orientation.c \
 PHY_DIR=physics
 
 REN_SRC_FILES=NUS_presentation_surface.c NUS_image_clear.c NUS_shaders.c \
-	NUS_swapchain.c
+	NUS_swapchain.c NUS_texture.c
 REN_DIR=render
 
 TIME_SRC_FILES=NUS_clock.c

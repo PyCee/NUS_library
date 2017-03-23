@@ -6,7 +6,7 @@
 #include "../NUS_vulkan.h"
 #include "../gpu/NUS_memory_map.h"
 
-struct NUS_suitable_queue;
+struct NUS_queue_info;
 
 typedef struct NUS_model{
   // do I need to store the vertices? or can I just use the VkBuffer in build?
@@ -29,7 +29,7 @@ typedef struct NUS_model{
 } NUS_model;
 
 NUS_result nus_model_build(char const * const, NUS_model *);
-void nus_model_free(struct NUS_suitable_queue, NUS_model *);
-NUS_result nus_model_buffer(struct NUS_suitable_queue, NUS_model *);
+void nus_model_free(struct NUS_queue_info, NUS_model *);
+NUS_result nus_model_buffer(struct NUS_queue_info, NUS_model *);
 
 #endif /* NUS_MODEL_H */

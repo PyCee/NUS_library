@@ -1,5 +1,5 @@
 #include "NUS_swapchain.h"
-#include "../gpu/NUS_suitable_queue.h"
+#include "../gpu/NUS_queue_info.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -79,8 +79,8 @@ VkImage nus_swapchain_get_image(NUS_swapchain swapchain)
 NUS_result nus_swapchain_present
 (NUS_gpu *gpu, VkSurfaceKHR surface, VkSemaphore wait, NUS_swapchain *p_swapchain)
 {
-  NUS_suitable_queue info;
-  nus_gpu_find_suitable_queue(gpu, NUS_QUEUE_FAMILY_SUPPORT_PRESENT, &info);
+  NUS_queue_info info;
+  nus_gpu_find_queue_info(gpu, NUS_QUEUE_FAMILY_SUPPORT_PRESENT, &info);
   
   VkPresentInfoKHR present_info = {
     .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,

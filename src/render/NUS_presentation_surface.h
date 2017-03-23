@@ -6,6 +6,7 @@
 #include "../gpu/NUS_gpu.h"
 #include "../gpu/NUS_queue_info.h"
 #include "NUS_swapchain.h"
+#include "NUS_texture.h"
 
 struct NUS_window;
 struct NUS_vulkan_instance;
@@ -15,10 +16,7 @@ typedef struct NUS_presentation_surface{
   VkSurfaceKHR surface;
   NUS_swapchain swapchain;
   NUS_queue_info queue_info;
-  
-  VkDeviceMemory render_target_memory;
-  
-  VkImage render_target;
+  NUS_texture render_target;
   VkSemaphore render_copied,
     image_available,
     image_presentable;
