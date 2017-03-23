@@ -1,10 +1,10 @@
 #include "NUS_memory_map.h"
-#include "NUS_suitable_queue.h"
+#include "NUS_queue_info.h"
 #include <stdio.h>
 #include <string.h>
 
 NUS_result nus_memory_map_build
-(NUS_suitable_queue queue, size_t memory_size, unsigned int usage,
+(NUS_queue_info queue, size_t memory_size, unsigned int usage,
  NUS_memory_map *p_memory_map)
 {
   p_memory_map->size = memory_size;
@@ -62,7 +62,7 @@ NUS_result nus_memory_map_build
   }
   return NUS_SUCCESS;
 }
-void nus_memory_map_free(NUS_memory_map *p_memory_map, NUS_suitable_queue queue)
+void nus_memory_map_free(NUS_memory_map *p_memory_map, NUS_queue_info queue)
 {
   if(p_memory_map->buffer != VK_NULL_HANDLE){
     vkDestroyBuffer(queue.p_gpu->logical_device, p_memory_map->buffer, NULL);
@@ -74,7 +74,7 @@ void nus_memory_map_free(NUS_memory_map *p_memory_map, NUS_suitable_queue queue)
   }
 }
 NUS_result nus_memory_map_flush
-(NUS_memory_map memory_map, NUS_suitable_queue queue, void *p_src)
+(NUS_memory_map memory_map, NUS_queue_info queue, void *p_src)
 {
   void *p_map;
   if(vkMapMemory(queue.p_gpu->logical_device, memory_map.device_memory, 0,

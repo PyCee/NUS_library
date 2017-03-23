@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include "NUS_gpu.h"
-#include "NUS_suitable_queue.h"
+#include "NUS_queue_info.h"
 
 NUS_result nus_queue_family_build
 (VkQueueFamilyProperties queue_family_properties, unsigned int queue_family_index,
@@ -101,8 +101,8 @@ NUS_result nus_queue_family_test_surface_support
   }
   return NUS_SUCCESS;
 }
-NUS_result nus_queue_family_find_suitable_queue
-(NUS_queue_family queue_family, NUS_suitable_queue *info)
+NUS_result nus_queue_family_find_queue_info
+(NUS_queue_family queue_family, NUS_queue_info *info)
 {
   unsigned int i,
     least_workload = UINT_MAX;

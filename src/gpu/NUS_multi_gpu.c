@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
-#include "NUS_suitable_queue.h"
+#include "NUS_queue_info.h"
 
 NUS_result nus_multi_gpu_build
 (NUS_vulkan_instance NUS_vulkan_instance_, NUS_multi_gpu *p_multi_gpu)
@@ -76,13 +76,13 @@ NUS_result nus_multi_gpu_check_surface_support
   }
   return NUS_SUCCESS;
 }
-NUS_result nus_multi_gpu_find_suitable_queue
+NUS_result nus_multi_gpu_find_queue_info
 (NUS_multi_gpu multi_gpu, unsigned int flags,
- NUS_suitable_queue *info)
+ NUS_queue_info *info)
 {
   unsigned int i;
   for(i = 0; i < multi_gpu.gpu_count; ++i){
-    if(nus_gpu_find_suitable_queue(multi_gpu.gpus + i, flags,
+    if(nus_gpu_find_queue_info(multi_gpu.gpus + i, flags,
 					   info) !=
        NUS_SUCCESS){
       printf("ERROR::gpu not suitable, not really error... TODO\n");

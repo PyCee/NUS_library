@@ -4,7 +4,7 @@
 #include "../NUS_vulkan.h"
 #include "../NUS_result.h"
 
-struct NUS_suitable_queue;
+struct NUS_queue_info;
 
 typedef struct NUS_command_group{
   VkQueue queue;

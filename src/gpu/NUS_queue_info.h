@@ -9,18 +9,18 @@
 #include "NUS_queue_family.h"
 #include "NUS_command_group.h"
 
-typedef struct NUS_suitable_queue{
+typedef struct NUS_queue_info{
   struct NUS_gpu *p_gpu;
   struct NUS_queue_family *p_queue_family;
   struct NUS_command_group *p_command_group;
   unsigned int gpu_index,
     queue_family_index,
     command_group_index;
-} NUS_suitable_queue;
+} NUS_queue_info;
 
-void nus_suitable_queue_build(NUS_suitable_queue *);
-NUS_result nus_suitable_queue_add_buffer
-(struct NUS_suitable_queue, VkCommandBuffer *);
-NUS_result nus_suitable_queue_submit(struct NUS_suitable_queue);
+void nus_queue_info_build(NUS_queue_info *);
+NUS_result nus_queue_info_add_buffer
+(struct NUS_queue_info, VkCommandBuffer *);
+NUS_result nus_queue_info_submit(struct NUS_queue_info);
 
 #endif /* NUS_SUITABLE_QUEUE_H */

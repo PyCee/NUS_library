@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
-#include "NUS_suitable_queue.h"
+#include "NUS_queue_info.h"
 
 static NUS_result nus_gpu_build_logical_device(NUS_gpu *);
 
@@ -96,14 +96,14 @@ void nus_gpu_print(NUS_gpu gpu)
     nus_queue_family_print(gpu.queue_families[i]);
   }
 }
-NUS_result nus_gpu_find_suitable_queue
+NUS_result nus_gpu_find_queue_info
 (NUS_gpu *p_gpu, unsigned int flags,
- NUS_suitable_queue *info)
+ NUS_queue_info *info)
 {
   unsigned int i;
   for(i = 0; i < p_gpu->queue_family_count; ++i){
     if((p_gpu->queue_families[i].flags & flags) == flags){
-      if(nus_queue_family_find_suitable_queue(p_gpu->queue_families[i],
+      if(nus_queue_family_find_queue_info(p_gpu->queue_families[i],
 						      info) !=
 	 NUS_SUCCESS){
 	printf("ERROR::failed to find suitable queue\n");

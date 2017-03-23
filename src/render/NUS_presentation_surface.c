@@ -1,7 +1,7 @@
 #include "NUS_presentation_surface.h"
 #include "../io/NUS_window.h"
 #include "../gpu/NUS_multi_gpu.h"
-#include "../gpu/NUS_suitable_queue.h"
+#include "../gpu/NUS_queue_info.h"
 #include "../gpu/NUS_vulkan_instance.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,7 +43,7 @@ NUS_result nus_presentation_surface_build
   nus_multi_gpu_check_surface_support(p_presentation_surface->surface,
 				      NUS_multi_gpu_);
 
-  nus_multi_gpu_find_suitable_queue(*NUS_multi_gpu_,
+  nus_multi_gpu_find_queue_info(*NUS_multi_gpu_,
 				    NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
 				    &p_presentation_surface->queue_info);
   
@@ -204,7 +204,7 @@ NUS_result nus_presentation_surface_present
   nus_command_group_append(p_presentation_surface->queue_info.p_command_group,
 			   p_presentation_surface->render_target_copy_command_buffers
 			   [p_presentation_surface->swapchain.image_index]);
-  nus_suitable_queue_submit(p_presentation_surface->queue_info);
+  nus_queue_info_submit(p_presentation_surface->queue_info);
   
   if(nus_swapchain_present(p_presentation_surface->queue_info.p_gpu,
 			   p_presentation_surface->surface,
@@ -261,7 +261,7 @@ static void nus_presentation_surface_build_command_buffers
     malloc(sizeof(*p_presentation_surface->render_target_copy_command_buffers) *
 	   p_presentation_surface->swapchain.image_count);
   for(i = 0; i < p_presentation_surface->swapchain.image_count; ++i){
-    nus_suitable_queue_add_buffer(p_presentation_surface->queue_info,
+    nus_queue_info_add_buffer(p_presentation_surface->queue_info,
 				  p_presentation_surface->
 				  render_target_copy_command_buffers + i);
     VkImageMemoryBarrier setup_barriers[] = {
