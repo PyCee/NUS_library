@@ -1,7 +1,28 @@
+@media only all and (min-width:64em) {/* computer */
+    html {
+	font-size:20px;
+    }
+    nav > a > div {
+	width:100px;
+	height:35px;
+	padding-top:15px;
+    }
+}
+@media only all and (max-width:64em) {/* mobile and tablet */
+    html {
+	font-size:25px;
+	text-align:center;
+    }
+    nav > a > div {
+	width:150px;
+	height:50px;
+	padding-top:20px;
+    }
+}
+
 html {
     background-color:hsla(285, 45%, 75%, 0.3);
     font-family:Georgia, Helvetica, sans-serif;
-    font-size:25px;
 }
 hr {
     margin-top:20px;
@@ -38,9 +59,6 @@ nav {
     overflow:auto;
 }
 nav > a > div {
-    width:150px;
-    height:50px;
-    padding-top:20px;
     margin:5px 15px;
     text-align:center;
     border-radius:50px;
