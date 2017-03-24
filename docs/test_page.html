@@ -6,19 +6,14 @@
     <link rel="stylesheet" href="style.css" type="text/css">
     <link rel="icon" href="images/fire.png" type="image/x-icon">
     <style>
-      dl {
-      text-indent:25px;
-      }
-      main > div {
-      padding-left:30px;
-      }
-      a {
+      main a {
+      text-decoration:none;
       }
     </style>
   </head>
   <body>
     <header>
-	<h1>nus_string_group_string_index documentation</h1>
+      <h1>NUS Library</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -31,7 +26,7 @@
 	  Usage
 	</div>
       </a>
-      <a href="/NUS_library/root_documentation.html">
+      <a href="/NUS_library/documentation.html">
 	<div>
 	  Docs
 	</div>
@@ -53,54 +48,22 @@
       </a>
     </nav>
     <main>
-      <a name="main"></a><h3>NAME</h3>
-      nus_string_group_string_index - obtains index of a string
+      <a name="main"></a>
       <hr>
-      <h3>C SPECIFICATION</h3>
-      <div class="code_example">NUS_result nus_string_group_string_index(
-    NUS_string_group string_group,
-    const char *string,
-    unsigned int *p_index);</div>
+      <a href="/NUS_library/root_documentation.html"><h2>DOCUMENTATION (DOCS)</h2></a>
+      Everything a programmer needs to know to program an application using the NUS library
       <hr>
-      <h3>PARAMETERS</h3>
-      <ul>
-	<li><span class="highlight">string_group</span> is a string group that an index will be obtained from</li>
-	<li><span class="highlight">string</span> is the string that will be searched for</li>
-	<li><span class="highlight">p_index</span> is a pointer to an int that will return the index</li>
-      </ul>
+      <a href="/NUS_library/usage.html"><h2>USAGE</h2></a>
+      How to setup a development environment utilizing NUS library
       <hr>
-      <h3>RETURN VALUE</h3>
-      On Success
-      <ul><li>returns NUS_SUCCESS</li></ul>
-      On Failure
-      <ul>
-	<li>returns NUS_FAILURE</li>
-	<li>string could not be found</li>
-      </ul>
+      <a href="/NUS_library/unit_tests.html"><h2>UNIT TESTS</h2></a>
+      Explains a variety of tests which show various aspects of the NUS library
       <hr>
-      <h3>DETAILS</h3>
-      <ul>
-	<li>string_group <span class="highlight">must</span> have been <a href="/NUS_library/documentation/nus_string_group_init.html#main">initialized</a> or <a href="/NUS_library/documentation/nus_string_group_build.html#main">built</a></li>
-	<li>string <span class="highlight">must</span> be a null-terminated c-string</li>
-	<li>p_index <span class="highlight">must</span> be a pointer to an allocated int</li>
-      </ul>
+      <a href="/NUS_library/about.html"><h2>ABOUT</h2></a>
+      Other details
       <hr>
-      <h3>EXAMPLE</h3>
-      Code:
-      <div class="code_example">NUS_string_group string_group;
-unsigned int index;
-nus_string_group_build(&string_group, "string!!!");
-nus_string_group_string_index(string_group, "string!!!", &index);
-printf("The index of the string is: %d\n", index);</div>
-      Output:
-      <div class="code_example">The index of the string is: 0</div>
-      <hr>
-      <h3>RELATED</h3>
-      <div>
-	<a href="/NUS_library/documentation/NUS_string_group.html#main">NUS_string_group</a>
-	<br>
-	<a href="/NUS_library/documentation/nus_string_group_build.html#main">nus_string_group_build</a>
-      </div>
+      <a target="_blank" href="https://github.com/PyCee/NUS_library"><h2>SOURCE</h2></a>
+      This is a link to the github page for the NUS library
     </main>
     <footer>
       <hr>

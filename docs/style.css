@@ -1,7 +1,7 @@
 html {
     background-color:hsla(285, 45%, 75%, 0.3);
     font-family:Georgia, Helvetica, sans-serif;
-    font-size:20px;
+    font-size:25px;
 }
 hr {
     margin-top:20px;
@@ -38,10 +38,10 @@ nav {
     overflow:auto;
 }
 nav > a > div {
-    width:120px;
-    height:35px;
-    padding-top:15px;
-    margin:0px 7px;
+    width:150px;
+    height:50px;
+    padding-top:20px;
+    margin:5px 15px;
     text-align:center;
     border-radius:50px;
     color:hsla(270, 70%, 20%, 1.0);
