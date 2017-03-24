@@ -18,6 +18,9 @@
 	height:50px;
 	padding-top:20px;
     }
+    .code_example {
+	margin:20px 0px;
+    }
 }
 
 html {
@@ -94,7 +97,6 @@ footer > hr {
     background-color:hsla(0, 0%, 60%, 0.1);
 }
 .code_example {
-    margin:20px 0px;
     padding:10px;
     font-family:"Lucida Console", Monaco, monospace;
     background-color:hsla(0, 0%, 60%, 0.1);
