@@ -4,8 +4,8 @@
     }
     nav > a > div {
 	width:100px;
-	height:35px;
-	padding-top:15px;
+	height:30px;
+        padding-top:15px;
     }
     .code_example {
 	padding-left:50px;
@@ -17,9 +17,9 @@
 	text-align:center;
     }
     nav > a > div {
-	width:150px;
+	width:calc(33% - 30px);
 	height:50px;
-	padding-top:20px;
+	padding-top:25px;
     }
 }
 
