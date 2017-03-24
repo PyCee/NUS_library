@@ -43,11 +43,10 @@ h1, h2, h3, h4, h5, h6{
     margin-bottom:20px;
 }
 body {
-    width:80vw;
+    width:calc(80vw - 100px);
     height:100%;
-    margin-top:0px;
-    margin-left:10vw;
-    padding-left:50px;
+    margin:0vw 10vw;
+    padding: 0px 50px;
     background-color:hsla(0, 0%, 100%, 0.5);
 }
 header {
