@@ -7,6 +7,9 @@
 	height:35px;
 	padding-top:15px;
     }
+    .code_example {
+	padding-left:50px;
+    }
 }
 @media only all and (max-width:64em) {/* mobile and tablet */
     html {
@@ -17,9 +20,6 @@
 	width:150px;
 	height:50px;
 	padding-top:20px;
-    }
-    .code_example {
-	margin:20px 0px;
     }
 }
 
@@ -97,8 +97,9 @@ footer > hr {
     background-color:hsla(0, 0%, 60%, 0.1);
 }
 .code_example {
-    padding:10px;
+    padding-top:10px;
+    padding-bottom:10px;
+    margin:20px 0px;
     font-family:"Lucida Console", Monaco, monospace;
     background-color:hsla(0, 0%, 60%, 0.1);
-    white-space:pre;
 }
