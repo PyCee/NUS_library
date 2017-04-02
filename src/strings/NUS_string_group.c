@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <limits.h>
 
-void nus_string_group_init(NUS_string_group *p_string_group)
+void nus_string_group_build(NUS_string_group *p_string_group)
 {
   p_string_group->strings = NULL;
   p_string_group->count = 0;
@@ -54,14 +54,6 @@ NUS_result nus_string_group_get
   *result = string_group.strings[index];
   return NUS_SUCCESS;
 }
-void nus_string_group_print(NUS_string_group string_group)
-{
-  unsigned int i;
-  printf("NUS_string_group contains %d string(s):\n", string_group.count);
-  for(i = 0; i < string_group.count; ++i){
-    printf("\tstring %d: %s\n", i, string_group.strings[i]);
-  }
-}
 void nus_string_group_copy
 (NUS_string_group *p_string_group_dest,
  NUS_string_group string_group_src)
@@ -82,4 +74,12 @@ unsigned int nus_string_group_string_index
     }
   }
   return UINT_MAX;
+}
+void nus_string_group_print(NUS_string_group string_group)
+{
+  unsigned int i;
+  printf("NUS_string_group contains %d string(s):\n", string_group.count);
+  for(i = 0; i < string_group.count; ++i){
+    printf("\tstring %d: %s\n", i, string_group.strings[i]);
+  }
 }
