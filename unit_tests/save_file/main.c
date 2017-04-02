@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
   if(argv){}
   
   NUS_save save;
-  if(nus_save_build("save_file", &save) != NUS_SUCCESS){
+  if(nus_save_build(nus_absolute_path_build("save_file"), &save) != NUS_SUCCESS){
     printf("ERROR::failed to build save\n");
     return -1;
   }
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
   }
   printf("whatis \"%s\"\n", attribute);
 
-  nus_save_output(save, "save_file");
+  nus_save_output(nus_absolute_path_build("save_file"), save);
   nus_save_free(&save);
   
   printf("unit test %s completed\n", PROGRAM_NAME);

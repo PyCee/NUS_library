@@ -10,10 +10,11 @@
 
 /* Include files that should be present in any instance of this engine*/
 #include "NUS_result.h"
-#include "NUS_string_group.h"
 #include "NUS_save.h"
-#include "NUS_executable_path.h"
 #include "NUS_component_key.h"
+
+#include "strings/NUS_string_group.h"
+#include "strings/NUS_absolute_path.h"
 
 #include "time/NUS_clock.h"
 
@@ -59,8 +60,12 @@
 #include "render/NUS_presentation_surface.h"
 #include "render/NUS_swapchain.h"
 #include "render/NUS_image_clear.h"
-#include "render/NUS_shaders.h"
+#include "render/NUS_shader.h"
 #include "render/NUS_texture.h"
+#include "render/NUS_subpass_info.h"
+#include "render/NUS_render_pass.h"
+#include "render/NUS_framebuffer.h"
+#include "render/NUS_graphics_pipeline.h"
 #endif /* NUS_SYSTEM_RENDER */
 
 #endif /* NUS_LIBRARY_H */

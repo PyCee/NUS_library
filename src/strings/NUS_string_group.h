@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "NUS_result.h"
+#include "../NUS_result.h"
 
 #define nus_string_group_build(p_string_group, ...)			\
   do{									\

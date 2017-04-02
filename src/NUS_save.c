@@ -1,18 +1,15 @@
 #include "NUS_save.h"
 #include <stdio.h>
-#include "NUS_executable_path.h"
 #include <limits.h>
 
-NUS_result nus_save_build(char const * const file_path, NUS_save *p_save)
+NUS_result nus_save_build(NUS_absolute_path absolute_path, NUS_save *p_save)
 {
   nus_string_group_init(&p_save->contents);
   FILE *file;
-  char *absolute_path = nus_executable_path_prefix(file_path);
-  if((file = fopen(absolute_path, "r")) == NULL){
-    printf("ERROR::failed to open save file \"%s\" to read\n", absolute_path);
+  if((file = fopen(absolute_path.path, "r")) == NULL){
+    printf("ERROR::failed to open save file \"%s\" to read\n", absolute_path.path);
     return NUS_FAILURE;
   }
-  free(absolute_path);
 
   char file_line[NUS_SAVE_FILE_MAX_LINE_LENGTH],
     element[NUS_SAVE_FILE_MAX_LINE_LENGTH],
@@ -43,17 +40,14 @@ NUS_result nus_save_build(char const * const file_path, NUS_save *p_save)
   fclose(file);
   return NUS_SUCCESS;
 }
-NUS_result nus_save_output(NUS_save save, char const * const file_path)
+NUS_result nus_save_output(NUS_absolute_path absolute_path, NUS_save save)
 {
+  unsigned int i;
   FILE *file;
-  char *absolute_path = nus_executable_path_prefix(file_path);
-  if((file = fopen(absolute_path, "w")) == NULL){
-    printf("ERROR::failed to open save file \"%s\" to read\n", absolute_path);
+  if((file = fopen(absolute_path.path, "w")) == NULL){
+    printf("ERROR::failed to open save file \"%s\" to read\n", absolute_path.path);
     return NUS_FAILURE;
   }
-  free(absolute_path);
-  
-  unsigned int i;
 
   fprintf(file, "%s\n", NUS_SAVE_FILE_HEAD);
   for(i = 0; i < save.contents.count; i += 2){

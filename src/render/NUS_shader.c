@@ -1,20 +1,19 @@
 #include "NUS_shader.h"
 #include "../gpu/NUS_gpu.h"
-#include "../NUS_executable_path.h"
+#include "../strings/NUS_absolute_path.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 NUS_result nus_shader_build
-(NUS_gpu gpu, char *source_file_path, NUS_shader *p_shader)
+(NUS_gpu gpu, NUS_absolute_path absolute_path, NUS_shader *p_shader)
 {
   int i,
     shader_length;
   char *shader_binary;
   FILE *source_file;
-  char *absolute_source_file_path = nus_executable_path_prefix(source_file_path);
-  if((source_file = fopen(absolute_source_file_path, "r")) == NULL){
-    printf("ERROR::failed to open shader file \"%s\"\n", absolute_source_file_path);
+  if((source_file = fopen(absolute_path.path, "r")) == NULL){
+    printf("ERROR::failed to open shader file \"%s\"\n", absolute_path.path);
     return NUS_FAILURE;
   }
   shader_length = 0;
@@ -40,13 +39,10 @@ NUS_result nus_shader_build
   if(vkCreateShaderModule(gpu.logical_device, &shader_module_create_info,
 			  NULL, &p_shader->module) != VK_SUCCESS){
     printf("ERROR::failed to create shader module from \"%s\"\n",
-	   absolute_source_file_path);
+	   absolute_path.path);
     return NUS_FAILURE;
   }
   //
-
-  
-  free(absolute_source_file_path);
   return NUS_SUCCESS;
 }
 NUS_result nus_shader_build_source(NUS_gpu gpu, char *source, NUS_shader *p_shader)

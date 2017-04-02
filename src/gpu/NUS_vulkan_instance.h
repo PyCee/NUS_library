@@ -6,7 +6,7 @@
 
 #include "../NUS_vulkan.h"
 #include "../NUS_result.h"
-#include "../NUS_string_group.h"
+#include "../strings/NUS_string_group.h"
 
 typedef struct NUS_vulkan_instance{
   NUS_vk_instance_functions functions;

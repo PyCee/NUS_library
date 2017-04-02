@@ -204,12 +204,14 @@ int main(int argc, char *argv[])
   // Create Graphics Pipeline
   NUS_shader vertex_shader,
     fragment_shader;
-  if(nus_shader_build(multi_gpu.gpus[0], "triangle_shader/shader.vert.spv",
+  if(nus_shader_build(multi_gpu.gpus[0],
+		      nus_absolute_path_build("triangle_shader/shader.vert.spv"),
 		      &vertex_shader) != NUS_SUCCESS){
     printf("ERROR::failed to build vertex shader\n");
     return -1;
   }
-  if(nus_shader_build(multi_gpu.gpus[0], "triangle_shader/shader.frag.spv",
+  if(nus_shader_build(multi_gpu.gpus[0],
+		      nus_absolute_path_build("triangle_shader/shader.frag.spv"),
 		      &fragment_shader) != NUS_SUCCESS){
     printf("ERROR::failed to build fragment shader\n");
     return -1;
@@ -399,18 +401,6 @@ int main(int argc, char *argv[])
   // end of render pass init
 
 
-
-
-
-
-
-
-
-
-
-
-
-  
   VkCommandBuffer command_buffer;
   
   VkCommandBufferBeginInfo command_buffer_begin_info = {
