@@ -34,15 +34,15 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to build event handler\n");
     return -1;
   }
-  nus_event_handler_function_append(eve, NUS_EVENT_CLOSE_WINDOW, 0, close_win);
+  nus_event_handler_append(eve, NUS_EVENT_CLOSE_WINDOW, 0, close_win);
   
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS,
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
 				    NUS_KEY_ESC, close_win);
   nus_event_handler_set(&eve);
   
   NUS_vulkan_instance vulkan_instance;
   NUS_string_group extensions;
-  nus_string_group_build(&extensions, 
+  nus_string_group_build(&extensions,
 			 VK_KHR_SURFACE_EXTENSION_NAME,
 #if defined(NUS_OS_WINDOWS)
 			 VK_KHR_WIN32_SURFACE_EXTENSION_NAME
@@ -89,9 +89,7 @@ int main(int argc, char *argv[])
     return NUS_FAILURE;
   }
   
-  printf("start model\n");
-  
-  NUS_model model;// temp model for testing purposes
+  NUS_model model;
   // the vertex normal represents color for this unit test
   model.vertex_count = 3;
   model.vertices = malloc(sizeof(NUS_vertex) * model.vertex_count);
@@ -106,8 +104,6 @@ int main(int argc, char *argv[])
   model.indices[2] = 2;
   
   nus_model_buffer(info, &model);
-  
-  printf("end model stuffz\n");
 
   // code to create renderpass
   VkAttachmentDescription attachment_descriptions[] = {
@@ -143,7 +139,6 @@ int main(int argc, char *argv[])
       .pPreserveAttachments = NULL
     }
   };
-  
   
   VkSubpassDependency dependencies[] = {
     {
@@ -185,56 +180,26 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to create render pass\n");
     return -1;
   }
-  
+
   // code to create framebuffer
-  VkImageViewCreateInfo image_view_create_info = {
-    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-    .pNext = NULL,
-    .flags = 0,
-    .image = present.render_target.image,
-    .viewType = VK_IMAGE_VIEW_TYPE_2D,
-    .format = present.swapchain.format.format,
-    .components = {
-      .r = VK_COMPONENT_SWIZZLE_IDENTITY,
-      .g = VK_COMPONENT_SWIZZLE_IDENTITY,
-      .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-      .a = VK_COMPONENT_SWIZZLE_IDENTITY
-    },
-    .subresourceRange = {
-      .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-      .baseMipLevel = 0,
-      .levelCount = 1,
-      .baseArrayLayer = 0,
-      .layerCount = 1
-    }
-  };
-  VkImageView image_view;
-  if(vkCreateImageView(present.queue_info.p_gpu->logical_device,
-		       &image_view_create_info, NULL,
-		       &image_view) != VK_SUCCESS){
-    printf("ERROR::failed to create image view\n");
-    return -1;
-  }
-  
-  VkFramebufferCreateInfo framebuffer_create_info = {
-    .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-    .pNext = NULL,
-    .flags = 0,
-    .renderPass = render_pass,
-    .attachmentCount = 1,
-    .pAttachments = &image_view,
-    .width = 600,
-    .height = 400,
-    .layers = 1
-  };
-  VkFramebuffer framebuffer;
-  if(vkCreateFramebuffer(present.queue_info.p_gpu->logical_device,
-			 &framebuffer_create_info, NULL,
-			 &framebuffer) != VK_SUCCESS){
-    printf("ERROR::failed to create framebuffer\n");
+  NUS_framebuffer_info framebuffer_info;
+  nus_framebuffer_info_build(600, 400, 1, &framebuffer_info);
+  if(nus_framebuffer_info_set_attachment(*present.queue_info.p_gpu,
+					 present.render_target,
+					 present.swapchain.format.format,
+					 VK_IMAGE_ASPECT_COLOR_BIT, 0,
+					 &framebuffer_info) != NUS_SUCCESS){
+    printf("ERROR::failed to set framebuffer info attachment\n");
     return -1;
   }
 
+  NUS_framebuffer framebuffer;
+  if(nus_framebuffer_build(*present.queue_info.p_gpu, render_pass, framebuffer_info,
+			   &framebuffer) != NUS_SUCCESS){
+    printf("ERROR::failed to build framebuffer\n");
+    return -1;
+  }
+  
 
   // Create Graphics Pipeline
   NUS_shader vertex_shader,
@@ -382,7 +347,7 @@ int main(int argc, char *argv[])
     .logicOp = VK_LOGIC_OP_COPY,
     .attachmentCount = 1,
     .pAttachments = &color_blend_attachment_state,
-    .blendConstants = { 0.0f, 0.0f, 0.0f, 0.0f }
+    .blendConstants = {0.0f, 0.0f, 0.0f, 0.0f}
   };
   
   VkPipelineLayoutCreateInfo pipeline_layout_create_info = {
@@ -390,7 +355,7 @@ int main(int argc, char *argv[])
     .pNext = NULL,
     .flags = 0,
     .setLayoutCount = 0,
-    .pSetLayouts = NULL,// add descriptor layout to pipeline layout
+    .pSetLayouts = NULL,
     .pushConstantRangeCount = 0,
     .pPushConstantRanges = NULL
   };
@@ -430,6 +395,21 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to create graphics pipelines\n");
     return -1;
   }
+
+  // end of render pass init
+
+
+
+
+
+
+
+
+
+
+
+
+
   
   VkCommandBuffer command_buffer;
   
@@ -452,7 +432,7 @@ int main(int argc, char *argv[])
     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
     .pNext = NULL,
     .renderPass = render_pass,
-    .framebuffer = framebuffer,
+    .framebuffer = framebuffer.vk_framebuffer,
     .renderArea = {
       .offset = {
 	.x = 0,
@@ -618,16 +598,9 @@ int main(int argc, char *argv[])
 		      render_pass, NULL);
     render_pass = VK_NULL_HANDLE;
   }
-  if(framebuffer != VK_NULL_HANDLE){
-    vkDestroyFramebuffer(present.queue_info.p_gpu->logical_device,
-		      framebuffer, NULL);
-    framebuffer = VK_NULL_HANDLE;
-  }
-  if(image_view != VK_NULL_HANDLE){
-    vkDestroyImageView(present.queue_info.p_gpu->logical_device,
-		      image_view, NULL);
-    image_view = VK_NULL_HANDLE;
-  }
+
+  nus_framebuffer_info_free(*present.queue_info.p_gpu, &framebuffer_info);
+  nus_framebuffer_free(*present.queue_info.p_gpu, &framebuffer);
   
   nus_presentation_surface_free(vulkan_instance, &present);
   nus_multi_gpu_free(&multi_gpu);

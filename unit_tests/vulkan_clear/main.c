@@ -34,9 +34,9 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to build event handler\n");
     return -1;
   }
-  nus_event_handler_function_append(eve, NUS_EVENT_CLOSE_WINDOW, 0, close_win);
+  nus_event_handler_append(eve, NUS_EVENT_CLOSE_WINDOW, 0, close_win);
   
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS,
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
 				    NUS_KEY_ESC, close_win);
   nus_event_handler_set(&eve);
   

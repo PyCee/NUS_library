@@ -18,9 +18,14 @@ void move_up(void);
 void move_left(void);
 void move_down(void);
 void move_right(void);
+
+void pitch_up(void);
+void pitch_down(void);
+void yaw_left(void);
+void yaw_right(void);
 char run;
-float dx = 0.0, dy = 0.0;
-float move_speed = 0.01;
+float dx = 0.0, dy = 0.0, dpitch = 0.0, dyaw = 0.0;
+float move_speed = 0.01, rotate_speed = 1.0 * 3.14159 / 180.0;
 
 int main(int argc, char *argv[])
 {
@@ -40,19 +45,37 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to build event handler\n");
     return -1;
   }
-  nus_event_handler_function_append(eve, NUS_EVENT_CLOSE_WINDOW, 0, close_win);
+  nus_event_handler_append(eve, NUS_EVENT_CLOSE_WINDOW, 0, close_win);
   
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS,
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
 				    NUS_KEY_ESC, close_win);
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_W, move_up);
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_A, move_left);
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_S, move_down);
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_D, move_right);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_W, move_up);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_A, move_left);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_S, move_down);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_D, move_right);
   
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_S, move_up);
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_D, move_left);
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_W, move_down);
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_A, move_right);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_S, move_up);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_D, move_left);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_W, move_down);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_A, move_right);
+  
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
+				    NUS_KEY_ARROW_UP, pitch_up);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
+				    NUS_KEY_ARROW_DOWN, pitch_down);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
+				    NUS_KEY_ARROW_LEFT, yaw_left);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
+				    NUS_KEY_ARROW_RIGHT, yaw_right);
+  
+  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE,
+				    NUS_KEY_ARROW_UP, pitch_down);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE,
+				    NUS_KEY_ARROW_DOWN, pitch_up);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE,
+				    NUS_KEY_ARROW_LEFT, yaw_right);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE,
+				    NUS_KEY_ARROW_RIGHT, yaw_left);
   nus_event_handler_set(&eve);
   
   NUS_vulkan_instance vulkan_instance;
@@ -108,7 +131,7 @@ int main(int argc, char *argv[])
   
   NUS_model model;// temp model for testing purposes
   // the vertex normal represents color for this unit test
-  
+  /*
   model.vertex_count = 3;
   model.vertices = malloc(sizeof(NUS_vertex) * model.vertex_count);
   model.vertices[0] = (NUS_vertex){{-0.2f, 0.2f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}};
@@ -120,7 +143,62 @@ int main(int argc, char *argv[])
   model.indices[0] = 0;
   model.indices[1] = 1;
   model.indices[2] = 2;
-  
+  */
+  model.vertex_count = 8;
+  model.vertices = malloc(sizeof(NUS_vertex) * model.vertex_count);
+  model.vertices[0] = (NUS_vertex){{-0.3, 0.3, 0.3, 1.0, 1.0, 1.0, 0.0, 0.0}};
+  model.vertices[1] = (NUS_vertex){{0.3, 0.3, 0.3, 0.0, 0.0, 0.0, 0.0, 0.0}};
+  model.vertices[2] = (NUS_vertex){{-0.3, -0.3, 0.3, 0.0, 0.0, 1.0, 0.0, 0.0}};
+  model.vertices[3] = (NUS_vertex){{0.3, -0.3, 0.3, 1.0, 0.0, 1.0, 0.0, 0.0}};
+  model.vertices[4] = (NUS_vertex){{-0.3, 0.3, -0.3, 1.0, 1.0, 0.0, 0.0, 0.0}};
+  model.vertices[5] = (NUS_vertex){{0.3, 0.3, -0.3, 0.0, 1.0, 0.0, 0.0, 0.0}};
+  model.vertices[6] = (NUS_vertex){{-0.3, -0.3, -0.3, 0.0, 0.0, 0.0, 0.0, 0.0}};
+  model.vertices[7] = (NUS_vertex){{0.3, -0.3, -0.3, 1.0, 0.0, 0.0, 0.0, 0.0}};
+
+  model.index_count = 36;
+  model.indices = malloc(sizeof(*model.indices) * model.index_count);
+  //ff
+  model.indices[0] = 2;
+  model.indices[1] = 0;
+  model.indices[2] = 1;
+  model.indices[3] = 1;
+  model.indices[4] = 3;
+  model.indices[5] = 2;
+  //fl
+  model.indices[6] = 0;
+  model.indices[7] = 2;
+  model.indices[8] = 6;
+  model.indices[9] = 6;
+  model.indices[10] = 4;
+  model.indices[11] = 0;
+  //fr
+  model.indices[12] = 3;
+  model.indices[13] = 1;
+  model.indices[14] = 5;
+  model.indices[15] = 5;
+  model.indices[16] = 7;
+  model.indices[17] = 3;
+  //ft
+  model.indices[18] = 2;
+  model.indices[19] = 3;
+  model.indices[20] = 7;
+  model.indices[21] = 7;
+  model.indices[22] = 6;
+  model.indices[23] = 2;
+  //fbo
+  model.indices[24] = 0;
+  model.indices[25] = 4;
+  model.indices[26] = 5;
+  model.indices[27] = 5;
+  model.indices[28] = 1;
+  model.indices[29] = 0;
+  //fba
+  model.indices[30] = 4;
+  model.indices[31] = 6;
+  model.indices[32] = 7;
+  model.indices[33] = 7;
+  model.indices[34] = 5;
+  model.indices[35] = 4;
   
   nus_model_buffer(info, &model);
   
@@ -686,8 +764,11 @@ int main(int argc, char *argv[])
     y += dy;
     x += dx;
     
-    //axes = nus_axes_global_yaw(axes, 1.0 * 3.14159 / 180.0);
-    translation = nus_vector_build(x, y, 0.0);
+    axes = nus_axes_global_pitch(axes, dpitch);
+    axes = nus_axes_global_yaw(axes, dyaw);
+    translation = nus_vector_build(x, y, 0.4);
+    // TODO depth range is (1, 0)
+    // is this wanted? or should it be (1, -1)?
     tmp = nus_matrix_transformation(translation, axes);
     tmp = nus_matrix_transpose(tmp);
     
@@ -789,4 +870,20 @@ void move_down(void)
 void move_right(void)
 {
   dx += move_speed;
+}
+void pitch_up(void)
+{
+  dpitch -= rotate_speed;
+}
+void pitch_down(void)
+{
+  dpitch += rotate_speed;
+}
+void yaw_left(void)
+{
+  dyaw += rotate_speed;
+}
+void yaw_right(void)
+{
+  dyaw -= rotate_speed;
 }

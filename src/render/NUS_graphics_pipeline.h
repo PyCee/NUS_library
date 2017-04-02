@@ -2,9 +2,9 @@
 #define NUS_GRAPHICS_PIPELINE_H
 
 #include "../NUS_vulkan.h"
+#include "NUS_shader.h"
 
-typedef struct NUS_graphics_pipeline{
-  VkPipeline pipeline;
-} NUS_graphics_pipeline;
+struct NUS_gpu;
+
 
 #endif /* NUS_GRAPHICS_PIPELINE_H */

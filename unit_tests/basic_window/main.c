@@ -38,32 +38,32 @@ int main(int argc, char *argv[])
     return -1;
   }
   
-  nus_event_handler_function_append(eve, NUS_EVENT_CLOSE_WINDOW, 0, close_win);
-  nus_event_handler_function_append(eve, NUS_EVENT_MOUSE_MOTION,
+  nus_event_handler_append(eve, NUS_EVENT_CLOSE_WINDOW, 0, close_win);
+  nus_event_handler_append(eve, NUS_EVENT_MOUSE_MOTION,
 				    0, print_mouse_motion);
-  nus_event_handler_function_append(eve, NUS_EVENT_MOUSE_SCROLL,
+  nus_event_handler_append(eve, NUS_EVENT_MOUSE_SCROLL,
 				    NUS_SCROLL_UP,
 				    print_scroll_up);
-  nus_event_handler_function_append(eve, NUS_EVENT_MOUSE_SCROLL,
+  nus_event_handler_append(eve, NUS_EVENT_MOUSE_SCROLL,
 				    NUS_SCROLL_DOWN,
 				    print_scroll_down);
-  nus_event_handler_function_append(eve, NUS_EVENT_MOUSE_SCROLL,
+  nus_event_handler_append(eve, NUS_EVENT_MOUSE_SCROLL,
 				    NUS_SCROLL_LEFT,
 				    print_scroll_left);
-  nus_event_handler_function_append(eve, NUS_EVENT_MOUSE_SCROLL,
+  nus_event_handler_append(eve, NUS_EVENT_MOUSE_SCROLL,
 				    NUS_SCROLL_RIGHT,
 				    print_scroll_right);
   
-  nus_event_handler_function_append(eve, NUS_EVENT_MOUSE_BUTTON_PRESS,
+  nus_event_handler_append(eve, NUS_EVENT_MOUSE_BUTTON_PRESS,
 				    NUS_MOUSE_BUTTON_LEFT, print_left_mb);
-  nus_event_handler_function_append(eve, NUS_EVENT_MOUSE_BUTTON_PRESS,
+  nus_event_handler_append(eve, NUS_EVENT_MOUSE_BUTTON_PRESS,
 				    NUS_MOUSE_BUTTON_RIGHT, print_right_mb);
   
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_ESC, close_win);
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_W, print_w);
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_A, print_a);
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_S, print_s);
-  nus_event_handler_function_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_D, print_d);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_ESC, close_win);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_W, print_w);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_A, print_a);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_S, print_s);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_D, print_d);
   
   nus_event_handler_set(&eve);
 
