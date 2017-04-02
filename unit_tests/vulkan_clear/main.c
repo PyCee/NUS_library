@@ -41,26 +41,29 @@ int main(int argc, char *argv[])
   nus_event_handler_set(&eve);
   
   NUS_vulkan_instance vulkan_instance;
-  NUS_string_group extensions;
-  nus_string_group_build(&extensions, 
-			 VK_KHR_SURFACE_EXTENSION_NAME,
-#if defined(NUS_OS_WINDOWS)
-			 VK_KHR_WIN32_SURFACE_EXTENSION_NAME
-#elif defined(NUS_OS_UNIX)
-			 VK_KHR_XCB_SURFACE_EXTENSION_NAME
-#endif
-			 );
-  NUS_string_group layers;
-  nus_string_group_init(&layers);
   
-  if(nus_vulkan_instance_build(&vulkan_instance, extensions, layers) !=
+  NUS_string_group instance_extensions;
+  nus_string_group_build(&instance_extensions);
+  nus_string_group_append(&instance_extensions, 
+			  VK_KHR_SURFACE_EXTENSION_NAME);
+#if defined(NUS_OS_WINDOWS)
+  nus_string_group_append(&instance_extensions, 
+			  VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+#elif defined(NUS_OS_UNIX)
+  nus_string_group_append(&instance_extensions,
+			  VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+#endif
+  NUS_string_group instance_layers;
+  nus_string_group_build(&instance_layers);
+  
+  if(nus_vulkan_instance_build(&vulkan_instance, instance_extensions, instance_layers) !=
      NUS_SUCCESS){
     printf("ERROR::failed to create vulkan instance info\n");
     return -1;
   }
 
-  nus_string_group_free(&extensions);
-  nus_string_group_free(&layers);
+  nus_string_group_free(&instance_extensions);
+  nus_string_group_free(&instance_layers);
   
   NUS_multi_gpu multi_gpu;
   if(nus_multi_gpu_build(vulkan_instance, &multi_gpu) != NUS_SUCCESS){
@@ -82,8 +85,6 @@ int main(int argc, char *argv[])
   float b = 0.0;
   while(run){
     nus_system_events_handle(win);
-    
-    printf("delta s: %f\n", nus_clock_update(&timekeeper));
     
     t = nus_clock_elapsed(timekeeper);
     while(t > 2) t -= 2;

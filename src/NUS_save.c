@@ -4,7 +4,7 @@
 
 NUS_result nus_save_build(NUS_absolute_path absolute_path, NUS_save *p_save)
 {
-  nus_string_group_init(&p_save->contents);
+  nus_string_group_build(&p_save->contents);
   FILE *file;
   if((file = fopen(absolute_path.path, "r")) == NULL){
     printf("ERROR::failed to open save file \"%s\" to read\n", absolute_path.path);

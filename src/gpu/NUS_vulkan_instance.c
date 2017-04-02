@@ -72,8 +72,8 @@ static NUS_result nus_vulkan_instance_build_instance
 #if defined(NUS_DEBUG)
   NUS_string_group tmp_extensions,
     tmp_layers;
-  nus_string_group_init(&tmp_extensions);
-  nus_string_group_init(&tmp_layers);
+  nus_string_group_build(&tmp_extensions);
+  nus_string_group_build(&tmp_layers);
   nus_string_group_copy(&tmp_extensions, extensions);
   nus_string_group_copy(&tmp_layers, layers);
   nus_string_group_append(&tmp_extensions, "VK_EXT_debug_report");

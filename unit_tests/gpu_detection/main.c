@@ -32,16 +32,18 @@ int main(int argc, char *argv[])
   nus_load_global_vulkan_library();
   
   NUS_string_group instance_extensions;
-  nus_string_group_build(&instance_extensions, 
-			 VK_KHR_SURFACE_EXTENSION_NAME,
+  nus_string_group_build(&instance_extensions);
+  nus_string_group_append(&instance_extensions, 
+			  VK_KHR_SURFACE_EXTENSION_NAME);
 #if defined(NUS_OS_WINDOWS)
-			 VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+  nus_string_group_append(&instance_extensions, 
+			  VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #elif defined(NUS_OS_UNIX)
-			 VK_KHR_XCB_SURFACE_EXTENSION_NAME
+  nus_string_group_append(&instance_extensions,
+			  VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
-			 );
   NUS_string_group instance_layers;
-  nus_string_group_init(&instance_layers);
+  nus_string_group_build(&instance_layers);
   
   NUS_vulkan_instance vulkan_instance;
   if(nus_vulkan_instance_build(&vulkan_instance, instance_extensions,
