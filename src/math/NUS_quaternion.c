@@ -7,112 +7,112 @@ NUS_quaternion nus_quaternion_build(double w, double x, double y, double z)
 {
   return (NUS_quaternion){w, x, y, z};
 }
-NUS_quaternion nus_quaternion_pure(NUS_vector NUS_vector_)
+NUS_quaternion nus_quaternion_pure(NUS_vector vector)
 {
-  return nus_quaternion_build(0.0, NUS_vector_.x, NUS_vector_.y, NUS_vector_.z);
+  return nus_quaternion_build(0.0, vector.x, vector.y, vector.z);
 }
-NUS_quaternion nus_quaternion_unit(NUS_vector NUS_vector_, double radians)
+NUS_quaternion nus_quaternion_unit(NUS_vector vector, double radians)
 {
   
   double half_radians = radians / 2.0,
     sin_half_radians = sin(half_radians);
-  return nus_quaternion_build(cos(half_radians), sin_half_radians * NUS_vector_.x,
-			      sin_half_radians * NUS_vector_.y,
-			      sin_half_radians * NUS_vector_.z);
+  return nus_quaternion_build(cos(half_radians), sin_half_radians * vector.x,
+			      sin_half_radians * vector.y,
+			      sin_half_radians * vector.z);
 }
-void nus_quaternion_print(NUS_quaternion NUS_quaternion_)
+NUS_quaternion nus_quaternion_conjugate(NUS_quaternion quaternion)
 {
-  printf("NUS_quaternion:\n{%f, %f, %f, %f}\n", NUS_quaternion_.w, NUS_quaternion_.x,
-	 NUS_quaternion_.y, NUS_quaternion_.z);
-}
-NUS_quaternion nus_quaternion_conjugate(NUS_quaternion NUS_quaternion_)
-{
-  return nus_quaternion_build(NUS_quaternion_.w, NUS_quaternion_.x * -1.0,
-			      NUS_quaternion_.y * -1.0, NUS_quaternion_.z * -1.0);
+  return nus_quaternion_build(quaternion.w, quaternion.x * -1.0,
+			      quaternion.y * -1.0, quaternion.z * -1.0);
 }
 NUS_quaternion nus_quaternion_h_product
-(NUS_quaternion NUS_quaternion_1,  NUS_quaternion NUS_quaternion_2)
+(NUS_quaternion quaternion_0,  NUS_quaternion quaternion_1)
 {
   return nus_quaternion_build(
 			      /* h product w component */
-			      NUS_quaternion_1.w * NUS_quaternion_2.w -
-			      NUS_quaternion_1.x * NUS_quaternion_2.x -
-			      NUS_quaternion_1.y * NUS_quaternion_2.y -
-			      NUS_quaternion_1.z * NUS_quaternion_2.z,
+			      quaternion_0.w * quaternion_1.w -
+			      quaternion_0.x * quaternion_1.x -
+			      quaternion_0.y * quaternion_1.y -
+			      quaternion_0.z * quaternion_1.z,
 			      /* h product x component */
-			      NUS_quaternion_1.w * NUS_quaternion_2.x +
-			      NUS_quaternion_1.x * NUS_quaternion_2.w +
-			      NUS_quaternion_1.y * NUS_quaternion_2.z -
-			      NUS_quaternion_1.z * NUS_quaternion_2.y,
+			      quaternion_0.w * quaternion_1.x +
+			      quaternion_0.x * quaternion_1.w +
+			      quaternion_0.y * quaternion_1.z -
+			      quaternion_0.z * quaternion_1.y,
 			      /* h product y component */
-			      NUS_quaternion_1.w * NUS_quaternion_2.y -
-			      NUS_quaternion_1.x * NUS_quaternion_2.z +
-			      NUS_quaternion_1.y * NUS_quaternion_2.w +
-			      NUS_quaternion_1.z * NUS_quaternion_2.x,
+			      quaternion_0.w * quaternion_1.y -
+			      quaternion_0.x * quaternion_1.z +
+			      quaternion_0.y * quaternion_1.w +
+			      quaternion_0.z * quaternion_1.x,
 			      /* h product z component */
-			      NUS_quaternion_1.w * NUS_quaternion_2.z +
-			      NUS_quaternion_1.x * NUS_quaternion_2.y -
-			      NUS_quaternion_1.y * NUS_quaternion_2.x +
-			      NUS_quaternion_1.z * NUS_quaternion_2.w);
+			      quaternion_0.w * quaternion_1.z +
+			      quaternion_0.x * quaternion_1.y -
+			      quaternion_0.y * quaternion_1.x +
+			      quaternion_0.z * quaternion_1.w);
 }
 
 NUS_vector nus_quaternion_apply_rotation
-(NUS_quaternion NUS_quaternion_, NUS_vector NUS_vector_)
+(NUS_quaternion quaternion, NUS_vector vector)
 {
-  NUS_quaternion rotate = nus_quaternion_pure(NUS_vector_),
-    conjugate = nus_quaternion_conjugate(NUS_quaternion_),
-    result = nus_quaternion_h_product(nus_quaternion_h_product(NUS_quaternion_,
+  NUS_quaternion rotate = nus_quaternion_pure(vector),
+    conjugate = nus_quaternion_conjugate(quaternion),
+    result = nus_quaternion_h_product(nus_quaternion_h_product(quaternion,
 							       rotate),
 				      conjugate);
   return nus_vector_build(result.x, result.y, result.z);
 }
 NUS_quaternion nus_quaternion_lerp
-(NUS_quaternion NUS_quaternion_1, NUS_quaternion NUS_quaternion_2, double t)
+(NUS_quaternion quaternion_0, NUS_quaternion quaternion_1, double t)
 {
   t = (t > 1) ? 1 : t;
   t = (t < 0) ? 0 : t;
   double b = 1.0 - t;
-  return nus_quaternion_normalize(nus_quaternion_build(NUS_quaternion_1.w * b +
-					       NUS_quaternion_2.w * t,
-					       NUS_quaternion_1.x * b +
-					       NUS_quaternion_2.x * t,
-					       NUS_quaternion_1.y * b +
-					       NUS_quaternion_2.y * t,
-					       NUS_quaternion_1.z * b +
-					       NUS_quaternion_2.z* t));
+  return nus_quaternion_normalize(nus_quaternion_build(quaternion_0.w * b +
+					       quaternion_1.w * t,
+					       quaternion_0.x * b +
+					       quaternion_1.x * t,
+					       quaternion_0.y * b +
+					       quaternion_1.y * t,
+					       quaternion_0.z * b +
+					       quaternion_1.z* t));
 }
 NUS_quaternion nus_quaternion_slerp
-(NUS_quaternion NUS_quaternion_1, NUS_quaternion NUS_quaternion_2, double t)
+(NUS_quaternion quaternion_0, NUS_quaternion quaternion_1, double t)
 {
   double wp, wq, angle, sin_angle;
   t = (t > 1) ? 1 : t;
   t = (t < 0) ? 0 : t;
   
-  angle = acos(NUS_quaternion_1.w * NUS_quaternion_2.w +
-	       NUS_quaternion_1.x * NUS_quaternion_2.x +
-	       NUS_quaternion_1.y * NUS_quaternion_2.y +
-	       NUS_quaternion_1.z * NUS_quaternion_2.z);
+  angle = acos(quaternion_0.w * quaternion_1.w +
+	       quaternion_0.x * quaternion_1.x +
+	       quaternion_0.y * quaternion_1.y +
+	       quaternion_0.z * quaternion_1.z);
   sin_angle = sin(angle);
   wp = sin((1 - t) * angle) / sin_angle;
   wq = sin(t * angle) / sin_angle;
-  return nus_quaternion_normalize(nus_quaternion_build(NUS_quaternion_1.w * wp +
-						       NUS_quaternion_2.w * wq,
-						       NUS_quaternion_1.x * wp +
-						       NUS_quaternion_2.x * wq,
-						       NUS_quaternion_1.y * wp +
-						       NUS_quaternion_2.y * wq,
-						       NUS_quaternion_1.z * wp +
-						       NUS_quaternion_2.z* wq));
+  return nus_quaternion_normalize(nus_quaternion_build(quaternion_0.w * wp +
+						       quaternion_1.w * wq,
+						       quaternion_0.x * wp +
+						       quaternion_1.x * wq,
+						       quaternion_0.y * wp +
+						       quaternion_1.y * wq,
+						       quaternion_0.z * wp +
+						       quaternion_1.z* wq));
 }
-NUS_quaternion nus_quaternion_normalize(NUS_quaternion NUS_quaternion_)
+NUS_quaternion nus_quaternion_normalize(NUS_quaternion quaternion)
 {
-  double mag_sq = NUS_quaternion_.w * NUS_quaternion_.w +
-    NUS_quaternion_.x * NUS_quaternion_.x + NUS_quaternion_.y * NUS_quaternion_.y +
-    NUS_quaternion_.z * NUS_quaternion_.z;
+  double mag_sq = quaternion.w * quaternion.w +
+    quaternion.x * quaternion.x + quaternion.y * quaternion.y +
+    quaternion.z * quaternion.z;
   if(0.00000001 >= mag_sq){
-    return NUS_quaternion_;
+    return quaternion;
   }
   double inv_mag = 1.0 / sqrt(mag_sq);
-  return nus_quaternion_build(NUS_quaternion_.w * inv_mag, NUS_quaternion_.x * inv_mag,
-			      NUS_quaternion_.y * inv_mag, NUS_quaternion_.z * inv_mag);
+  return nus_quaternion_build(quaternion.w * inv_mag, quaternion.x * inv_mag,
+			      quaternion.y * inv_mag, quaternion.z * inv_mag);
+}
+void nus_quaternion_print(NUS_quaternion quaternion)
+{
+  printf("NUS_quaternion:\n{%f, %f, %f, %f}\n", quaternion.w, quaternion.x,
+	 quaternion.y, quaternion.z);
 }

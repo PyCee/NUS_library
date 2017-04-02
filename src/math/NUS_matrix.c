@@ -26,30 +26,30 @@ NUS_matrix nus_matrix_zero(void)
 			  0.0, 0.0, 0.0, 0.0,
 			  0.0, 0.0, 0.0, 0.0);
 }
-NUS_matrix nus_matrix_transpose(const NUS_matrix NUS_matrix_)
+NUS_matrix nus_matrix_transpose(const NUS_matrix matrix)
 {
-  return nus_matrix_build(NUS_matrix_.ele[0][0], NUS_matrix_.ele[1][0],
-			  NUS_matrix_.ele[2][0], NUS_matrix_.ele[3][0],
-			  NUS_matrix_.ele[0][1], NUS_matrix_.ele[1][1],
-			  NUS_matrix_.ele[2][1], NUS_matrix_.ele[3][1],
-			  NUS_matrix_.ele[0][2], NUS_matrix_.ele[1][2],
-			  NUS_matrix_.ele[2][2], NUS_matrix_.ele[3][2],
-			  NUS_matrix_.ele[0][3], NUS_matrix_.ele[1][3],
-			  NUS_matrix_.ele[2][3], NUS_matrix_.ele[3][3]);
+  return nus_matrix_build(matrix.ele[0][0], matrix.ele[1][0],
+			  matrix.ele[2][0], matrix.ele[3][0],
+			  matrix.ele[0][1], matrix.ele[1][1],
+			  matrix.ele[2][1], matrix.ele[3][1],
+			  matrix.ele[0][2], matrix.ele[1][2],
+			  matrix.ele[2][2], matrix.ele[3][2],
+			  matrix.ele[0][3], matrix.ele[1][3],
+			  matrix.ele[2][3], matrix.ele[3][3]);
 }
-NUS_matrix nus_matrix_scale(const NUS_matrix NUS_matrix_, const float s)
+NUS_matrix nus_matrix_scale(const NUS_matrix matrix, const float s)
 {
-  return nus_matrix_build(NUS_matrix_.ele[0][0] * s, NUS_matrix_.ele[0][1] * s,
-			  NUS_matrix_.ele[0][2] * s, NUS_matrix_.ele[0][3] * s,
-			  NUS_matrix_.ele[1][0] * s, NUS_matrix_.ele[1][1] * s,
-			  NUS_matrix_.ele[1][2] * s, NUS_matrix_.ele[1][3] * s,
-			  NUS_matrix_.ele[2][0] * s, NUS_matrix_.ele[2][1] * s,
-			  NUS_matrix_.ele[2][2] * s, NUS_matrix_.ele[2][3] * s,
-			  NUS_matrix_.ele[3][0] * s, NUS_matrix_.ele[3][1] * s,
-			  NUS_matrix_.ele[3][2] * s, NUS_matrix_.ele[3][3] * s);
+  return nus_matrix_build(matrix.ele[0][0] * s, matrix.ele[0][1] * s,
+			  matrix.ele[0][2] * s, matrix.ele[0][3] * s,
+			  matrix.ele[1][0] * s, matrix.ele[1][1] * s,
+			  matrix.ele[1][2] * s, matrix.ele[1][3] * s,
+			  matrix.ele[2][0] * s, matrix.ele[2][1] * s,
+			  matrix.ele[2][2] * s, matrix.ele[2][3] * s,
+			  matrix.ele[3][0] * s, matrix.ele[3][1] * s,
+			  matrix.ele[3][2] * s, matrix.ele[3][3] * s);
 }
 NUS_matrix nus_matrix_multiply
-(const NUS_matrix NUS_matrix_1, const NUS_matrix NUS_matrix_2)
+(const NUS_matrix matrix_0, const NUS_matrix matrix_1)
 {
   /* matrix multiplication-loop form */
   /*
@@ -58,93 +58,93 @@ NUS_matrix nus_matrix_multiply
   for(i = 0; i < 4; ++i){
     for(j = 0; j < 4; ++j){
       for(k = 0; k < 4; ++k){
-	NUS_matrix_.ele[i][j] += NUS_matrix_1.ele[i][k] * NUS_matrix_2.ele[k][j];
+	matrix.ele[i][j] += matrix_0.ele[i][k] * matrix_1.ele[k][j];
       }
     }
   }
-  return NUS_matrix_;
+  return matrix;
   */
   /* matrix multiplication-unrolled*/
   return nus_matrix_build(/* First row, first element */
-			  NUS_matrix_1.ele[0][0] * NUS_matrix_2.ele[0][0] + 
-			  NUS_matrix_1.ele[0][1] * NUS_matrix_2.ele[1][0] + 
-			  NUS_matrix_1.ele[0][2] * NUS_matrix_2.ele[2][0] + 
-			  NUS_matrix_1.ele[0][3] * NUS_matrix_2.ele[3][0],
+			  matrix_0.ele[0][0] * matrix_1.ele[0][0] + 
+			  matrix_0.ele[0][1] * matrix_1.ele[1][0] + 
+			  matrix_0.ele[0][2] * matrix_1.ele[2][0] + 
+			  matrix_0.ele[0][3] * matrix_1.ele[3][0],
 			  /* First row, second element */
-			  NUS_matrix_1.ele[0][0] * NUS_matrix_2.ele[0][1] + 
-			  NUS_matrix_1.ele[0][1] * NUS_matrix_2.ele[1][1] + 
-			  NUS_matrix_1.ele[0][2] * NUS_matrix_2.ele[2][1] + 
-			  NUS_matrix_1.ele[0][3] * NUS_matrix_2.ele[3][1],
+			  matrix_0.ele[0][0] * matrix_1.ele[0][1] + 
+			  matrix_0.ele[0][1] * matrix_1.ele[1][1] + 
+			  matrix_0.ele[0][2] * matrix_1.ele[2][1] + 
+			  matrix_0.ele[0][3] * matrix_1.ele[3][1],
 			  /* First row, third element */
-			  NUS_matrix_1.ele[0][0] * NUS_matrix_2.ele[0][2] + 
-			  NUS_matrix_1.ele[0][1] * NUS_matrix_2.ele[1][2] + 
-			  NUS_matrix_1.ele[0][2] * NUS_matrix_2.ele[2][2] + 
-			  NUS_matrix_1.ele[0][3] * NUS_matrix_2.ele[3][2],
+			  matrix_0.ele[0][0] * matrix_1.ele[0][2] + 
+			  matrix_0.ele[0][1] * matrix_1.ele[1][2] + 
+			  matrix_0.ele[0][2] * matrix_1.ele[2][2] + 
+			  matrix_0.ele[0][3] * matrix_1.ele[3][2],
 			  /* First row, fourth element */
-			  NUS_matrix_1.ele[0][0] * NUS_matrix_2.ele[0][3] + 
-			  NUS_matrix_1.ele[0][1] * NUS_matrix_2.ele[1][3] + 
-			  NUS_matrix_1.ele[0][2] * NUS_matrix_2.ele[2][3] + 
-			  NUS_matrix_1.ele[0][3] * NUS_matrix_2.ele[3][3],
+			  matrix_0.ele[0][0] * matrix_1.ele[0][3] + 
+			  matrix_0.ele[0][1] * matrix_1.ele[1][3] + 
+			  matrix_0.ele[0][2] * matrix_1.ele[2][3] + 
+			  matrix_0.ele[0][3] * matrix_1.ele[3][3],
 			  /* Second row, first element */
-			  NUS_matrix_1.ele[1][0] * NUS_matrix_2.ele[0][0] + 
-			  NUS_matrix_1.ele[1][1] * NUS_matrix_2.ele[1][0] + 
-			  NUS_matrix_1.ele[1][2] * NUS_matrix_2.ele[2][0] + 
-			  NUS_matrix_1.ele[1][3] * NUS_matrix_2.ele[3][0],
+			  matrix_0.ele[1][0] * matrix_1.ele[0][0] + 
+			  matrix_0.ele[1][1] * matrix_1.ele[1][0] + 
+			  matrix_0.ele[1][2] * matrix_1.ele[2][0] + 
+			  matrix_0.ele[1][3] * matrix_1.ele[3][0],
 			  /* Second row, second element */
-			  NUS_matrix_1.ele[1][0] * NUS_matrix_2.ele[0][1] + 
-			  NUS_matrix_1.ele[1][1] * NUS_matrix_2.ele[1][1] + 
-			  NUS_matrix_1.ele[1][2] * NUS_matrix_2.ele[2][1] + 
-			  NUS_matrix_1.ele[1][3] * NUS_matrix_2.ele[3][1],
+			  matrix_0.ele[1][0] * matrix_1.ele[0][1] + 
+			  matrix_0.ele[1][1] * matrix_1.ele[1][1] + 
+			  matrix_0.ele[1][2] * matrix_1.ele[2][1] + 
+			  matrix_0.ele[1][3] * matrix_1.ele[3][1],
 			  /* Second row, third element */
-			  NUS_matrix_1.ele[1][0] * NUS_matrix_2.ele[0][2] + 
-			  NUS_matrix_1.ele[1][1] * NUS_matrix_2.ele[1][2] + 
-			  NUS_matrix_1.ele[1][2] * NUS_matrix_2.ele[2][2] + 
-			  NUS_matrix_1.ele[1][3] * NUS_matrix_2.ele[3][2],
+			  matrix_0.ele[1][0] * matrix_1.ele[0][2] + 
+			  matrix_0.ele[1][1] * matrix_1.ele[1][2] + 
+			  matrix_0.ele[1][2] * matrix_1.ele[2][2] + 
+			  matrix_0.ele[1][3] * matrix_1.ele[3][2],
 			  /* Second row, fourth element */
-			  NUS_matrix_1.ele[1][0] * NUS_matrix_2.ele[0][3] + 
-			  NUS_matrix_1.ele[1][1] * NUS_matrix_2.ele[1][3] + 
-			  NUS_matrix_1.ele[1][2] * NUS_matrix_2.ele[2][3] + 
-			  NUS_matrix_1.ele[1][3] * NUS_matrix_2.ele[3][3],
+			  matrix_0.ele[1][0] * matrix_1.ele[0][3] + 
+			  matrix_0.ele[1][1] * matrix_1.ele[1][3] + 
+			  matrix_0.ele[1][2] * matrix_1.ele[2][3] + 
+			  matrix_0.ele[1][3] * matrix_1.ele[3][3],
 			  /* Third row, first element */
-			  NUS_matrix_1.ele[2][0] * NUS_matrix_2.ele[0][0] + 
-			  NUS_matrix_1.ele[2][1] * NUS_matrix_2.ele[1][0] + 
-			  NUS_matrix_1.ele[2][2] * NUS_matrix_2.ele[2][0] + 
-			  NUS_matrix_1.ele[2][3] * NUS_matrix_2.ele[3][0],
+			  matrix_0.ele[2][0] * matrix_1.ele[0][0] + 
+			  matrix_0.ele[2][1] * matrix_1.ele[1][0] + 
+			  matrix_0.ele[2][2] * matrix_1.ele[2][0] + 
+			  matrix_0.ele[2][3] * matrix_1.ele[3][0],
 			  /* Third row, second element */
-			  NUS_matrix_1.ele[2][0] * NUS_matrix_2.ele[0][1] + 
-			  NUS_matrix_1.ele[2][1] * NUS_matrix_2.ele[1][1] + 
-			  NUS_matrix_1.ele[2][2] * NUS_matrix_2.ele[2][1] + 
-			  NUS_matrix_1.ele[2][3] * NUS_matrix_2.ele[3][1],
+			  matrix_0.ele[2][0] * matrix_1.ele[0][1] + 
+			  matrix_0.ele[2][1] * matrix_1.ele[1][1] + 
+			  matrix_0.ele[2][2] * matrix_1.ele[2][1] + 
+			  matrix_0.ele[2][3] * matrix_1.ele[3][1],
 			  /* Third row, third element */
-			  NUS_matrix_1.ele[2][0] * NUS_matrix_2.ele[0][2] + 
-			  NUS_matrix_1.ele[2][1] * NUS_matrix_2.ele[1][2] + 
-			  NUS_matrix_1.ele[2][2] * NUS_matrix_2.ele[2][2] + 
-			  NUS_matrix_1.ele[2][3] * NUS_matrix_2.ele[3][2],
+			  matrix_0.ele[2][0] * matrix_1.ele[0][2] + 
+			  matrix_0.ele[2][1] * matrix_1.ele[1][2] + 
+			  matrix_0.ele[2][2] * matrix_1.ele[2][2] + 
+			  matrix_0.ele[2][3] * matrix_1.ele[3][2],
 			  /* Third row, fourth element */
-			  NUS_matrix_1.ele[2][0] * NUS_matrix_2.ele[0][3] + 
-			  NUS_matrix_1.ele[2][1] * NUS_matrix_2.ele[1][3] + 
-			  NUS_matrix_1.ele[2][2] * NUS_matrix_2.ele[2][3] + 
-			  NUS_matrix_1.ele[2][3] * NUS_matrix_2.ele[3][3],
+			  matrix_0.ele[2][0] * matrix_1.ele[0][3] + 
+			  matrix_0.ele[2][1] * matrix_1.ele[1][3] + 
+			  matrix_0.ele[2][2] * matrix_1.ele[2][3] + 
+			  matrix_0.ele[2][3] * matrix_1.ele[3][3],
 			  /* Fourth row, first element */
-			  NUS_matrix_1.ele[3][0] * NUS_matrix_2.ele[0][0] + 
-			  NUS_matrix_1.ele[3][1] * NUS_matrix_2.ele[1][0] + 
-			  NUS_matrix_1.ele[3][2] * NUS_matrix_2.ele[2][0] + 
-			  NUS_matrix_1.ele[3][3] * NUS_matrix_2.ele[3][0],
+			  matrix_0.ele[3][0] * matrix_1.ele[0][0] + 
+			  matrix_0.ele[3][1] * matrix_1.ele[1][0] + 
+			  matrix_0.ele[3][2] * matrix_1.ele[2][0] + 
+			  matrix_0.ele[3][3] * matrix_1.ele[3][0],
 			  /* Fourth row, second element */
-			  NUS_matrix_1.ele[3][0] * NUS_matrix_2.ele[0][1] + 
-			  NUS_matrix_1.ele[3][1] * NUS_matrix_2.ele[1][1] + 
-			  NUS_matrix_1.ele[3][2] * NUS_matrix_2.ele[2][1] + 
-			  NUS_matrix_1.ele[3][3] * NUS_matrix_2.ele[3][1],
+			  matrix_0.ele[3][0] * matrix_1.ele[0][1] + 
+			  matrix_0.ele[3][1] * matrix_1.ele[1][1] + 
+			  matrix_0.ele[3][2] * matrix_1.ele[2][1] + 
+			  matrix_0.ele[3][3] * matrix_1.ele[3][1],
 			  /* Fourth row, third element */
-			  NUS_matrix_1.ele[3][0] * NUS_matrix_2.ele[0][2] + 
-			  NUS_matrix_1.ele[3][1] * NUS_matrix_2.ele[1][2] + 
-			  NUS_matrix_1.ele[3][2] * NUS_matrix_2.ele[2][2] + 
-			  NUS_matrix_1.ele[3][3] * NUS_matrix_2.ele[3][2],
+			  matrix_0.ele[3][0] * matrix_1.ele[0][2] + 
+			  matrix_0.ele[3][1] * matrix_1.ele[1][2] + 
+			  matrix_0.ele[3][2] * matrix_1.ele[2][2] + 
+			  matrix_0.ele[3][3] * matrix_1.ele[3][2],
 			  /* Fourth row, fourth element */
-			  NUS_matrix_1.ele[3][0] * NUS_matrix_2.ele[0][3] + 
-			  NUS_matrix_1.ele[3][1] * NUS_matrix_2.ele[1][3] + 
-			  NUS_matrix_1.ele[3][2] * NUS_matrix_2.ele[2][3] + 
-			  NUS_matrix_1.ele[3][3] * NUS_matrix_2.ele[3][3]);
+			  matrix_0.ele[3][0] * matrix_1.ele[0][3] + 
+			  matrix_0.ele[3][1] * matrix_1.ele[1][3] + 
+			  matrix_0.ele[3][2] * matrix_1.ele[2][3] + 
+			  matrix_0.ele[3][3] * matrix_1.ele[3][3]);
 }
 NUS_matrix nus_matrix_translation(const struct NUS_vector NUS_vector_)
 {
@@ -176,40 +176,42 @@ NUS_matrix nus_matrix_rotation(NUS_axes NUS_axes_)
 }
 
 NUS_matrix nus_matrix_transformation
-(NUS_vector NUS_vector_, NUS_axes NUS_axes_)
+(NUS_vector vector, NUS_axes axes)
 {
   NUS_matrix scale = nus_matrix_scale(nus_matrix_identity(), 1.0),
-    rotation = nus_matrix_rotation(NUS_axes_),
-    translation = nus_matrix_translation(NUS_vector_);
+    rotation = nus_matrix_rotation(axes),
+    translation = nus_matrix_translation(vector);
   return nus_matrix_multiply(nus_matrix_multiply(translation, rotation), scale);
 }
-NUS_vector nus_matrix_transform(NUS_matrix NUS_matrix_, NUS_vector NUS_vector_)
+NUS_vector nus_matrix_transform(NUS_matrix matrix, NUS_vector vector)
 {
   return nus_vector_build(/* x component */
-			  NUS_matrix_.ele[0][0] * NUS_vector_.x +
-			  NUS_matrix_.ele[0][1] * NUS_vector_.y +
-			  NUS_matrix_.ele[0][2] * NUS_vector_.z +
-			  NUS_matrix_.ele[0][3] * 1.0,
+			  matrix.ele[0][0] * vector.x +
+			  matrix.ele[0][1] * vector.y +
+			  matrix.ele[0][2] * vector.z +
+			  matrix.ele[0][3] * 1.0,
 			  /* y component */
-			  NUS_matrix_.ele[1][0] * NUS_vector_.x +
-			  NUS_matrix_.ele[1][1] * NUS_vector_.y +
-			  NUS_matrix_.ele[1][2] * NUS_vector_.z +
-			  NUS_matrix_.ele[1][3] * 1.0,
+			  matrix.ele[1][0] * vector.x +
+			  matrix.ele[1][1] * vector.y +
+			  matrix.ele[1][2] * vector.z +
+			  matrix.ele[1][3] * 1.0,
 			  /* z component */
-			  NUS_matrix_.ele[2][0] * NUS_vector_.x +
-			  NUS_matrix_.ele[2][1] * NUS_vector_.y +
-			  NUS_matrix_.ele[2][2] * NUS_vector_.z +
-			  NUS_matrix_.ele[2][3] * 1.0);
+			  matrix.ele[2][0] * vector.x +
+			  matrix.ele[2][1] * vector.y +
+			  matrix.ele[2][2] * vector.z +
+			  matrix.ele[2][3] * 1.0);
 }
-NUS_matrix nus_matrix_inverted(NUS_matrix);
-
-void nus_matrix_print(NUS_matrix NUS_matrix_)
+NUS_matrix nus_matrix_inverted(NUS_matrix matrix)
+{
+  return nus_matrix_identity();
+}
+void nus_matrix_print(NUS_matrix matrix)
 {
   printf("{%f, %f, %f, %f,\n %f, %f, %f, %f,\n %f, %f, %f, %f,\n %f, %f, %f, %f}\n",
-	 NUS_matrix_.ele[0][0], NUS_matrix_.ele[0][1], NUS_matrix_.ele[0][2],
-	 NUS_matrix_.ele[0][3], NUS_matrix_.ele[1][0], NUS_matrix_.ele[1][1],
-	 NUS_matrix_.ele[1][2], NUS_matrix_.ele[1][3], NUS_matrix_.ele[2][0],
-	 NUS_matrix_.ele[2][1], NUS_matrix_.ele[2][2], NUS_matrix_.ele[2][3],
-	 NUS_matrix_.ele[3][0], NUS_matrix_.ele[3][1], NUS_matrix_.ele[3][2],
-	 NUS_matrix_.ele[3][3]);
+	 matrix.ele[0][0], matrix.ele[0][1], matrix.ele[0][2],
+	 matrix.ele[0][3], matrix.ele[1][0], matrix.ele[1][1],
+	 matrix.ele[1][2], matrix.ele[1][3], matrix.ele[2][0],
+	 matrix.ele[2][1], matrix.ele[2][2], matrix.ele[2][3],
+	 matrix.ele[3][0], matrix.ele[3][1], matrix.ele[3][2],
+	 matrix.ele[3][3]);
 }
