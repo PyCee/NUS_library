@@ -18,6 +18,6 @@ NUS_result nus_save_build(NUS_absolute_path, NUS_save *);
 NUS_result nus_save_output(NUS_absolute_path, NUS_save);
 NUS_result nus_save_set_variable(NUS_save *, char const * const, char const * const);
 void nus_save_free(NUS_save *);
-NUS_result nus_save_get_attribute(NUS_save, char const * const, char **);
+NUS_result nus_save_get_value(NUS_save, char const * const, char **);
 
 #endif /* NUS_SAVE_H */

@@ -23,21 +23,21 @@ int main(int argc, char *argv[])
   }
 
   char *element = "game",
-    *attribute;
-  if(nus_save_get_attribute(save, element, &attribute) != NUS_SUCCESS){
-    printf("ERROR::failed to get attribute from element \"%s\"\n", element);
+    *value;
+  if(nus_save_get_value(save, element, &value) != NUS_SUCCESS){
+    printf("ERROR::failed to get value from element \"%s\"\n", element);
     return -1;
   }
-  printf("game is \"%s\"\n", attribute);
+  printf("game is \"%s\"\n", value);
 
   
   element = "counter";
-  if(nus_save_get_attribute(save, element, &attribute) != NUS_SUCCESS){
-    printf("ERROR::failed to get attribute from element \"%s\"\n", element);
+  if(nus_save_get_value(save, element, &value) != NUS_SUCCESS){
+    printf("ERROR::failed to get value from element \"%s\"\n", element);
     return -1;
   }
   
-  int counter = (int)strtol(attribute, NULL, 10);
+  int counter = (int)strtol(value, NULL, 10);
   printf("previous counter = %d\nnew counter = %d\n", counter, counter + 1);
   ++counter;
   char counter_str[NUS_SAVE_FILE_MAX_LINE_LENGTH];
@@ -46,11 +46,11 @@ int main(int argc, char *argv[])
   
   
   element = "whatis";
-  if(nus_save_get_attribute(save, element, &attribute) != NUS_SUCCESS){
-    printf("ERROR::failed to get attribute from element \"%s\"\n", element);
+  if(nus_save_get_value(save, element, &value) != NUS_SUCCESS){
+    printf("ERROR::failed to get value from element \"%s\"\n", element);
     return -1;
   }
-  printf("whatis \"%s\"\n", attribute);
+  printf("whatis \"%s\"\n", value);
 
   nus_save_output(nus_absolute_path_build("save_file"), save);
   nus_save_free(&save);

@@ -13,7 +13,7 @@ NUS_result nus_save_build(NUS_absolute_path absolute_path, NUS_save *p_save)
 
   char file_line[NUS_SAVE_FILE_MAX_LINE_LENGTH],
     element[NUS_SAVE_FILE_MAX_LINE_LENGTH],
-    attribute[NUS_SAVE_FILE_MAX_LINE_LENGTH];
+    value[NUS_SAVE_FILE_MAX_LINE_LENGTH];
   fscanf(file, "%s", file_line);
   if(0 != strcmp(NUS_SAVE_FILE_HEAD, file_line)){
     printf("ERROR::file does not begin with required head \"%s\"\n",
@@ -23,7 +23,7 @@ NUS_result nus_save_build(NUS_absolute_path absolute_path, NUS_save *p_save)
   char *seperator;
   while(fscanf(file, "%s\n", file_line) != EOF){
     memset(element, '\0', NUS_SAVE_FILE_MAX_LINE_LENGTH);
-    memset(attribute, '\0', NUS_SAVE_FILE_MAX_LINE_LENGTH);
+    memset(value, '\0', NUS_SAVE_FILE_MAX_LINE_LENGTH);
     if((seperator = strstr(file_line, ":")) == NULL){
       printf("ERROR::no occurence of \":\"in file line %s\n", file_line);
       return NUS_FAILURE;
@@ -31,10 +31,10 @@ NUS_result nus_save_build(NUS_absolute_path absolute_path, NUS_save *p_save)
     memcpy(element, file_line, (size_t)(seperator - file_line));
     element[seperator - file_line] = '\0';
     
-    memcpy(attribute, seperator + 1,
+    memcpy(value, seperator + 1,
 	   (size_t)((file_line + strlen(file_line)) - (seperator + 1)));
     nus_string_group_append(&p_save->contents, element);
-    nus_string_group_append(&p_save->contents, attribute);
+    nus_string_group_append(&p_save->contents, value);
   }
   
   fclose(file);
@@ -62,7 +62,7 @@ void nus_save_free(NUS_save *p_save)
   nus_string_group_free(&p_save->contents);
 }
 NUS_result nus_save_set_variable
-(NUS_save *p_save, char const * const element, char const * const attribute)
+(NUS_save *p_save, char const * const element, char const * const value)
 {
   unsigned int element_index;
   if((element_index = nus_string_group_string_index(p_save->contents,
@@ -70,15 +70,15 @@ NUS_result nus_save_set_variable
     printf("ERROR::failed to get save element string index to set\n");
     return NUS_FAILURE;
   }
-  if(nus_string_group_set(&p_save->contents, element_index + 1, attribute) !=
+  if(nus_string_group_set(&p_save->contents, element_index + 1, value) !=
      NUS_SUCCESS){
-    printf("ERROR::failed to get save attribute\n");
+    printf("ERROR::failed to get save value\n");
     return NUS_FAILURE;
   }
   return NUS_SUCCESS;
 }
-NUS_result nus_save_get_attribute
-(NUS_save save, char const * const element, char **attribute)
+NUS_result nus_save_get_value
+(NUS_save save, char const * const element, char **value)
 {
   unsigned int element_index;
   if((element_index = nus_string_group_string_index(save.contents,
@@ -86,9 +86,9 @@ NUS_result nus_save_get_attribute
     printf("ERROR::failed to get save element string index\n");
     return NUS_FAILURE;
   }
-  if(nus_string_group_get(save.contents, element_index + 1, attribute) !=
+  if(nus_string_group_get(save.contents, element_index + 1, value) !=
      NUS_SUCCESS){
-    printf("ERROR::failed to get save attribute\n");
+    printf("ERROR::failed to get save value\n");
     return NUS_FAILURE;
   }
   return NUS_SUCCESS;
