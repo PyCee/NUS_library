@@ -6,11 +6,11 @@
 #include "NUS_queue_info.h"
 
 NUS_result nus_multi_gpu_build
-(NUS_vulkan_instance NUS_vulkan_instance_, NUS_multi_gpu *p_multi_gpu)
+(NUS_vulkan_instance vulkan_instance, NUS_multi_gpu *p_multi_gpu)
 {
   unsigned int i;
   
-  if(vkEnumeratePhysicalDevices(NUS_vulkan_instance_.instance,
+  if(vkEnumeratePhysicalDevices(vulkan_instance.vk_instance,
 				&p_multi_gpu->gpu_count, NULL) !=
      VK_SUCCESS || 0 == p_multi_gpu->gpu_count){
     printf("ERROR::failed enumerating physical devices: count = %d\n",
@@ -18,15 +18,15 @@ NUS_result nus_multi_gpu_build
     return NUS_FAILURE;
   }
   p_multi_gpu->physical_devices = malloc(sizeof(p_multi_gpu->physical_devices) *
-					    p_multi_gpu->gpu_count);
-  if(vkEnumeratePhysicalDevices(NUS_vulkan_instance_.instance,
+					 p_multi_gpu->gpu_count);
+  if(vkEnumeratePhysicalDevices(vulkan_instance.vk_instance,
 				&p_multi_gpu->gpu_count,
 			        p_multi_gpu->physical_devices) != VK_SUCCESS){
     printf("ERROR::failed enumerating physical devices: physical devices\n");
     return NUS_FAILURE;
   }
   p_multi_gpu->gpus = malloc(sizeof(*p_multi_gpu->gpus)
-				* p_multi_gpu->gpu_count);
+			     * p_multi_gpu->gpu_count);
   for(i = 0; i < p_multi_gpu->gpu_count; ++i){
     if(nus_gpu_build(p_multi_gpu->physical_devices[i], p_multi_gpu->gpus + i)
        != NUS_SUCCESS){

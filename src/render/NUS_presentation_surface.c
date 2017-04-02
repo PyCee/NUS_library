@@ -11,8 +11,8 @@ static void nus_presentation_surface_build_command_buffers
 (NUS_presentation_surface *);
 
 NUS_result nus_presentation_surface_build
-(NUS_window NUS_window_, NUS_vulkan_instance NUS_vulkan_instance_,
- NUS_multi_gpu *NUS_multi_gpu_,
+(NUS_window window, NUS_vulkan_instance vulkan_instance,
+ NUS_multi_gpu *multi_gpu,
  NUS_presentation_surface *p_presentation_surface)
 {
 #if defined(NUS_OS_WINDOWS)
@@ -22,7 +22,7 @@ NUS_result nus_presentation_surface_build
   surface_create_info.flags = 0;
   //surface_create_info.hinstance = Window.Instance;//TODO support windows
   //surface_create_info.hwind = Window.Handle;
-  if(vkCreateWin32SurfaceKHR(NUS_vulkan_instance_.instance, &surface_create_info,
+  if(vkCreateWin32SurfaceKHR(vulkan_instance.vk_instance, &surface_create_info,
 			      NULL, &p_presentation_surface.surface) != VK_SUCCESS){
     printf("ERROR::unable to create Win32 vulkan surface\n");
     return NUS_FAILURE;
@@ -32,20 +32,20 @@ NUS_result nus_presentation_surface_build
   surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
   surface_create_info.pNext = NULL;
   surface_create_info.flags = 0;
-  surface_create_info.connection = NUS_window_.connection;
-  surface_create_info.window = NUS_window_.window;
-  if(vkCreateXcbSurfaceKHR(NUS_vulkan_instance_.instance, &surface_create_info,
+  surface_create_info.connection = window.connection;
+  surface_create_info.window = window.window;
+  if(vkCreateXcbSurfaceKHR(vulkan_instance.vk_instance, &surface_create_info,
 			   NULL, &p_presentation_surface->surface) != VK_SUCCESS){
     printf("ERROR::unable to create XCB vulkan surface\n");
     return NUS_FAILURE;
   }
 #endif
   nus_multi_gpu_check_surface_support(p_presentation_surface->surface,
-				      NUS_multi_gpu_);
+				      multi_gpu);
 
-  nus_multi_gpu_find_queue_info(*NUS_multi_gpu_,
-				    NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
-				    &p_presentation_surface->queue_info);
+  nus_multi_gpu_find_queue_info(*multi_gpu,
+				NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
+				&p_presentation_surface->queue_info);
   
   nus_bind_device_vulkan_library(p_presentation_surface->queue_info.p_gpu->functions);
 
@@ -107,7 +107,7 @@ NUS_result nus_presentation_surface_build
   return NUS_SUCCESS;
 }
 void nus_presentation_surface_free
-(NUS_vulkan_instance NUS_vulkan_instance_,
+(NUS_vulkan_instance vulkan_instance,
  NUS_presentation_surface *p_presentation_surface)
 {
   nus_swapchain_free(*p_presentation_surface->queue_info.p_gpu,
@@ -131,7 +131,7 @@ void nus_presentation_surface_free
   nus_texture_free(*p_presentation_surface->queue_info.p_gpu,
 		   &p_presentation_surface->render_target);
   
-  vkDestroySurfaceKHR(NUS_vulkan_instance_.instance,
+  vkDestroySurfaceKHR(vulkan_instance.vk_instance,
 		      p_presentation_surface->surface, NULL);
 }
 NUS_result nus_presentation_surface_present

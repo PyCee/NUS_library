@@ -12,54 +12,54 @@ static void nus_callback_mouse_button(int, unsigned char);
 static void nus_callback_mouse_scroll(int);
 static void nus_callback_mouse_motion(float, float);
 
-NUS_result nus_event_handler_build(NUS_event_handler *NUS_event_handler_)
+NUS_result nus_event_handler_build(NUS_event_handler *p_event_handler)
 {
   short i;
   for(i = 0; i < NUS_CLOSE_WINDOW_COUNT; ++i){
-    NUS_FUNCTION_GROUP_INIT(NUS_event_handler_->close_window[i]);
+    NUS_FUNCTION_GROUP_INIT(p_event_handler->close_window[i]);
   }
   for(i = 0; i < NUS_KEY_COUNT; i++){
-    NUS_FUNCTION_GROUP_INIT(NUS_event_handler_->key_press[i]);
-    NUS_FUNCTION_GROUP_INIT(NUS_event_handler_->key_release[i]);
+    NUS_FUNCTION_GROUP_INIT(p_event_handler->key_press[i]);
+    NUS_FUNCTION_GROUP_INIT(p_event_handler->key_release[i]);
   }
   for(i = 0; i < NUS_MOUSE_BUTTON_COUNT; i++){
-    NUS_FUNCTION_GROUP_INIT(NUS_event_handler_->mouse_button_press[i]);
-    NUS_FUNCTION_GROUP_INIT(NUS_event_handler_->mouse_button_release[i]);
+    NUS_FUNCTION_GROUP_INIT(p_event_handler->mouse_button_press[i]);
+    NUS_FUNCTION_GROUP_INIT(p_event_handler->mouse_button_release[i]);
   }
   for(i = 0; i < NUS_MOUSE_SCROLL_COUNT; i++){
-    NUS_FUNCTION_GROUP_INIT(NUS_event_handler_->mouse_scroll[i]);
+    NUS_FUNCTION_GROUP_INIT(p_event_handler->mouse_scroll[i]);
   }
   for(i = 0; i < NUS_MOUSE_MOTION_COUNT; i++){
-    NUS_FUNCTION_GROUP_INIT(NUS_event_handler_->mouse_motion[i]);
+    NUS_FUNCTION_GROUP_INIT(p_event_handler->mouse_motion[i]);
   }
   return NUS_SUCCESS;
 }
-void nus_event_handler_free(NUS_event_handler *NUS_event_handler_)
+void nus_event_handler_free(NUS_event_handler *p_event_handler)
 {
   short i;
   for(i = 0; i < NUS_CLOSE_WINDOW_COUNT; ++i){
-    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->close_window[i]);
+    NUS_FUNCTION_GROUP_FREE(p_event_handler->close_window[i]);
   }
   for(i = 0; i < NUS_KEY_COUNT; i++){
-    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->key_press[i]);
-    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->key_release[i]);
+    NUS_FUNCTION_GROUP_FREE(p_event_handler->key_press[i]);
+    NUS_FUNCTION_GROUP_FREE(p_event_handler->key_release[i]);
   }
   for(i = 0; i < NUS_MOUSE_BUTTON_COUNT; i++){
-    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->mouse_button_press[i]);
-    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->mouse_button_release[i]);
+    NUS_FUNCTION_GROUP_FREE(p_event_handler->mouse_button_press[i]);
+    NUS_FUNCTION_GROUP_FREE(p_event_handler->mouse_button_release[i]);
   }
   for(i = 0; i < NUS_MOUSE_SCROLL_COUNT; i++){
-    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->mouse_scroll[i]);
+    NUS_FUNCTION_GROUP_FREE(p_event_handler->mouse_scroll[i]);
   }
   for(i = 0; i < NUS_MOUSE_MOTION_COUNT; i++){
-    NUS_FUNCTION_GROUP_FREE(NUS_event_handler_->mouse_motion[i]);
+    NUS_FUNCTION_GROUP_FREE(p_event_handler->mouse_motion[i]);
   }
 }
-void nus_event_handler_set(NUS_event_handler *NUS_event_handler_)
+void nus_event_handler_set(NUS_event_handler *p_event_handler)
 {
-  NUS_bound_event_handler = NUS_event_handler_;
+  NUS_bound_event_handler = p_event_handler;
 }
-void nus_system_events_handle(NUS_window NUS_window_)
+void nus_system_events_handle(NUS_window window)
 {
   static float mouse_position_x = 0.0,
     mouse_position_y = 0.0;
@@ -73,7 +73,7 @@ void nus_system_events_handle(NUS_window NUS_window_)
   unsigned int event_count = 0,
     tmp_event_count = 0;
   
-  while((event = xcb_poll_for_event(NUS_window_.connection))){
+  while((event = xcb_poll_for_event(window.connection))){
     event_list = realloc(event_list, sizeof(*event_list) * ++event_count);
     event_list[event_count - 1] = event;
   }
@@ -120,7 +120,7 @@ void nus_system_events_handle(NUS_window NUS_window_)
     switch(event->response_type & ~0x80){
     case XCB_CLIENT_MESSAGE:
       if(((xcb_client_message_event_t*)event)->data.data32[0] ==
-	   (*NUS_window_.delete_reply).atom){
+	   (*window.delete_reply).atom){
 	  nus_callback_close_window();
         }
         break;

@@ -10,7 +10,7 @@
 
 typedef struct NUS_vulkan_instance{
   NUS_vk_instance_functions functions;
-  VkInstance instance;
+  VkInstance vk_instance;
 } NUS_vulkan_instance;
 
 NUS_result nus_vulkan_instance_build

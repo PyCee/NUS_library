@@ -14,18 +14,18 @@ VkDebugReportCallbackEXT NUS_vulkan_debug_report_callback;
 #endif
 
 NUS_result nus_vulkan_instance_build
-(NUS_vulkan_instance *p_NUS_vulkan_instance_,
+(NUS_vulkan_instance *p_vulkan_instance,
  NUS_string_group extensions, NUS_string_group layers)
 {
-  if(nus_vulkan_instance_build_instance(p_NUS_vulkan_instance_,
+  if(nus_vulkan_instance_build_instance(p_vulkan_instance,
 					extensions, layers) != NUS_SUCCESS){
     printf("ERROR::failed to build vulkan instance instance\n");
     return NUS_FAILURE;
   }
   
-  nus_load_instance_vulkan_library(p_NUS_vulkan_instance_->instance,
-				   &p_NUS_vulkan_instance_->functions);
-  nus_bind_instance_vulkan_library(p_NUS_vulkan_instance_->functions);
+  nus_load_instance_vulkan_library(p_vulkan_instance->vk_instance,
+				   &p_vulkan_instance->functions);
+  nus_bind_instance_vulkan_library(p_vulkan_instance->functions);
 
 #if defined(NUS_DEBUG)
   
@@ -40,7 +40,7 @@ NUS_result nus_vulkan_instance_build
     .pfnCallback = &nus_vulkan_validation_callback,
     .pUserData = NULL
   };
-  if(vkCreateDebugReportCallbackEXT(p_NUS_vulkan_instance_->instance,
+  if(vkCreateDebugReportCallbackEXT(p_vulkan_instance->vk_instance,
 				    &callback_create_info, NULL,
 				    &NUS_vulkan_debug_report_callback) !=
      VK_SUCCESS){
@@ -51,22 +51,22 @@ NUS_result nus_vulkan_instance_build
 #endif
   return NUS_SUCCESS;
 }
-void nus_vulkan_instance_free(NUS_vulkan_instance *p_NUS_vulkan_instance_)
+void nus_vulkan_instance_free(NUS_vulkan_instance *p_vulkan_instance)
 {
 #if defined(NUS_DEBUG)
   if(VK_NULL_HANDLE != NUS_vulkan_debug_report_callback){
-    vkDestroyDebugReportCallbackEXT(p_NUS_vulkan_instance_->instance,
+    vkDestroyDebugReportCallbackEXT(p_vulkan_instance->vk_instance,
 				    NUS_vulkan_debug_report_callback,
 				    VK_NULL_HANDLE);
     NUS_vulkan_debug_report_callback = VK_NULL_HANDLE;
   }
 #endif
-  if(VK_NULL_HANDLE != p_NUS_vulkan_instance_->instance){
-    vkDestroyInstance(p_NUS_vulkan_instance_->instance, NULL);
+  if(VK_NULL_HANDLE != p_vulkan_instance->vk_instance){
+    vkDestroyInstance(p_vulkan_instance->vk_instance, NULL);
   }
 }
 static NUS_result nus_vulkan_instance_build_instance
-(NUS_vulkan_instance *p_NUS_vulkan_instance_,
+(NUS_vulkan_instance *p_vulkan_instance,
  NUS_string_group extensions, NUS_string_group layers)
 {
 #if defined(NUS_DEBUG)
@@ -109,9 +109,9 @@ static NUS_result nus_vulkan_instance_build_instance
     .enabledExtensionCount = extensions.count,
     .ppEnabledExtensionNames = (char const * const *)extensions.strings
   };
-  p_NUS_vulkan_instance_->instance = VK_NULL_HANDLE;
+  p_vulkan_instance->vk_instance = VK_NULL_HANDLE;
   if(vkCreateInstance(&instance_create_info, NULL,
-		      &p_NUS_vulkan_instance_->instance) != VK_SUCCESS){
+		      &p_vulkan_instance->vk_instance) != VK_SUCCESS){
     printf("ERROR::unable to create vulkan instance\n");
     return NUS_FAILURE;
   }
@@ -126,7 +126,7 @@ static NUS_result nus_vulkan_instance_build_instance
   return NUS_SUCCESS;
 }
 static NUS_result nus_vulkan_instance_extension_support
-(NUS_string_group NUS_string_group_)
+(NUS_string_group string_group)
 {
   unsigned int supported_extension_count,
     supported_wanted_extension_count,
@@ -150,19 +150,19 @@ static NUS_result nus_vulkan_instance_extension_support
   for(i = 0, supported_wanted_extension_count = 0;
       i < supported_extension_count; ++i){
     
-    if(nus_string_group_string_index(NUS_string_group_,
+    if(nus_string_group_string_index(string_group,
 				     supported_extensions[i].extensionName) !=
        UINT_MAX){
       ++supported_wanted_extension_count;
     }
   }
-  if(supported_wanted_extension_count < NUS_string_group_.count){
+  if(supported_wanted_extension_count < string_group.count){
     return NUS_FAILURE;
   }
   return NUS_SUCCESS;
 }
 static NUS_result nus_vulkan_instance_layer_support
-(NUS_string_group NUS_string_group_)
+(NUS_string_group string_group)
 {//TODO fix memleak originating from vkEnumereate...
   unsigned int supported_layer_count,
     supported_wanted_layer_count,
@@ -186,13 +186,13 @@ static NUS_result nus_vulkan_instance_layer_support
   // "count" tracks how many of the supported layers are in the string group
   // we want this to be equal to the length of the string group
   for(i = 0, supported_wanted_layer_count = 0; i < supported_layer_count; ++i){
-    if(nus_string_group_string_index(NUS_string_group_,
+    if(nus_string_group_string_index(string_group,
 				     supported_layers[i].layerName) !=
        UINT_MAX){
       ++supported_wanted_layer_count;
     }
   }
-  if(supported_wanted_layer_count < NUS_string_group_.count){
+  if(supported_wanted_layer_count < string_group.count){
     return NUS_FAILURE;
   }
   
