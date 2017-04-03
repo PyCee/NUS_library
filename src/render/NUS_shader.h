@@ -9,10 +9,11 @@ struct NUS_gpu;
 
 typedef struct NUS_shader{
   VkShaderModule module;
+  unsigned int stage;
 } NUS_shader;
 
-NUS_result nus_shader_build(struct NUS_gpu, NUS_absolute_path, NUS_shader *);
-NUS_result nus_shader_build_source(struct NUS_gpu, char *, NUS_shader *);
+NUS_result nus_shader_build
+(struct NUS_gpu, NUS_absolute_path, unsigned int, NUS_shader *);
 void nus_shader_free(struct NUS_gpu ,NUS_shader *);
 
 #endif /* NUS_SHADERS_H */

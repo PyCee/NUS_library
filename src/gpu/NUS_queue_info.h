@@ -1,5 +1,5 @@
-#ifndef NUS_SUITABLE_QUEUE_H
-#define NUS_SUITABLE_QUEUE_H
+#ifndef NUS_QUEUE_INFO_H
+#define NUS_QUEUE_INFO_H
 
 #include <limits.h>
 
@@ -23,4 +23,4 @@ NUS_result nus_queue_info_add_buffer
 (struct NUS_queue_info, VkCommandBuffer *);
 NUS_result nus_queue_info_submit(struct NUS_queue_info);
 
-#endif /* NUS_SUITABLE_QUEUE_H */
+#endif /* NUS_QUEUE_INFO_H */

@@ -6,7 +6,8 @@
 #include <string.h>
 
 NUS_result nus_shader_build
-(NUS_gpu gpu, NUS_absolute_path absolute_path, NUS_shader *p_shader)
+(NUS_gpu gpu, NUS_absolute_path absolute_path, unsigned int stage,
+ NUS_shader *p_shader)
 {
   int i,
     shader_length;
@@ -27,8 +28,8 @@ NUS_result nus_shader_build
   }
   fclose(source_file);
 
-
-  // replace the code surrounded by comments with a call to nus_shader_build_source
+  p_shader->stage = stage;
+  
   VkShaderModuleCreateInfo shader_module_create_info = {
     .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
     .pNext = NULL,
@@ -42,24 +43,7 @@ NUS_result nus_shader_build
 	   absolute_path.path);
     return NUS_FAILURE;
   }
-  //
-  return NUS_SUCCESS;
-}
-NUS_result nus_shader_build_source(NUS_gpu gpu, char *source, NUS_shader *p_shader)
-{
-  VkShaderModuleCreateInfo shader_module_create_info = {
-    .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-    .pNext = NULL,
-    .flags = 0,
-    .codeSize = (long unsigned int)strlen(source),
-    .pCode = (unsigned int *)source
-  };
-  if(vkCreateShaderModule(gpu.logical_device, &shader_module_create_info,
-			  NULL, &p_shader->module) != VK_SUCCESS){
-    printf("ERROR::failed to create shader module from below code:\n%s\n",
-	   source);
-    return NUS_FAILURE;
-  }
+  
   return NUS_SUCCESS;
 }
 void nus_shader_free(NUS_gpu gpu, NUS_shader *p_shader)

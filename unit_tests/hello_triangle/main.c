@@ -35,7 +35,6 @@ int main(int argc, char *argv[])
     return -1;
   }
   nus_event_handler_append(eve, NUS_EVENT_CLOSE_WINDOW, 0, close_win);
-  
   nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
 				    NUS_KEY_ESC, close_win);
   nus_event_handler_set(&eve);
@@ -208,13 +207,13 @@ int main(int argc, char *argv[])
     fragment_shader;
   if(nus_shader_build(multi_gpu.gpus[0],
 		      nus_absolute_path_build("triangle_shader/shader.vert.spv"),
-		      &vertex_shader) != NUS_SUCCESS){
+		      VK_SHADER_STAGE_VERTEX_BIT, &vertex_shader) != NUS_SUCCESS){
     printf("ERROR::failed to build vertex shader\n");
     return -1;
   }
   if(nus_shader_build(multi_gpu.gpus[0],
 		      nus_absolute_path_build("triangle_shader/shader.frag.spv"),
-		      &fragment_shader) != NUS_SUCCESS){
+		      VK_SHADER_STAGE_FRAGMENT_BIT, &fragment_shader) != NUS_SUCCESS){
     printf("ERROR::failed to build fragment shader\n");
     return -1;
   }
@@ -224,7 +223,7 @@ int main(int argc, char *argv[])
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .pNext = NULL,
       .flags = 0,
-      .stage = VK_SHADER_STAGE_VERTEX_BIT,
+      .stage = vertex_shader.stage,
       .module = vertex_shader.module,
       .pName = "main",
       .pSpecializationInfo = NULL
@@ -233,7 +232,7 @@ int main(int argc, char *argv[])
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .pNext = NULL,
       .flags = 0,
-      .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+      .stage = fragment_shader.stage,
       .module = fragment_shader.module,
       .pName = "main",
       .pSpecializationInfo = NULL
@@ -585,14 +584,15 @@ int main(int argc, char *argv[])
 		      graphics_pipeline, NULL);
     graphics_pipeline = VK_NULL_HANDLE;
   }
+
+  nus_framebuffer_info_free(*present.queue_info.p_gpu, &framebuffer_info);
+  nus_framebuffer_free(*present.queue_info.p_gpu, &framebuffer);
+  
   if(render_pass != VK_NULL_HANDLE){
     vkDestroyRenderPass(present.queue_info.p_gpu->logical_device,
 		      render_pass, NULL);
     render_pass = VK_NULL_HANDLE;
   }
-
-  nus_framebuffer_info_free(*present.queue_info.p_gpu, &framebuffer_info);
-  nus_framebuffer_free(*present.queue_info.p_gpu, &framebuffer);
   
   nus_presentation_surface_free(vulkan_instance, &present);
   nus_multi_gpu_free(&multi_gpu);

@@ -338,13 +338,13 @@ int main(int argc, char *argv[])
     fragment_shader;
   if(nus_shader_build(multi_gpu.gpus[0],
 		      nus_absolute_path_build("triangle_shader/shader.vert.spv"),
-		      &vertex_shader) != NUS_SUCCESS){
+		      VK_SHADER_STAGE_VERTEX_BIT, &vertex_shader) != NUS_SUCCESS){
     printf("ERROR::failed to build vertex shader\n");
     return -1;
   }
   if(nus_shader_build(multi_gpu.gpus[0],
 		      nus_absolute_path_build("triangle_shader/shader.frag.spv"),
-		      &fragment_shader) != NUS_SUCCESS){
+		      VK_SHADER_STAGE_FRAGMENT_BIT, &fragment_shader) != NUS_SUCCESS){
     printf("ERROR::failed to build fragment shader\n");
     return -1;
   }
@@ -354,7 +354,7 @@ int main(int argc, char *argv[])
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .pNext = NULL,
       .flags = 0,
-      .stage = VK_SHADER_STAGE_VERTEX_BIT,
+      .stage = vertex_shader.stage,
       .module = vertex_shader.module,
       .pName = "main",
       .pSpecializationInfo = NULL
@@ -363,7 +363,7 @@ int main(int argc, char *argv[])
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .pNext = NULL,
       .flags = 0,
-      .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+      .stage = fragment_shader.stage,
       .module = fragment_shader.module,
       .pName = "main",
       .pSpecializationInfo = NULL
