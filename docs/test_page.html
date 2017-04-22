@@ -1,11 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title></title>
+    <title>nus library</title>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <link rel="icon" href="images/icon.png" type="image/x-icon">
+    <style>
+      <!-- styling for the pdf link on this page -->
+      body > main a {
+      text-decoration:none;
+      }
+    </style>
   </head>
   <body>
-    <a href="#" onclick="window.open('http://google.com');
-    window.open('http://yahoo.com');">a link</a>
+    <header>
+	<h1>Documentation</h1>
+    </header>
+    <nav>
+      <a href="/NUS_library/index.html">
+	<div>
+	  Home
+	</div>
+      </a>
+      <a href="/NUS_library/documentation.html">
+	<div>
+	  Docs
+	</div>
+      </a>
+      <a href="/NUS_library/unit_tests.html">
+	<div>
+	  Unit Tests
+	</div>
+      </a>
+      <a href="/NUS_library/about.html">
+	<div>
+	  About
+	</div>
+      </a>
+      <a target="_blank" href="https://github.com/PyCee/NUS_library">
+	<div>
+	  Source
+	</div>
+      </a>
+    </nav>
+    <main>
+      <a name="main"></a>
+      <!-- Link to documentation pdf in another tab -->
+      Documentation for this library can be easily viewed in <a href="/NUS_library/pdf_documentation.pdf" target="_blank">PDF form</a>.<br>
+      The documentation can also be printed from the pdf file.<br><br>
+      This documentation outlines everything an developer needs to know about this library to develop an application.
+    </main>
+    <footer>
+      <hr>
+      &copy; Copyright 2017 Kim Pampusch
+      <hr>
+    </footer>
   </body>
 </html>

@@ -4,7 +4,7 @@
     <title>nus library</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="/NUS_library/style.css" type="text/css">
-    <link rel="icon" href="images/fire.png" type="image/x-icon">
+    <link rel="icon" href="images/icon.png" type="image/x-icon">
   </head>
   <body>
     <header>
@@ -40,6 +40,7 @@
     <main>
       <a name="main"></a>
       Unit Tests are simple programs designed to test specific functions of the NUS library. These programs may rely on code originally tested in other unit tests, or may be independant of other unit tests.
+      <!-- a description list, one for each unit test -->
       <dl>
 	<hr>
 	<dt>save_file</dt>
@@ -81,6 +82,11 @@
 	<dt>hello_triangle</dt>
 	<dd>a program that build upon vulkan_clear and uses shaders to draw a solid colored triangle, then display it on a window. Tests shader utilization without uniform memory<br>
 	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/hello_triangle">source</a></dd>
+	<hr>
+	<dt>uniform_shader</dt>
+	<dd>building off of hello_triangle, this program displays and moves a triangle around the screen based on keyboard input (wasd and the arrow keys). Tests basic vulkan uniform variables in shaders and description sets<br>
+	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/uniform_shader">source</a></dd>
+	<hr>
       </dl>
     </main>
     <footer>
