@@ -7,16 +7,13 @@
 	height:40px;
         padding-top:15px;
     }
-    .code_example {
-	padding-left:50px;
-    }
 }
 @media only all and (max-width:64em) {/* mobile and tablet */
-    html {
+    html {/* Text is larger and centered */
 	font-size:25px;
 	text-align:center;
     }
-    nav > a > div {
+    nav > a > div {/* Resized divs */
 	width:calc(33% - 30px);
 	height:50px;
 	padding-top:25px;
@@ -36,7 +33,7 @@ hr {
 li {
     margin:7px 0px;
 }
-h1, h2, h3, h4, h5, h6{
+h1, h2, h3, h4, h5, h6 {
     color:hsla(240, 50%, 60%, 0.9);
     font-weight:normal;
     margin-top:10px;
@@ -60,7 +57,7 @@ nav {
     height:auto;
     overflow:auto;
 }
-nav > a > div {
+nav > a > div {/* Styles the main navigation links */
     margin:5px 15px;
     text-align:center;
     border-radius:50px;
@@ -82,23 +79,4 @@ footer {
 }
 footer > hr {
     margin:20px 40px;
-}
-.should {
-    color:hsla(255, 60%, 70%, 1.0);
-    font-weight:bold;
-}
-.must {
-    color:hsla(255, 60%, 50%, 1.0);
-    font-weight:bold;
-}
-.highlight {
-    color:hsla(270, 50%, 10%, 1.0);
-    background-color:hsla(0, 0%, 60%, 0.1);
-}
-.code_example {
-    padding-top:10px;
-    padding-bottom:10px;
-    margin:20px 0px;
-    font-family:"Lucida Console", Monaco, monospace;
-    background-color:hsla(0, 0%, 60%, 0.1);
 }
