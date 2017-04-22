@@ -92,6 +92,7 @@ int main(int argc, char *argv[])
   
   NUS_model model;
   // the vertex normal represents color for this unit test
+  /*
   model.vertex_count = 3;
   model.vertices = malloc(sizeof(NUS_vertex) * model.vertex_count);
   model.vertices[0] = (NUS_vertex){{-0.7f, 0.7f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}};
@@ -103,7 +104,8 @@ int main(int argc, char *argv[])
   model.indices[0] = 0;
   model.indices[1] = 1;
   model.indices[2] = 2;
-  
+  */
+  nus_model_build(nus_absolute_path_build("triangle.nusm"), &model);
   nus_model_buffer(info, &model);
 
   // code to create renderpass
@@ -240,22 +242,22 @@ int main(int argc, char *argv[])
   };
 
   VkVertexInputBindingDescription vertex_binding_description = {
-    .binding = 0,
-    .stride = (unsigned int)sizeof(*model.vertices),
-    .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+    .binding = 0,//
+    .stride = (unsigned int)NUSM_VERTEX_BYTE_COUNT,//
+    .inputRate = VK_VERTEX_INPUT_RATE_VERTEX//
   };
   VkVertexInputAttributeDescription vertex_attribute_description[] = {
     {
-      .location = 0,
-      .binding = vertex_binding_description.binding,
-      .format = VK_FORMAT_R32G32B32_SFLOAT,
-      .offset = sizeof(float) * 0
+      .location = 0,//
+      .binding = vertex_binding_description.binding,//
+      .format = VK_FORMAT_R32G32B32_SFLOAT,//
+      .offset = sizeof(float) * 0//
     },
     {
-      .location = 1,
-      .binding = vertex_binding_description.binding,
-      .format = VK_FORMAT_R32G32B32_SFLOAT,
-      .offset = sizeof(float) * 3
+      .location = 1,//
+      .binding = vertex_binding_description.binding,//
+      .format = VK_FORMAT_R32G32B32_SFLOAT,//
+      .offset = sizeof(float) * 3//
     }
   };
   
@@ -273,8 +275,7 @@ int main(int argc, char *argv[])
     .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    //.topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP,
-    .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+    .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,//
     .primitiveRestartEnable = VK_FALSE
   };
   
@@ -298,69 +299,69 @@ int main(int argc, char *argv[])
     .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .dynamicStateCount = 2,
-    .pDynamicStates = dynamics_states
+    .dynamicStateCount = 2,//
+    .pDynamicStates = dynamics_states//
   };
   
   VkPipelineRasterizationStateCreateInfo rasterization_state_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .depthClampEnable = VK_FALSE,
-    .rasterizerDiscardEnable = VK_FALSE,
-    .polygonMode = VK_POLYGON_MODE_FILL,
-    .cullMode = VK_CULL_MODE_BACK_BIT,
-    .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
-    .depthBiasEnable = VK_FALSE,
-    .depthBiasConstantFactor = 0.0f,
-    .depthBiasClamp = 0.0f,
-    .depthBiasSlopeFactor = 0.0f,
-    .lineWidth = 1.0f
+    .depthClampEnable = VK_FALSE,//
+    .rasterizerDiscardEnable = VK_FALSE,//
+    .polygonMode = VK_POLYGON_MODE_FILL,//
+    .cullMode = VK_CULL_MODE_BACK_BIT,//
+    .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,//
+    .depthBiasEnable = VK_FALSE,//
+    .depthBiasConstantFactor = 0.0f,//
+    .depthBiasClamp = 0.0f,//
+    .depthBiasSlopeFactor = 0.0f,//
+    .lineWidth = 1.0f//
   };
   
   VkPipelineMultisampleStateCreateInfo multisample_state_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-    .sampleShadingEnable = VK_FALSE,
-    .minSampleShading = 1.0f,
-    .pSampleMask = NULL,
-    .alphaToCoverageEnable = VK_FALSE,
-    .alphaToOneEnable = VK_FALSE
+    .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,//
+    .sampleShadingEnable = VK_FALSE,//
+    .minSampleShading = 1.0f,//
+    .pSampleMask = NULL,//
+    .alphaToCoverageEnable = VK_FALSE,//
+    .alphaToOneEnable = VK_FALSE//
   };
   
   VkPipelineColorBlendAttachmentState color_blend_attachment_state = {
-    .blendEnable = VK_FALSE,
-    .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
-    .dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,
-    .colorBlendOp = VK_BLEND_OP_ADD,
-    .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
-    .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
-    .alphaBlendOp = VK_BLEND_OP_ADD,
+    .blendEnable = VK_FALSE,//
+    .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,//
+    .dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,//
+    .colorBlendOp = VK_BLEND_OP_ADD,//
+    .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,//
+    .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,//
+    .alphaBlendOp = VK_BLEND_OP_ADD,//
     .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-    VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+    VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT//
   };
   
   VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .logicOpEnable = VK_FALSE,
-    .logicOp = VK_LOGIC_OP_COPY,
-    .attachmentCount = 1,
-    .pAttachments = &color_blend_attachment_state,
-    .blendConstants = {0.0f, 0.0f, 0.0f, 0.0f}
+    .logicOpEnable = VK_FALSE,//
+    .logicOp = VK_LOGIC_OP_COPY,//
+    .attachmentCount = 1,//
+    .pAttachments = &color_blend_attachment_state,//
+    .blendConstants = {0.0f, 0.0f, 0.0f, 0.0f}//
   };
   
   VkPipelineLayoutCreateInfo pipeline_layout_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .setLayoutCount = 0,
-    .pSetLayouts = NULL,
-    .pushConstantRangeCount = 0,
-    .pPushConstantRanges = NULL
+    .setLayoutCount = 0,//
+    .pSetLayouts = NULL,//
+    .pushConstantRangeCount = 0,//
+    .pPushConstantRanges = NULL//
   };
   VkPipelineLayout pipeline_layout;
   if(vkCreatePipelineLayout(present.queue_info.p_gpu->logical_device,
@@ -517,7 +518,7 @@ int main(int argc, char *argv[])
   vkCmdBindIndexBuffer(command_buffer, model.index_memory.buffer, index_memory_offset,
 			VK_INDEX_TYPE_UINT32);
 
-  vkCmdDrawIndexed(command_buffer, model.index_count, 1, 0, 0, 0);
+  vkCmdDrawIndexed(command_buffer, model.contents.index_data_size/4, 1, 0, 0, 0);
     
   vkCmdEndRenderPass(command_buffer);
   

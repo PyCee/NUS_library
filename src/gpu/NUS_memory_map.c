@@ -1,5 +1,6 @@
 #include "NUS_memory_map.h"
 #include "NUS_queue_info.h"
+#include "NUS_memory_properties.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -26,11 +27,10 @@ NUS_result nus_memory_map_build
   VkMemoryRequirements buffer_memory_req;
   vkGetBufferMemoryRequirements(queue.p_gpu->logical_device,
 				p_memory_map->buffer, &buffer_memory_req);
-
+  /*
   VkPhysicalDeviceMemoryProperties memory_properties;
   vkGetPhysicalDeviceMemoryProperties(queue.p_gpu->physical_device,
 				      &memory_properties);
-  
   unsigned int memory_type_index;
   VkPhysicalDeviceMemoryProperties mem_properties;
   vkGetPhysicalDeviceMemoryProperties(queue.p_gpu->physical_device,
@@ -42,13 +42,15 @@ NUS_result nus_memory_map_build
 	VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)){
       break;
     }
-  }
+  }*/
   
   VkMemoryAllocateInfo memory_allocate_info = {
     .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
     .pNext = NULL,
     .allocationSize = buffer_memory_req.size,
-    .memoryTypeIndex = memory_type_index
+    .memoryTypeIndex =
+    nus_memory_properties_type_index(*queue.p_gpu, buffer_memory_req,
+				     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
   };
   if(vkAllocateMemory(queue.p_gpu->logical_device, &memory_allocate_info,
 		      NULL, &p_memory_map->device_memory) != VK_SUCCESS){

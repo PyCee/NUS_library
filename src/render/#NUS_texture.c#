@@ -1,12 +1,10 @@
 #include "NUS_texture.h"
 #include "../gpu/NUS_gpu.h"
-#include "../gpu/NUS_memory_properties.h"
 #include <stdio.h>
 
 NUS_result nus_texture_build
 (NUS_gpu gpu, unsigned int width, unsigned int height,
- VkFormat format, unsigned int usage, unsigned int type,
- NUS_texture *p_texture)
+ VkFormat format, unsigned int usage, NUS_texture *p_texture)
 {
   VkImageCreateInfo image_create_info = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -36,7 +34,7 @@ NUS_result nus_texture_build
   }
   VkMemoryRequirements image_memory_req;
   vkGetImageMemoryRequirements(gpu.logical_device, p_texture->image, &image_memory_req);
-  /* TODO remove
+  /*
   VkPhysicalDeviceMemoryProperties mem_properties;
   vkGetPhysicalDeviceMemoryProperties(gpu.physical_device, &mem_properties);
   unsigned int memory_type_index;
@@ -54,8 +52,11 @@ NUS_result nus_texture_build
     .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
     .pNext = NULL,
     .allocationSize = image_memory_req.size,
+    //.memoryTypeIndex = memory_type_index
     .memoryTypeIndex =
-    nus_memory_properties_type_index(gpu, image_memory_req, type)
+    nus_memory_properties_type_index(gpu, image_memory_req,
+				     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+				     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
   };
   if(vkAllocateMemory(gpu.logical_device, &memory_alloc_info, NULL,
 		      &p_texture->memory) != VK_SUCCESS){

@@ -18,9 +18,14 @@ void move_up(void);
 void move_left(void);
 void move_down(void);
 void move_right(void);
+
+void pitch_up(void);
+void pitch_down(void);
+void yaw_left(void);
+void yaw_right(void);
 char run;
-float dx = 0.0, dy = 0.0;
-float move_speed = 0.01;
+float dx = 0.0, dy = 0.0, dpitch = 0.0, dyaw = 0.0;
+float move_speed = 0.01, rotate_speed = 1.0 * 3.14159 / 180.0;
 
 int main(int argc, char *argv[])
 {
@@ -53,6 +58,24 @@ int main(int argc, char *argv[])
   nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_D, move_left);
   nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_W, move_down);
   nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_A, move_right);
+  
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
+				    NUS_KEY_ARROW_UP, pitch_up);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
+				    NUS_KEY_ARROW_DOWN, pitch_down);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
+				    NUS_KEY_ARROW_LEFT, yaw_left);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
+				    NUS_KEY_ARROW_RIGHT, yaw_right);
+  
+  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE,
+				    NUS_KEY_ARROW_UP, pitch_down);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE,
+				    NUS_KEY_ARROW_DOWN, pitch_up);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE,
+				    NUS_KEY_ARROW_LEFT, yaw_right);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE,
+				    NUS_KEY_ARROW_RIGHT, yaw_left);
   nus_event_handler_set(&eve);
   
   NUS_vulkan_instance vulkan_instance;
@@ -71,14 +94,14 @@ int main(int argc, char *argv[])
   NUS_string_group instance_layers;
   nus_string_group_build(&instance_layers);
   
-  if(nus_vulkan_instance_build(&vulkan_instance, instance_extensions, instance_layers) !=
-     NUS_SUCCESS){
+  if(nus_vulkan_instance_build(&vulkan_instance, instance_extensions,
+			       instance_layers) != NUS_SUCCESS){
     printf("ERROR::failed to create vulkan instance info\n");
     return -1;
   }
-
   nus_string_group_free(&instance_extensions);
   nus_string_group_free(&instance_layers);
+  
   
   NUS_multi_gpu multi_gpu;
   if(nus_multi_gpu_build(vulkan_instance, &multi_gpu) != NUS_SUCCESS){
@@ -98,19 +121,87 @@ int main(int argc, char *argv[])
   NUS_queue_info info;
   
   if(nus_gpu_find_queue_info(present.queue_info.p_gpu,
-			     NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
-			     NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
-			     &info) != NUS_SUCCESS){
+				 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
+				 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
+				 &info) !=
+     NUS_SUCCESS){
     printf("ERROR::failed to find suitable gou info\n");
     return NUS_FAILURE;
   }
   
   printf("start model\n");
   
-  NUS_model model;
+  NUS_model model;// temp model for testing purposes
   // the vertex normal represents color for this unit test
+  /*
+  model.vertex_count = 3;
+  model.vertices = malloc(sizeof(NUS_vertex) * model.vertex_count);
+  model.vertices[0] = (NUS_vertex){{-0.2f, 0.2f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}};
+  model.vertices[1] = (NUS_vertex){{0.2f, 0.2f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f}};
+  model.vertices[2] = (NUS_vertex){{0.0f, -0.2f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}};
+
+  model.index_count = 6;
+  model.indices = malloc(sizeof(*model.indices) * model.index_count);
+  model.indices[0] = 0;
+  model.indices[1] = 1;
+  model.indices[2] = 2;
+  */
+  model.vertex_count = 8;
+  model.vertices = malloc(sizeof(NUS_vertex) * model.vertex_count);
+  model.vertices[0] = (NUS_vertex){{-0.3, 0.3, 0.3, 1.0, 1.0, 1.0, 0.0, 0.0}};
+  model.vertices[1] = (NUS_vertex){{0.3, 0.3, 0.3, 0.0, 0.0, 0.0, 0.0, 0.0}};
+  model.vertices[2] = (NUS_vertex){{-0.3, -0.3, 0.3, 0.0, 0.0, 1.0, 0.0, 0.0}};
+  model.vertices[3] = (NUS_vertex){{0.3, -0.3, 0.3, 1.0, 0.0, 1.0, 0.0, 0.0}};
+  model.vertices[4] = (NUS_vertex){{-0.3, 0.3, -0.3, 1.0, 1.0, 0.0, 0.0, 0.0}};
+  model.vertices[5] = (NUS_vertex){{0.3, 0.3, -0.3, 0.0, 1.0, 0.0, 0.0, 0.0}};
+  model.vertices[6] = (NUS_vertex){{-0.3, -0.3, -0.3, 0.0, 0.0, 0.0, 0.0, 0.0}};
+  model.vertices[7] = (NUS_vertex){{0.3, -0.3, -0.3, 1.0, 0.0, 0.0, 0.0, 0.0}};
+
+  model.index_count = 36;
+  model.indices = malloc(sizeof(*model.indices) * model.index_count);
+  //ff
+  model.indices[0] = 2;
+  model.indices[1] = 0;
+  model.indices[2] = 1;
+  model.indices[3] = 1;
+  model.indices[4] = 3;
+  model.indices[5] = 2;
+  //fl
+  model.indices[6] = 0;
+  model.indices[7] = 2;
+  model.indices[8] = 6;
+  model.indices[9] = 6;
+  model.indices[10] = 4;
+  model.indices[11] = 0;
+  //fr
+  model.indices[12] = 3;
+  model.indices[13] = 1;
+  model.indices[14] = 5;
+  model.indices[15] = 5;
+  model.indices[16] = 7;
+  model.indices[17] = 3;
+  //ft
+  model.indices[18] = 2;
+  model.indices[19] = 3;
+  model.indices[20] = 7;
+  model.indices[21] = 7;
+  model.indices[22] = 6;
+  model.indices[23] = 2;
+  //fbo
+  model.indices[24] = 0;
+  model.indices[25] = 4;
+  model.indices[26] = 5;
+  model.indices[27] = 5;
+  model.indices[28] = 1;
+  model.indices[29] = 0;
+  //fba
+  model.indices[30] = 4;
+  model.indices[31] = 6;
+  model.indices[32] = 7;
+  model.indices[33] = 7;
+  model.indices[34] = 5;
+  model.indices[35] = 4;
   
-  nus_model_build(nus_absolute_path_build("triangle.nusm"), &model);
   nus_model_buffer(info, &model);
   
   printf("end model stuffz\n");
@@ -263,7 +354,7 @@ int main(int argc, char *argv[])
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .pNext = NULL,
       .flags = 0,
-      .stage = VK_SHADER_STAGE_VERTEX_BIT,
+      .stage = vertex_shader.stage,
       .module = vertex_shader.module,
       .pName = "main",
       .pSpecializationInfo = NULL
@@ -272,7 +363,7 @@ int main(int argc, char *argv[])
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
       .pNext = NULL,
       .flags = 0,
-      .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+      .stage = fragment_shader.stage,
       .module = fragment_shader.module,
       .pName = "main",
       .pSpecializationInfo = NULL
@@ -281,7 +372,7 @@ int main(int argc, char *argv[])
 
   VkVertexInputBindingDescription vertex_binding_description = {
     .binding = 0,
-    .stride = (unsigned int)NUSM_VERTEX_BYTE_COUNT,
+    .stride = (unsigned int)sizeof(*model.vertices),
     .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
   };
   VkVertexInputAttributeDescription vertex_attribute_description[] = {
@@ -313,8 +404,7 @@ int main(int argc, char *argv[])
     .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    //.topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP,
-    .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+    .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
     .primitiveRestartEnable = VK_FALSE
   };
   
@@ -648,7 +738,7 @@ int main(int argc, char *argv[])
   vkCmdBindIndexBuffer(command_buffer, model.index_memory.buffer, index_memory_offset,
 			VK_INDEX_TYPE_UINT32);
 
-  vkCmdDrawIndexed(command_buffer, model.contents.index_data_size/4, 1, 0, 0, 0);
+  vkCmdDrawIndexed(command_buffer, model.index_count, 1, 0, 0, 0);
     
   vkCmdEndRenderPass(command_buffer);
   
@@ -677,8 +767,11 @@ int main(int argc, char *argv[])
     y += dy;
     x += dx;
     
-    //axes = nus_axes_global_roll(axes, 1.0 * 3.14159 / 180.0);
-    translation = nus_vector_build(x, y, 0.0);
+    axes = nus_axes_global_pitch(axes, dpitch);
+    axes = nus_axes_global_yaw(axes, dyaw);
+    translation = nus_vector_build(x, y, 0.4);
+    // TODO depth range is (1, 0)
+    // is this wanted? or should it be (1, -1)?
     tmp = nus_matrix_transformation(translation, axes);
     tmp = nus_matrix_transpose(tmp);
     
@@ -780,4 +873,20 @@ void move_down(void)
 void move_right(void)
 {
   dx += move_speed;
+}
+void pitch_up(void)
+{
+  dpitch -= rotate_speed;
+}
+void pitch_down(void)
+{
+  dpitch += rotate_speed;
+}
+void yaw_left(void)
+{
+  dyaw += rotate_speed;
+}
+void yaw_right(void)
+{
+  dyaw -= rotate_speed;
 }

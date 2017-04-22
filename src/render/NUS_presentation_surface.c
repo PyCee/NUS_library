@@ -64,6 +64,8 @@ NUS_result nus_presentation_surface_build
 		       VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
 		       VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 		       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+		       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		       &p_presentation_surface->render_target) != NUS_SUCCESS){
     printf("ERROR::failed to build render_target texture\n");
     return NUS_FAILURE;

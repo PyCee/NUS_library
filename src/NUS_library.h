@@ -37,6 +37,7 @@
 #include "model/NUS_joint.h"
 #include "model/NUS_pose_skeleton.h"
 #include "model/NUS_pose_joint.h"
+#include <NUSM/NUSM_library.h>
 
 /*  NUS_SYSTEM_WINDOW must be defined in the application to enable windowing */
 #if defined(NUS_SYSTEM_WINDOW)
@@ -53,6 +54,7 @@
 #include "gpu/NUS_vulkan_instance.h"
 #include "gpu/NUS_queue_info.h"
 #include "gpu/NUS_memory_map.h"
+#include "gpu/NUS_memory_properties.h"
 #endif /* NUS_SYSTEM_GPU */
 
 /*  NUS_SYSTEM_RENDER must be defined in the application to enable rendering */

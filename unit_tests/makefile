@@ -12,17 +12,18 @@ CFLAGS=-g -Wextra \
 	-Wunreachable-code \
 	-I/home/kims/VulkanSDK/1.0.39.0/x86_64/include
 
-LFLAGS= -lNUS_library -lxcb -ldl -lm \
+LFLAGS= -lNUS_library -lNUSM -lxcb -ldl -lm \
 	-L/home/kims/VulkanSDK/1.0.39.0/x86_64/lib -lVkLayer_unique_objects \
 	-lVkLayer_swapchain -lVkLayer_core_validation -lVkLayer_image \
 	-lVkLayer_object_tracker -lVkLayer_parameter_validation -lVkLayer_threading
 
 SHADERS:= hello_triangle/triangle_shader/shader.vert.spv hello_triangle/triangle_shader/shader.frag.spv \
-	uniform_shader/triangle_shader/shader.vert.spv uniform_shader/triangle_shader/shader.frag.spv
+	uniform_shader/triangle_shader/shader.vert.spv uniform_shader/triangle_shader/shader.frag.spv \
+	load_model/triangle_shader/shader.vert.spv load_model/triangle_shader/shader.frag.spv
 
 TEST?=3d_math_vector/ 3d_math_matrix/ 3d_math_axes/ 3d_math_reference_vector/ \
 	gravity_simulation/ save_file/ basic_window/ gpu_detection/ vulkan_clear/ \
-	hello_triangle/ uniform_shader/
+	hello_triangle/ uniform_shader/ load_model/
 
 VALGRIND_RUN= valgrind --tool=memcheck --leak-check=yes --track-origins=yes
 
@@ -45,7 +46,7 @@ recompile: clean compile
 %/unit_test: %/main.o
 	@$(CC) $< $(LFLAGS) -o $@
 %.o: %.c
-	@$(CC) $(CFLAGS) -c $<  -o $@
+	@$(CC) $(CFLAGS) -c $< $(LFLAGS) -o $@
 	@echo "Compiling File: $<"
 %.spv:
 	@touch $@
