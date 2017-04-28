@@ -14,7 +14,7 @@
   </head>
   <body>
     <header>
-	<h1>Documentation</h1>
+	<h1>Models (NUSM)</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -32,6 +32,11 @@
 	  Unit Tests
 	</div>
       </a>
+      <a href="/NUS_library/NUSM.html">
+	<div>
+	  Models
+	</div>
+      </a>
       <a href="/NUS_library/about.html">
 	<div>
 	  About
@@ -46,9 +51,12 @@
     <main>
       <a name="main"></a>
       <!-- Link to documentation pdf in another tab -->
-      Documentation for this library can be easily viewed in <a href="/NUS_library/pdf_documentation.pdf" target="_blank">PDF form</a>.<br>
-      The documentation can also be printed from the pdf file.<br><br>
-      This documentation outlines everything an developer needs to know about this library to develop an application.
+      NUS library utilizes a smaller library, named NUSM, for storing 3D model data.<br>
+      Documentation for NUSM can be <a target="_blank" href="/NUS_library/pdf_NUSM.pdf">found in pdf form</a>.
+      <hr>
+      NUSM uses a custom binary file format used to store 3D models, which may be read using a function from the NUSM library.
+      <hr>
+      In addition to the functions to manage a NUSM file in an application, NUSM supplies a command-line utility that will read a 3D model file (of any type listed at <a target="_blank" href="http://assimp.sourceforge.net/main_features_formats.html">Assimp</a>) and create a corresponding NUSM file.
     </main>
     <footer>
       <hr>
