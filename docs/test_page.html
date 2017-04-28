@@ -5,16 +5,10 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="style.css" type="text/css">
     <link rel="icon" href="images/icon.png" type="image/x-icon">
-    <style>
-      <!-- styling for the pdf link on this page -->
-      body > main a {
-      text-decoration:none;
-      }
-    </style>
   </head>
   <body>
     <header>
-	<h1>Documentation</h1>
+	<h1>Unit Tests</h1>
     </header>
     <nav>
       <a href="index.html">
@@ -50,15 +44,43 @@
     </nav>
     <main>
       <a name="main"></a>
-      <!-- Link to documentation pdf in another tab -->
-      Documentation for this library can be easily viewed in <a href="pdf_documentation.pdf" target="_blank">PDF form</a>.<br>
-      The documentation can also be printed from the pdf file.<br><br>
-      This documentation outlines everything an developer needs to know about this library to develop an application. Including:
-      <ul>
-	<li>Minimum requirements</li>
-	<li>Library dependencies</li>
-	<li>Function and structure usage</li>
-      </ul>
+      Unit Tests are simple programs designed to test specific functions of the NUS library. These programs may rely on code originally tested in other unit tests, or may be independant of other unit tests.
+      <!-- a description list, one for each unit test -->
+      <dl>
+	<hr>
+	<dt>save_file</dt>
+	<dd>obtains information from a save file, prints the information out, and then saves the file with an incremented number from the file. A test for basic save file input/output.<br>
+	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/save_file">source</a></dd>
+	<hr>
+	<dt>3d_math</dt>
+	<dd>Tests various 3d math functions for correctness.<br>
+	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/3d_math">source</a></dd>
+	<hr>
+	<dt>gravity_simulation</dt>
+	<dd>Uses 3d_math to determine the efect of gravity on a resting object and prints the result. Tests force and momentum effects on a mass.<br>
+	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/gravity_simulation">source</a></dd>
+	<hr>
+	<dt>basic_window</dt>
+	<dd>Opens a window and detects input. The window can be closed by pressing the esc key or clicking the close window button that is usually in the top-left or top-right of the displayed window (depending on your operating system). Tests window creation and input detection.<br>
+	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/basic_window">source</a></dd>
+	<hr>
+	<dt>gpu_detection</dt>
+	<dd>Utilizes vulkan to detect, and then print information regarding the clients graphical processing unit. This program will open a window to get some information and automatically close said window once the information has been obtained. Tests vulkan instnace creation, presentation surface creation, and obtaining gpu information.<br>
+	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/gpu_detection">source</a></dd>
+	<hr>
+	<dt>vulkan_clear</dt>
+	<dd>Similar to basic_window, this program opens a window and can be closed by the esc key or the close button. Vulkan is utilized to make the computer's gpu clear the window to a solid color. Tests basic vulkan command submiting and surface presenting.<br>
+	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/vulkan_clear">source</a></dd>
+	<hr>
+	<dt>hello_triangle</dt>
+	<dd>A program that builds upon vulkan_clear. It uses shaders to draw a solid colored triangle and display it on a window. Tests shader utilization without uniform memory variables. Also tests loading a NUSM model into application memory.<br>
+	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/hello_triangle">source</a></dd>
+	<hr>
+	<dt>uniform_shader</dt>
+	<dd>Building off of hello_triangle, this program displays and moves a triangle around the screen based on keyboard input (the wasd and arrow keys). Tests basic vulkan uniform variables in shaders and description sets.<br>
+	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/uniform_shader">source</a></dd>
+	<hr>
+      </dl>
     </main>
     <footer>
       <hr>
