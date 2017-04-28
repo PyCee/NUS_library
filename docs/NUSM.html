@@ -3,12 +3,18 @@
   <head>
     <title>nus library</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="/NUS_library/style.css" type="text/css">
+    <link rel="stylesheet" href="style.css" type="text/css">
     <link rel="icon" href="images/icon.png" type="image/x-icon">
+    <style>
+      <!-- styling for the pdf link on this page -->
+      body > main a {
+      text-decoration:none;
+      }
+    </style>
   </head>
   <body>
     <header>
-	<h1>About</h1>
+	<h1>Models (NUSM)</h1>
     </header>
     <nav>
       <a href="/NUS_library/index.html">
@@ -44,12 +50,13 @@
     </nav>
     <main>
       <a name="main"></a>
-      NUS_library is a group of functions and structures to abstract away some of the more complicated tasks of programming a 3d video game in the C programming language.
+      <!-- Link to documentation pdf in another tab -->
+      NUS library utilizes a smaller library, named NUSM, for storing 3D model data.<br>
+      Documentation for NUSM can be <a target="_blank" href="/NUS_library/pdf_NUSM.pdf">found in pdf form</a>.
       <hr>
-      This library is being activly developed by Kim Pampusch. Going by the name of "PyCee" on github, Kim is a computer science student at St. Paul college that programs the NUS library with the goal of developing 3D games.
+      NUSM uses a custom binary file format used to store 3D models, which may be read using a function from the NUSM library.
       <hr>
-      NUS library is liscensed under The MIT License.<br>
-      The exact license can be seen <a target="_blank" href="https://github.com/PyCee/NUS_library/blob/master/LICENSE">under the github repository</a>.
+      In addition to the functions to manage a NUSM file in an application, NUSM supplies a command-line utility that will read a 3D model file (of any type listed at <a target="_blank" href="http://assimp.sourceforge.net/main_features_formats.html">Assimp</a>) and create a corresponding NUSM file.
     </main>
     <footer>
       <hr>
