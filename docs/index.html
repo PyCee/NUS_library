@@ -9,6 +9,18 @@
       main a {
       text-decoration:none;
       }
+      .description_group {
+      height: auto;
+      width: 100%;
+      overflow: hidden;
+      }
+      .page_description {
+      width: 50%;
+      height: 100%;
+      margin: 0px;
+      padding-bottom: 30px;
+      float: left;
+      }
     </style>
   </head>
   <body>
@@ -49,21 +61,31 @@
     </nav>
     <main>
       <a name="main"></a>
-      The NUS library is a video game library currently in development.
+      The NUS library is a video game library currently in development.<br>
       <hr>
-      <a href="documentation.html"><h2>DOCUMENTATION</h2></a>
-      Documentation for the NUS library.<br>
-      Specifies setup and use of the library for developers.
+      <div class="description_group">
+	<div class="page_description">
+	  <a href="documentation.html"><h2>DOCS</h2></a>
+	  Documentation for the NUS library.<br>
+	  Specifies setup and use of the library for developers.
+	</div>
+	<div class="page_description">
+	  <a href="unit_tests.html"><h2>UNIT TESTS</h2></a>
+	  Explains a variety of tests that show features of the library in use.<br>
+	  Used to test new features during development.
+	</div>
+      </div>
       <hr>
-      <a href="unit_tests.html"><h2>UNIT TESTS</h2></a>
-      Explains a variety of tests that show features of the library in use.<br>
-      Used to test new features during development.
-      <hr>
-      <a href="NUSM.html"><h2>MODELS (NUSM)</h2></a>
-      Describes the custom modeling details this library uses.
-      <hr>
-      <a href="about.html"><h2>ABOUT</h2></a>
-      Information about the NUS library and it's developer.
+      <div class="description_group">
+	<div class="page_description">
+	  <a href="NUSM.html"><h2>MODELS</h2></a>
+	  Describes the custom modeling details this library uses.
+	</div>
+	<div class="page_description">
+	  <a href="about.html"><h2>ABOUT</h2></a>
+	  Information about the NUS library and its developer.
+	</div>
+      </div>
       <hr>
       <a target="_blank" href="https://github.com/PyCee/NUS_library"><h2>SOURCE</h2></a>
       The public github repository for the NUS library.

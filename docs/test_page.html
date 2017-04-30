@@ -5,10 +5,25 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="style.css" type="text/css">
     <link rel="icon" href="images/icon.png" type="image/x-icon">
+    <style>
+      main a {
+      text-decoration:none;
+      }
+      .description_group {
+      height: 500px;
+      width: 100%;
+      }
+      .page_description {
+      width: 50%;
+      height: 100%;
+      margin: 0px;
+      float: left;
+      }
+    </style>
   </head>
   <body>
     <header>
-	<h1>Unit Tests</h1>
+      <h1>NUS Library</h1>
     </header>
     <nav>
       <a href="index.html">
@@ -44,43 +59,32 @@
     </nav>
     <main>
       <a name="main"></a>
-      Unit Tests are simple programs designed to test specific functions of the NUS library. These programs may rely on code originally tested in other unit tests, or may be independant of other unit tests.
-      <!-- a description list, one for each unit test -->
-      <dl>
-	<hr>
-	<dt>save_file</dt>
-	<dd>obtains information from a save file, prints the information out, and then saves the file with an incremented number from the file. A test for basic save file input/output.<br>
-	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/save_file">source</a></dd>
-	<hr>
-	<dt>3d_math</dt>
-	<dd>Tests various 3d math functions for correctness.<br>
-	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/3d_math">source</a></dd>
-	<hr>
-	<dt>gravity_simulation</dt>
-	<dd>Uses 3d_math to determine the efect of gravity on a resting object and prints the result. Tests force and momentum effects on a mass.<br>
-	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/gravity_simulation">source</a></dd>
-	<hr>
-	<dt>basic_window</dt>
-	<dd>Opens a window and detects input. The window can be closed by pressing the esc key or clicking the close window button that is usually in the top-left or top-right of the displayed window (depending on your operating system). Tests window creation and input detection.<br>
-	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/basic_window">source</a></dd>
-	<hr>
-	<dt>gpu_detection</dt>
-	<dd>Utilizes vulkan to detect, and then print information regarding the clients graphical processing unit. This program will open a window to get some information and automatically close said window once the information has been obtained. Tests vulkan instnace creation, presentation surface creation, and obtaining gpu information.<br>
-	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/gpu_detection">source</a></dd>
-	<hr>
-	<dt>vulkan_clear</dt>
-	<dd>Similar to basic_window, this program opens a window and can be closed by the esc key or the close button. Vulkan is utilized to make the computer's gpu clear the window to a solid color. Tests basic vulkan command submiting and surface presenting.<br>
-	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/vulkan_clear">source</a></dd>
-	<hr>
-	<dt>hello_triangle</dt>
-	<dd>A program that builds upon vulkan_clear. It uses shaders to draw a solid colored triangle and display it on a window. Tests shader utilization without uniform memory variables. Also tests loading a NUSM model into application memory.<br>
-	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/hello_triangle">source</a></dd>
-	<hr>
-	<dt>uniform_shader</dt>
-	<dd>Building off of hello_triangle, this program displays and moves a triangle around the screen based on keyboard input (the wasd and arrow keys). Tests basic vulkan uniform variables in shaders and description sets.<br>
-	  <a target="_blank" href="https://github.com/PyCee/NUS_library/tree/master/unit_tests/uniform_shader">source</a></dd>
-	<hr>
-      </dl>
+      The NUS library is a video game library currently in development.
+      <hr>
+      <div class="description_group">
+	<div class="page_description">
+	  asd
+	</div>
+	<div class="page_description">
+	  dsa
+	</div>
+      </div>
+      <a href="documentation.html"><h2>DOCUMENTATION</h2></a>
+      Documentation for the NUS library.<br>
+      Specifies setup and use of the library for developers.
+      <hr>
+      <a href="unit_tests.html"><h2>UNIT TESTS</h2></a>
+      Explains a variety of tests that show features of the library in use.<br>
+      Used to test new features during development.
+      <hr>
+      <a href="NUSM.html"><h2>MODELS (NUSM)</h2></a>
+      Describes the custom modeling details this library uses.
+      <hr>
+      <a href="about.html"><h2>ABOUT</h2></a>
+      Information about the NUS library and its developer.
+      <hr>
+      <a target="_blank" href="https://github.com/PyCee/NUS_library"><h2>SOURCE</h2></a>
+      The public github repository for the NUS library.
     </main>
     <footer>
       <hr>
