@@ -28,8 +28,8 @@ html {
     font-family:Georgia, Helvetica, sans-serif;
 }
 hr {
-    margin-top:20px;
-    margin-bottom:25px;
+    margin-top:10px;
+    margin-bottom:20px;
     border-color:hsla(300, 60%, 90%, 0.2);
     background-color:hsla(300, 60%, 80%, 0.0);
 }
@@ -81,5 +81,22 @@ footer {
     text-align:center;
 }
 footer > hr {
-    margin:20px 40px;
+    margin:10px 40px;
+}
+code {
+    font-size:14px;
+    text-align:left;
+}
+/* A horizontal group that manages spacing for page_descriptions */
+.description_group {
+    height:auto;
+    width:100%;
+    padding-top:25px;
+    overflow:hidden;
+}
+/* A desctiption of a particular webpage on this site */
+.page_description {
+    width:50%;
+    height:100%;
+    float:left;
 }

@@ -49,14 +49,26 @@
       </a>
     </nav>
     <main>
-      <a name="main"></a>
       <!-- Link to documentation pdf in another tab -->
-      NUS library utilizes a smaller library, named NUSM, for storing 3D model data.<br>
-      Documentation for NUSM can be <a target="_blank" href="pdf_NUSM.pdf">found in pdf form</a>.
+      NUS library utilizes a smaller library, named NUS-Models (NUSM), for storing 3D model data.<br>
+      Documentation for NUSM can be found in <a target="_blank" href="pdf_NUSM.pdf">PDF form. (ongoing development)</a>
       <hr>
-      NUSM uses a custom binary file format used to store 3D models, which may be read using a function from the NUSM library.
+      NUSM uses a custom binary file format used to store 3D models, which may be read using a function from the NUSM library.<br><br>
+      In addition to the functions to manage a NUSM file in an application, NUSM supplies a command-line utility that will read a 3D model file (of any type supported by <a target="_blank" href="http://assimp.sourceforge.net/main_features_formats.html">Assimp</a>) and create a corresponding NUSM file.
       <hr>
-      In addition to the functions to manage a NUSM file in an application, NUSM supplies a command-line utility that will read a 3D model file (of any type listed at <a target="_blank" href="http://assimp.sourceforge.net/main_features_formats.html">Assimp</a>) and create a corresponding NUSM file.
+      The command can be run as follows:<br><br>
+      NUSM &lt;path to source file&gt; &lt;path to desired file output&gt;<br>
+      (paths are relative to working directory)<br><br>
+      <code>
+	> NUSM cube.dae cube.nusm<br>
+	Loading information from file using assimp<br>
+	Model has 8 vertices<br>
+	Model has 36 indices<br>
+	Storing information in file<br>
+	Validating created file<br>
+	File successfully created<br>
+	>
+      </code>
     </main>
     <footer>
       <hr>
