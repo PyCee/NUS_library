@@ -1,22 +1,22 @@
-@media only all and (min-width:64em) {/* computer */
+@media only all and (min-width:64em) {/* Computer */
     html {
 	font-size:20px;
     }
     main {
 	font-size:16px;
     }
-    nav > a > div {
+    nav > a > div {/* Navigation links */
 	width:120px;
 	height:40px;
         padding-top:15px;
     }
 }
-@media only all and (max-width:64em) {/* mobile and tablet */
+@media only all and (max-width:64em) {/* Mobile and tablet */
     html {/* Text is larger and centered */
 	font-size:25px;
 	text-align:center;
     }
-    nav > a > div {/* Resized divs */
+    nav > a > div {/* Resized navigation links */
 	width:calc(33% - 30px);
 	height:50px;
 	padding-top:25px;
@@ -36,7 +36,7 @@ hr {
 li {
     margin:7px 0px;
 }
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6 { /* Styles the headings */
     color:hsla(240, 50%, 60%, 0.9);
     font-weight:normal;
     margin-top:0px;
@@ -80,13 +80,14 @@ footer {
     font-size:12px;
     text-align:center;
 }
-footer > hr {
+footer > hr { /* Styles the horizontal rules in the footer */
     margin:10px 40px;
 }
 code {
     font-size:14px;
     text-align:left;
 }
+
 /* A horizontal group that manages spacing for page_descriptions */
 .description_group {
     height:auto;
