@@ -5,11 +5,6 @@
 #include "stdio.h"
 #include <NUSM/NUSM_library.h>
 
-
-#include <assimp/cimport.h>        // Plain-C interface
-#include <assimp/scene.h>          // Output data structure
-#include <assimp/postprocess.h>    // Post processing flags
-
 NUS_result nus_model_build(NUS_absolute_path absolute_path, NUS_model *p_model)
 {
   nusm_read(absolute_path.path, &p_model->contents);
