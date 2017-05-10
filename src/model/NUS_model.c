@@ -5,20 +5,22 @@
 #include "stdio.h"
 #include <NUSM/NUSM_library.h>
 
+
+#include <assimp/cimport.h>        // Plain-C interface
+#include <assimp/scene.h>          // Output data structure
+#include <assimp/postprocess.h>    // Post processing flags
+
 NUS_result nus_model_build(NUS_absolute_path absolute_path, NUS_model *p_model)
 {
   nusm_read(absolute_path.path, &p_model->contents);
   
-  printf("index buffer count: %d\n", (int)p_model->contents.index_data_size /
-	 (int)NUSM_INDEX_BYTE_COUNT);
-  printf("vertex buffer count: %d\n", (int)p_model->contents.vertex_data_size/
-	 (int)NUSM_VERTEX_BYTE_COUNT);
   return NUS_SUCCESS;
 }
 void nus_model_free(NUS_queue_info queue, NUS_model *p_model)
 {
   nus_memory_map_free(&p_model->vertex_memory, queue);
   nus_memory_map_free(&p_model->index_memory, queue);
+  // free model contents
 }
 NUS_result nus_model_buffer
 (NUS_queue_info queue, NUS_model *p_model)

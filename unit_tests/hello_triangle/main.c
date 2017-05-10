@@ -86,25 +86,12 @@ int main(int argc, char *argv[])
 				 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
 				 &info) !=
      NUS_SUCCESS){
-    printf("ERROR::failed to find suitable gou info\n");
+    printf("ERROR::failed to find suitable gpu info\n");
     return NUS_FAILURE;
   }
   
   NUS_model model;
   // the vertex normal represents color for this unit test
-  /*
-  model.vertex_count = 3;
-  model.vertices = malloc(sizeof(NUS_vertex) * model.vertex_count);
-  model.vertices[0] = (NUS_vertex){{-0.7f, 0.7f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}};
-  model.vertices[1] = (NUS_vertex){{0.7f, 0.7f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f}};
-  model.vertices[2] = (NUS_vertex){{0.0f, -0.7f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}};
-
-  model.index_count = 6;
-  model.indices = malloc(sizeof(*model.indices) * model.index_count);
-  model.indices[0] = 0;
-  model.indices[1] = 1;
-  model.indices[2] = 2;
-  */
   nus_model_build(nus_absolute_path_build("triangle.nusm"), &model);
   nus_model_buffer(info, &model);
 

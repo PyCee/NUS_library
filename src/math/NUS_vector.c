@@ -58,8 +58,7 @@ NUS_vector nus_vector_interpolate
 char nus_vector_cmp(NUS_vector vector_0, NUS_vector vector_1, double range)
 {
   NUS_vector sub = nus_vector_subtract(vector_0, vector_1);
-  return nus_vector_dot(sub, sub) <=
-    range * range;
+  return nus_vector_dot(sub, sub) <= range * range;
 }
 void nus_vector_print(NUS_vector vector)
 {

@@ -13,8 +13,8 @@ NUS_result nus_image_clear
 
   NUS_queue_info info;
   nus_gpu_find_queue_info(NUS_gpu_,
-			      NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
-			      &info);
+			  NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
+			  &info);
   
   nus_queue_info_add_buffer(info, &command_buffer);
   

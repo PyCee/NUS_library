@@ -1,4 +1,4 @@
-
+\
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -14,6 +14,8 @@
 #define PROGRAM_NAME "unit_test-load_model"
 
 void close_win(void);
+void move_forward(void);
+void move_back(void);
 void move_up(void);
 void move_left(void);
 void move_down(void);
@@ -24,7 +26,7 @@ void pitch_down(void);
 void yaw_left(void);
 void yaw_right(void);
 char run;
-float dx = 0.0, dy = 0.0, dpitch = 0.0, dyaw = 0.0;
+float dx = 0.0, dy = 0.0, dz = 0.0, dpitch = 0.0, dyaw = 0.0;
 float move_speed = 0.01, rotate_speed = 1.0 * 3.14159 / 180.0;
 
 int main(int argc, char *argv[])
@@ -49,11 +51,15 @@ int main(int argc, char *argv[])
   
   nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
 				    NUS_KEY_ESC, close_win);
+  //nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_E, move_forward);
+  //nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_Q, move_back);
   nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_W, move_up);
   nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_A, move_left);
   nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_S, move_down);
   nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_D, move_right);
   
+  //nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_E, move_back);
+  //nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_Q, move_forward);
   nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_S, move_up);
   nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_D, move_left);
   nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_W, move_down);
@@ -125,88 +131,30 @@ int main(int argc, char *argv[])
 				 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
 				 &info) !=
      NUS_SUCCESS){
-    printf("ERROR::failed to find suitable gou info\n");
+    printf("ERROR::failed to find suitable gpu info\n");
     return NUS_FAILURE;
   }
   
   printf("start model\n");
   
-  NUS_model model;// temp model for testing purposes
-  // the vertex normal represents color for this unit test
-  /*
-  model.vertex_count = 3;
-  model.vertices = malloc(sizeof(NUS_vertex) * model.vertex_count);
-  model.vertices[0] = (NUS_vertex){{-0.2f, 0.2f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}};
-  model.vertices[1] = (NUS_vertex){{0.2f, 0.2f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f}};
-  model.vertices[2] = (NUS_vertex){{0.0f, -0.2f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}};
-
-  model.index_count = 6;
-  model.indices = malloc(sizeof(*model.indices) * model.index_count);
-  model.indices[0] = 0;
-  model.indices[1] = 1;
-  model.indices[2] = 2;
-  */
-  /*
-  model.vertex_count = 8;
-  model.vertices = malloc(sizeof(NUS_vertex) * model.vertex_count);
-  model.vertices[0] = (NUS_vertex){{-0.3, 0.3, 0.3, 1.0, 1.0, 1.0, 0.0, 0.0}};
-  model.vertices[1] = (NUS_vertex){{0.3, 0.3, 0.3, 0.0, 0.0, 0.0, 0.0, 0.0}};
-  model.vertices[2] = (NUS_vertex){{-0.3, -0.3, 0.3, 0.0, 0.0, 1.0, 0.0, 0.0}};
-  model.vertices[3] = (NUS_vertex){{0.3, -0.3, 0.3, 1.0, 0.0, 1.0, 0.0, 0.0}};
-  model.vertices[4] = (NUS_vertex){{-0.3, 0.3, -0.3, 1.0, 1.0, 0.0, 0.0, 0.0}};
-  model.vertices[5] = (NUS_vertex){{0.3, 0.3, -0.3, 0.0, 1.0, 0.0, 0.0, 0.0}};
-  model.vertices[6] = (NUS_vertex){{-0.3, -0.3, -0.3, 0.0, 0.0, 0.0, 0.0, 0.0}};
-  model.vertices[7] = (NUS_vertex){{0.3, -0.3, -0.3, 1.0, 0.0, 0.0, 0.0, 0.0}};
-
-  model.index_count = 36;
-  model.indices = malloc(sizeof(*model.indices) * model.index_count);
-  //ff
-  model.indices[0] = 2;
-  model.indices[1] = 0;
-  model.indices[2] = 1;
-  model.indices[3] = 1;
-  model.indices[4] = 3;
-  model.indices[5] = 2;
-  //fl
-  model.indices[6] = 0;
-  model.indices[7] = 2;
-  model.indices[8] = 6;
-  model.indices[9] = 6;
-  model.indices[10] = 4;
-  model.indices[11] = 0;
-  //fr
-  model.indices[12] = 3;
-  model.indices[13] = 1;
-  model.indices[14] = 5;
-  model.indices[15] = 5;
-  model.indices[16] = 7;
-  model.indices[17] = 3;
-  //ft
-  model.indices[18] = 2;
-  model.indices[19] = 3;
-  model.indices[20] = 7;
-  model.indices[21] = 7;
-  model.indices[22] = 6;
-  model.indices[23] = 2;
-  //fbo
-  model.indices[24] = 0;
-  model.indices[25] = 4;
-  model.indices[26] = 5;
-  model.indices[27] = 5;
-  model.indices[28] = 1;
-  model.indices[29] = 0;
-  //fba
-  model.indices[30] = 4;
-  model.indices[31] = 6;
-  model.indices[32] = 7;
-  model.indices[33] = 7;
-  model.indices[34] = 5;
-  model.indices[35] = 4;
-  */
+  NUS_model model;
+  
   nus_model_build(nus_absolute_path_build("cube.nusm"), &model);
   nus_model_buffer(info, &model);
   
   printf("end model stuffz\n");
+
+  
+  NUS_depth_buffer depth_buffer;
+  if(nus_depth_buffer_build(*present.queue_info.p_gpu, 600, 400, &depth_buffer) !=
+     NUS_SUCCESS){
+    printf("UNIT_TEST_ERROR::failed to build depth_buffer\n");
+    return -1;
+  }
+  nus_texture_initial_transition(depth_buffer, present.queue_info,
+				 VK_IMAGE_LAYOUT_UNDEFINED,
+				 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+  
 
   // code to create renderpass
   VkAttachmentDescription attachment_descriptions[] = {
@@ -220,12 +168,27 @@ int main(int argc, char *argv[])
       .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
       .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
       .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+    },
+    {
+      .flags = 0,
+      .format = depth_buffer.format,
+      .samples = VK_SAMPLE_COUNT_1_BIT,
+      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      .initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+      .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
     }
   };
-  VkAttachmentReference color_attachment_references[] = {
+  VkAttachmentReference attachment_refs[] = {
     {
       .attachment = 0,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    },
+    {
+      .attachment = 1,
+      .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
     }
   };
   VkSubpassDescription subpass_descriptions[] = {
@@ -235,9 +198,9 @@ int main(int argc, char *argv[])
       .inputAttachmentCount = 0,
       .pInputAttachments = NULL,
       .colorAttachmentCount = 1,
-      .pColorAttachments = color_attachment_references,
+      .pColorAttachments = attachment_refs + 0,
       .pResolveAttachments = NULL,
-      .pDepthStencilAttachment = NULL,
+      .pDepthStencilAttachment = attachment_refs + 1,
       .preserveAttachmentCount = 0,
       .pPreserveAttachments = NULL
     }
@@ -269,7 +232,7 @@ int main(int argc, char *argv[])
     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .attachmentCount = 1,
+    .attachmentCount = 2,
     .pAttachments = attachment_descriptions,
     .subpassCount = 1,
     .pSubpasses = subpass_descriptions,
@@ -286,54 +249,32 @@ int main(int argc, char *argv[])
   }
   
   // code to create framebuffer
-  VkImageViewCreateInfo image_view_create_info = {
-    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-    .pNext = NULL,
-    .flags = 0,
-    .image = present.render_target.image,
-    .viewType = VK_IMAGE_VIEW_TYPE_2D,
-    .format = present.swapchain.format.format,
-    .components = {
-      .r = VK_COMPONENT_SWIZZLE_IDENTITY,
-      .g = VK_COMPONENT_SWIZZLE_IDENTITY,
-      .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-      .a = VK_COMPONENT_SWIZZLE_IDENTITY
-    },
-    .subresourceRange = {
-      .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-      .baseMipLevel = 0,
-      .levelCount = 1,
-      .baseArrayLayer = 0,
-      .layerCount = 1
-    }
-  };
-  VkImageView image_view;
-  if(vkCreateImageView(present.queue_info.p_gpu->logical_device,
-		       &image_view_create_info, NULL,
-		       &image_view) != VK_SUCCESS){
-    printf("ERROR::failed to create image view\n");
+  NUS_framebuffer_info framebuffer_info;
+  nus_framebuffer_info_build(600, 400, 2, &framebuffer_info);
+  if(nus_framebuffer_info_set_attachment(*present.queue_info.p_gpu,
+					 present.render_target,
+					 present.swapchain.format.format,
+					 VK_IMAGE_ASPECT_COLOR_BIT, 0,
+					 &framebuffer_info) != NUS_SUCCESS){
+    printf("ERROR::failed to set framebuffer info attachment: render target\n");
     return -1;
   }
   
-  VkFramebufferCreateInfo framebuffer_create_info = {
-    .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-    .pNext = NULL,
-    .flags = 0,
-    .renderPass = render_pass,
-    .attachmentCount = 1,
-    .pAttachments = &image_view,
-    .width = 600,
-    .height = 400,
-    .layers = 1
-  };
-  VkFramebuffer framebuffer;
-  if(vkCreateFramebuffer(present.queue_info.p_gpu->logical_device,
-			 &framebuffer_create_info, NULL,
-			 &framebuffer) != VK_SUCCESS){
-    printf("ERROR::failed to create framebuffer\n");
+  if(nus_framebuffer_info_set_attachment(*present.queue_info.p_gpu,
+					 depth_buffer,
+					 present.swapchain.format.format,
+					 VK_IMAGE_ASPECT_DEPTH_BIT, 1,
+					 &framebuffer_info) != NUS_SUCCESS){
+    printf("ERROR::failed to set framebuffer info attachment: render target\n");
     return -1;
   }
 
+  NUS_framebuffer framebuffer;
+  if(nus_framebuffer_build(*present.queue_info.p_gpu, render_pass, framebuffer_info,
+			   &framebuffer) != NUS_SUCCESS){
+    printf("ERROR::failed to build framebuffer\n");
+    return -1;
+  }
 
   // Create Graphics Pipeline
   NUS_shader vertex_shader,
@@ -442,7 +383,8 @@ int main(int argc, char *argv[])
     .depthClampEnable = VK_FALSE,
     .rasterizerDiscardEnable = VK_FALSE,
     .polygonMode = VK_POLYGON_MODE_FILL,
-    .cullMode = VK_CULL_MODE_BACK_BIT,
+    .cullMode = VK_CULL_MODE_NONE,
+    //.cullMode = VK_CULL_MODE_BACK_BIT,
     .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
     .depthBiasEnable = VK_FALSE,
     .depthBiasConstantFactor = 0.0f,
@@ -562,6 +504,21 @@ int main(int argc, char *argv[])
     return -1;
   }
   
+  VkPipelineDepthStencilStateCreateInfo depth_create_info = {
+    .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+    .pNext = NULL,
+    .flags = 0,
+    .depthTestEnable = VK_TRUE,
+    .depthWriteEnable = VK_TRUE,
+    .depthCompareOp = VK_COMPARE_OP_LESS,
+    .depthBoundsTestEnable = VK_FALSE,
+    .minDepthBounds = 0.0f,
+    .maxDepthBounds = 1.0f,
+    .stencilTestEnable = VK_FALSE,
+    .front = {},
+    .back = {}
+  };
+  
   VkGraphicsPipelineCreateInfo graphics_pipeline_create_info = {
     .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
     .pNext = NULL,
@@ -574,7 +531,7 @@ int main(int argc, char *argv[])
     .pViewportState = &viewport_state_create_info,
     .pRasterizationState = &rasterization_state_create_info,
     .pMultisampleState = &multisample_state_create_info,
-    .pDepthStencilState = NULL,
+    .pDepthStencilState = &depth_create_info,
     .pColorBlendState = &color_blend_state_create_info,
     .pDynamicState = &dynamic_state_create_info,
     .layout = pipeline_layout,
@@ -606,13 +563,20 @@ int main(int argc, char *argv[])
     0,
     1
   };
-  VkClearValue clear_value = { .color = {{0.4f, 0.1f, 0.3f, 1.0f}} };
+  VkClearValue clear_value[] = {
+    {
+      .color = {{0.4f, 0.1f, 0.3f, 1.0f}},
+    },
+    {
+      .depthStencil = {1.0f, 0}
+    }
+  };
 
   VkRenderPassBeginInfo render_pass_begin_info = {
     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
     .pNext = NULL,
     .renderPass = render_pass,
-    .framebuffer = framebuffer,
+    .framebuffer = framebuffer.vk_framebuffer,
     .renderArea = {
       .offset = {
 	.x = 0,
@@ -620,8 +584,8 @@ int main(int argc, char *argv[])
       },
       .extent = present.swapchain.extent
     },
-    .clearValueCount = 1,
-    .pClearValues = &clear_value
+    .clearValueCount = 2,
+    .pClearValues = clear_value
   };
   
 
@@ -762,7 +726,7 @@ int main(int argc, char *argv[])
   
   
   run = 1;
-  float x = 0.0f, y = 0.0f;
+  float x = 0.0f, y = 0.0f, z = 0.4;
   while(run){
 
     nus_system_events_handle(win);
@@ -770,12 +734,14 @@ int main(int argc, char *argv[])
     
     y += dy;
     x += dx;
+    z += dz;
     
     axes = nus_axes_global_pitch(axes, dpitch);
     axes = nus_axes_global_yaw(axes, dyaw);
-    translation = nus_vector_build(x, y, 0.4);
+    translation = nus_vector_build(x, y, z);
     tmp = nus_matrix_transformation(translation, axes);
     tmp = nus_matrix_transpose(tmp);
+    //nus_matrix_print(tmp);
     
     nus_memory_map_flush(uniform_world_memory, present.queue_info, &tmp);
 
@@ -799,8 +765,6 @@ int main(int argc, char *argv[])
       printf("ERROR::failed to present window\n");
       return -1;
     }
-
-    //run = 0;
     
   }
   
@@ -835,16 +799,9 @@ int main(int argc, char *argv[])
 		      render_pass, NULL);
     render_pass = VK_NULL_HANDLE;
   }
-  if(framebuffer != VK_NULL_HANDLE){
-    vkDestroyFramebuffer(present.queue_info.p_gpu->logical_device,
-		      framebuffer, NULL);
-    framebuffer = VK_NULL_HANDLE;
-  }
-  if(image_view != VK_NULL_HANDLE){
-    vkDestroyImageView(present.queue_info.p_gpu->logical_device,
-		      image_view, NULL);
-    image_view = VK_NULL_HANDLE;
-  }
+  
+  nus_framebuffer_info_free(*present.queue_info.p_gpu, &framebuffer_info);
+  nus_framebuffer_free(*present.queue_info.p_gpu, &framebuffer);
   
   nus_presentation_surface_free(vulkan_instance, &present);
   nus_multi_gpu_free(&multi_gpu);
@@ -860,6 +817,14 @@ void close_win(void)
   run = 0;
 }
 
+void move_forward(void)
+{
+  dz -= move_speed;
+}
+void move_back(void)
+{
+  dz += move_speed;
+}
 void move_up(void)
 {
   dy -= move_speed;

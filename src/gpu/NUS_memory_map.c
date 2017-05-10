@@ -27,22 +27,6 @@ NUS_result nus_memory_map_build
   VkMemoryRequirements buffer_memory_req;
   vkGetBufferMemoryRequirements(queue.p_gpu->logical_device,
 				p_memory_map->buffer, &buffer_memory_req);
-  /*
-  VkPhysicalDeviceMemoryProperties memory_properties;
-  vkGetPhysicalDeviceMemoryProperties(queue.p_gpu->physical_device,
-				      &memory_properties);
-  unsigned int memory_type_index;
-  VkPhysicalDeviceMemoryProperties mem_properties;
-  vkGetPhysicalDeviceMemoryProperties(queue.p_gpu->physical_device,
-				      &mem_properties);
-  for(memory_type_index = 0; memory_type_index < mem_properties.memoryTypeCount;
-      ++memory_type_index){
-    if((buffer_memory_req.memoryTypeBits & (uint32_t)(1 << memory_type_index)) &&
-       (mem_properties.memoryTypes[memory_type_index].propertyFlags &
-	VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)){
-      break;
-    }
-  }*/
   
   VkMemoryAllocateInfo memory_allocate_info = {
     .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
