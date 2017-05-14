@@ -12,6 +12,7 @@
 #include "NUS_result.h"
 #include "NUS_save.h"
 #include "NUS_component_key.h"
+#include "NUS_log.h"
 
 #include "strings/NUS_string_group.h"
 #include "strings/NUS_absolute_path.h"

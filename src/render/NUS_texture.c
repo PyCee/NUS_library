@@ -2,7 +2,7 @@
 #include "../gpu/NUS_gpu.h"
 #include "../gpu/NUS_queue_info.h"
 #include "../gpu/NUS_memory_properties.h"
-#include <stdio.h>
+#include "../NUS_log.h"
 
 NUS_result nus_texture_layout_to_mask(VkImageLayout, unsigned int *);
 
@@ -35,7 +35,7 @@ NUS_result nus_texture_build
   };
   if(vkCreateImage(gpu.logical_device, &image_create_info, NULL,
 		   &p_texture->image) != VK_SUCCESS){
-    printf("ERROR::failed to create texture image\n");
+    NUS_LOG_ERROR("failed to create texture image\n");
     return NUS_FAILURE;
   }
   VkMemoryRequirements image_memory_req;
@@ -49,7 +49,7 @@ NUS_result nus_texture_build
   };
   if(vkAllocateMemory(gpu.logical_device, &memory_alloc_info, NULL,
 		      &p_texture->memory) != VK_SUCCESS){
-    printf("ERROR::failed to allocate memory for texture\n");
+    NUS_LOG_ERROR("failed to allocate memory for texture\n");
     return NUS_FAILURE;
   }
   vkBindImageMemory(gpu.logical_device, p_texture->image, p_texture->memory, 0);
@@ -79,11 +79,11 @@ NUS_result nus_texture_initial_transition
     dst_access_mask;
 
   if(nus_texture_layout_to_mask(src_layout, &src_access_mask) != NUS_SUCCESS){
-    printf("NUS_ERROR::invalid src_layout in initial texture transition\n");
+    NUS_LOG_ERROR("invalid src_layout in initial texture transition\n");
     return NUS_FAILURE;
   }
   if(nus_texture_layout_to_mask(dst_layout, &dst_access_mask) != NUS_SUCCESS){
-    printf("NUS_ERROR::invalid dst_layout in initial texture transition\n");
+    NUS_LOG_ERROR("invalid dst_layout in initial texture transition\n");
     return NUS_FAILURE;
   }
   
@@ -120,7 +120,7 @@ NUS_result nus_texture_initial_transition
 		       VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 		       0, 0, NULL, 0, NULL, 1, &barrier_from_old_to_new);
   if(vkEndCommandBuffer(command_buffer) != VK_SUCCESS){
-      printf("ERROR::Could not record command buffer!\n");
+      NUS_LOG_ERROR("Could not record command buffer!\n");
       return NUS_FAILURE;
   }
   nus_command_group_append(queue_info.p_command_group, command_buffer);
@@ -152,7 +152,7 @@ NUS_result nus_texture_layout_to_mask(VkImageLayout layout, unsigned int *mask)
       VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
       break;
   default:
-    printf("NUS_ERROR::invalid layout\n");
+    NUS_LOG_ERROR("invalid layout\n");
     return NUS_FAILURE;
   }
   return NUS_SUCCESS;

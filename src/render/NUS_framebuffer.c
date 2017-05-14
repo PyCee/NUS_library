@@ -4,6 +4,7 @@
 #include "../gpu/NUS_gpu.h"
 #include "NUS_render_pass.h"
 #include "NUS_texture.h"
+#include "../NUS_log.h"
 
 NUS_result nus_framebuffer_info_build
 (unsigned int width, unsigned int height, unsigned int view_count,
@@ -30,8 +31,7 @@ NUS_result nus_framebuffer_info_set_attachment
  unsigned int index, NUS_framebuffer_info *p_framebuffer_info)
 {
   if(index >= p_framebuffer_info->view_count || index < 0){
-    printf("ERROR::failed to add framebuffer attachment %d::invalid index\n",
-	   index);
+    NUS_LOG_ERROR("failed to add framebuffer attachment %d::invalid index\n", index);
     return NUS_FAILURE;
   }
   p_framebuffer_info->p_view_create_infos[index] = (VkImageViewCreateInfo){
@@ -71,7 +71,7 @@ NUS_result nus_framebuffer_build
      if(vkCreateImageView(gpu.logical_device,
 			  &framebuffer_info.p_view_create_infos[i], NULL,
 			  &p_framebuffer->p_views[i]) != VK_SUCCESS){
-       printf("ERROR::failed to create framebuffer image view attachment\n");
+       NUS_LOG_ERROR("failed to create framebuffer image view attachment\n");
        return NUS_FAILURE;
      }
   }
@@ -88,7 +88,7 @@ NUS_result nus_framebuffer_build
   };
   if(vkCreateFramebuffer(gpu.logical_device, &framebuffer_create_info, NULL,
 			 &p_framebuffer->vk_framebuffer) != VK_SUCCESS){
-    printf("ERROR::failed to create framebuffer vk_framebuffer\n");
+    NUS_LOG_ERROR("failed to create framebuffer vk_framebuffer\n");
     return NUS_FAILURE;
   }
   return NUS_SUCCESS;

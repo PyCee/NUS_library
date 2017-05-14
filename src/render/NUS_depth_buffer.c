@@ -23,6 +23,10 @@ NUS_result nus_depth_buffer_build
   }
   return NUS_SUCCESS;
 }
+void nus_depth_buffer_free(NUS_gpu gpu, NUS_depth_buffer *p_depth_buffer)
+{
+  nus_texture_free(gpu, p_depth_buffer);
+}
 static NUS_result nus_depth_buffer_find_format(NUS_gpu gpu, VkFormat *format)
 {
   VkFormat possible_formats[] = {

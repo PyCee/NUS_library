@@ -60,7 +60,8 @@ MOD_HEA=$(MOD_SRC:.c=.h)
 PHY_HEA=$(PHY_SRC:.c=.h)
 REN_HEA=$(REN_SRC:.c=.h)
 TIME_HEA=$(TIME_SRC:.c=.h)
-OTH_HEA=NUS_library.h NUS_result.h NUS_os.h NUS_component_key.h $(OTH_SRC:.c=.h)
+OTH_HEA=NUS_library.h NUS_result.h NUS_os.h NUS_component_key.h NUS_log.h \
+	$(OTH_SRC:.c=.h)
 
 NUS_SRC_FILES=$(STR_SRC) $(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(PHY_SRC) \
 	$(REN_SRC) $(OTH_SRC) $(TIME_SRC)
