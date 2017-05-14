@@ -73,7 +73,7 @@ NUS_result nus_texture_load_image_file(NUS_texture *p_texture, char *file_path)
 }
 NUS_result nus_texture_initial_transition
 (NUS_texture texture, NUS_queue_info queue_info,
- VkImageLayout src_layout, VkImageLayout dst_layout)
+ VkImageLayout src_layout, VkImageLayout dst_layout, unsigned int aspect_mask)
 {
   unsigned int src_access_mask,
     dst_access_mask;
@@ -97,7 +97,7 @@ NUS_result nus_texture_initial_transition
     .pInheritanceInfo = NULL
   };
   VkImageSubresourceRange image_subresource_range = {
-    VK_IMAGE_ASPECT_COLOR_BIT,
+    aspect_mask,
     0,
     1,
     0,

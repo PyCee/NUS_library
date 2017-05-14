@@ -153,8 +153,8 @@ int main(int argc, char *argv[])
   }
   nus_texture_initial_transition(depth_buffer, present.queue_info,
 				 VK_IMAGE_LAYOUT_UNDEFINED,
-				 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-  
+				 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+				 VK_IMAGE_ASPECT_DEPTH_BIT);
 
   // code to create renderpass
   VkAttachmentDescription attachment_descriptions[] = {
