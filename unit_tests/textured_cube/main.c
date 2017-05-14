@@ -259,10 +259,9 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to set framebuffer info attachment: render target\n");
     return -1;
   }
-  
   if(nus_framebuffer_info_set_attachment(*present.queue_info.p_gpu,
 					 depth_buffer,
-					 present.swapchain.format.format,
+					 depth_buffer.format,
 					 VK_IMAGE_ASPECT_DEPTH_BIT, 1,
 					 &framebuffer_info) != NUS_SUCCESS){
     printf("ERROR::failed to set framebuffer info attachment: render target\n");
@@ -383,8 +382,8 @@ int main(int argc, char *argv[])
     .depthClampEnable = VK_FALSE,
     .rasterizerDiscardEnable = VK_FALSE,
     .polygonMode = VK_POLYGON_MODE_FILL,
-    .cullMode = VK_CULL_MODE_NONE,
-    //.cullMode = VK_CULL_MODE_BACK_BIT,
+    //.cullMode = VK_CULL_MODE_NONE,
+    .cullMode = VK_CULL_MODE_BACK_BIT,
     .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
     .depthBiasEnable = VK_FALSE,
     .depthBiasConstantFactor = 0.0f,
@@ -783,6 +782,8 @@ int main(int argc, char *argv[])
   
   nus_shader_free(*present.queue_info.p_gpu, &vertex_shader);
   nus_shader_free(*present.queue_info.p_gpu, &fragment_shader);
+
+  nus_depth_buffer_free(*present.queue_info.p_gpu, &depth_buffer);
 
   if(pipeline_layout != VK_NULL_HANDLE){
     vkDestroyPipelineLayout(present.queue_info.p_gpu->logical_device,
