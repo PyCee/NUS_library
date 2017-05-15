@@ -5,7 +5,7 @@
 #include <NUS/NUS_library.h>
 #include <limits.h>
 
-#define PROGRAM_NAME "unit_test-save_file"
+#define PROGRAM_NAME "unit_test-gravity_simulation"
 
 char run;
 void close_win(void);
@@ -16,8 +16,7 @@ int main(int argc, char *argv[])
   if(argc){}
   if(argv){}
 
-  NUS_component_key key = NUS_COMPONENT_KEY_MOVEMENT | NUS_COMPONENT_KEY_ORIENTATION;
-  NUS_mass test_mass = nus_mass_build(key);
+  NUS_mass test_mass = nus_mass_build();
   nus_mass_print(test_mass);
 
   nus_movement_set_mass(test_mass.movement, 1);
