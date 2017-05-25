@@ -3,6 +3,7 @@
 #include "../gpu/NUS_queue_info.h"
 #include "../gpu/NUS_memory_properties.h"
 #include "../NUS_log.h"
+#include <string.h>
 
 NUS_result nus_texture_layout_to_mask(VkImageLayout, unsigned int *);
 
@@ -45,7 +46,7 @@ NUS_result nus_texture_build
     .pNext = NULL,
     .allocationSize = image_memory_req.size,
     .memoryTypeIndex =
-    nus_memory_properties_type_index(gpu, image_memory_req,memory_property_flag)
+    nus_memory_properties_type_index(gpu, image_memory_req, memory_property_flag)
   };
   if(vkAllocateMemory(gpu.logical_device, &memory_alloc_info, NULL,
 		      &p_texture->memory) != VK_SUCCESS){
@@ -66,9 +67,14 @@ void nus_texture_free(NUS_gpu gpu, NUS_texture *p_texture)
     p_texture->image = VK_NULL_HANDLE;
   }
 }
-NUS_result nus_texture_load_image_file(NUS_texture *p_texture, char *file_path)
-{//TODO take NUS_abslute_path as parameter insted of char *
-  // load image at file_path into p_texture
+NUS_result nus_texture_load_data
+(NUS_gpu gpu, NUS_texture *p_texture, void *src, size_t size)
+{
+  void* data;
+  vkMapMemory(gpu.logical_device, p_texture->memory, 0, size, 0, &data);
+  memcpy(data, src, size);
+  vkUnmapMemory(gpu.logical_device, p_texture->memory);
+  
   return NUS_SUCCESS;
 }
 NUS_result nus_texture_initial_transition
