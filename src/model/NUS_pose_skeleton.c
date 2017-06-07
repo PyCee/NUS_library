@@ -77,7 +77,10 @@ static void nus_pose_skeleton_build_joint_transformation
   unsigned int parent_index;
   parent_index = p_pose_skeleton->p_skeleton->joints[joint_index].parent_index;
   p_pose_joint = p_pose_skeleton->joints + joint_index;
-  local_rotation = nus_axes_global_rotation(NUS_AXES_DEFAULT_FORWARD,
+  local_rotation = nus_axes_build(nus_vector_build(0.0, 0.0, 1.0),
+				  nus_vector_build(0.0, 1.0, 0.0),
+				  nus_vector_build(1.0, 0.0, 0.0));
+  local_rotation = nus_axes_global_rotation(local_rotation,
 					    p_pose_joint->rot);
   local_transformation = nus_matrix_transformation(p_pose_joint->trans,
 						   local_rotation);

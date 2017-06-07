@@ -55,10 +55,13 @@ NUS_vector nus_vector_interpolate
   return nus_vector_add(nus_vector_scale(vector_0, b),
 			nus_vector_scale(vector_1, t));
 }
-char nus_vector_cmp(NUS_vector vector_0, NUS_vector vector_1, double range)
+NUS_bool nus_vector_cmp(NUS_vector vector_0, NUS_vector vector_1, double range)
 {
   NUS_vector sub = nus_vector_subtract(vector_0, vector_1);
-  return nus_vector_dot(sub, sub) <= range * range;
+  if(nus_vector_dot(sub, sub) <= range * range){
+    return NUS_TRUE;
+  }
+  return NUS_FALSE;
 }
 void nus_vector_print(NUS_vector vector)
 {

@@ -1,6 +1,8 @@
 #ifndef NUS_MATRIX_H
 #define NUS_MATRIX_H
 
+#include "../NUS_bool.h"
+
 struct NUS_vector;
 struct NUS_axes;
 struct NUS_quaternion;
@@ -27,6 +29,7 @@ NUS_matrix nus_matrix_transformation
 struct NUS_vector nus_matrix_transform(NUS_matrix, struct NUS_vector);
 
 NUS_matrix nus_matrix_inverted(NUS_matrix);
+NUS_bool nus_matrix_cmp(NUS_matrix, NUS_matrix, float);
 void nus_matrix_print(NUS_matrix);
 
 #endif /* NUS_MATRIX_H */

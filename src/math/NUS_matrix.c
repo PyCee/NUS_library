@@ -1,6 +1,7 @@
 #include "NUS_matrix.h"
 #include "NUS_vector.h"
 #include "NUS_axes.h"
+#include "../NUS_log.h"
 #include <stdio.h>
 
 NUS_matrix nus_matrix_build(float m00, float m01, float m02, float m03,
@@ -146,21 +147,18 @@ NUS_matrix nus_matrix_multiply
 			  matrix_0.ele[3][2] * matrix_1.ele[2][3] + 
 			  matrix_0.ele[3][3] * matrix_1.ele[3][3]);
 }
-NUS_matrix nus_matrix_translation(const struct NUS_vector NUS_vector_)
+NUS_matrix nus_matrix_translation(const struct NUS_vector vector)
 {
-  return nus_matrix_build(1.0, 0.0, 0.0, NUS_vector_.x,
-			  0.0, 1.0, 0.0, NUS_vector_.y,
-			  0.0, 0.0, 1.0, NUS_vector_.z,
+  return nus_matrix_build(1.0, 0.0, 0.0, vector.x,
+			  0.0, 1.0, 0.0, vector.y,
+			  0.0, 0.0, 1.0, vector.z,
 			  0.0, 0.0, 0.0, 1.0);
 }
-NUS_matrix nus_matrix_rotation(NUS_axes NUS_axes_)
+NUS_matrix nus_matrix_rotation(NUS_axes axes)
 {
-  return nus_matrix_build(NUS_axes_.left.x, NUS_axes_.left.y,
-			  NUS_axes_.left.z, 0.0,
-			  NUS_axes_.upward.x, NUS_axes_.upward.y,
-			  NUS_axes_.upward.z, 0.0,
-			  NUS_axes_.forward.x, NUS_axes_.forward.y,
-			  NUS_axes_.forward.z, 0.0,
+  return nus_matrix_build(axes.right.x, axes.right.y, axes.right.z, 0.0,
+			  axes.upward.x, axes.upward.y, axes.upward.z, 0.0,
+			  axes.forward.x, axes.forward.y, axes.forward.z, 0.0,
 			  0.0, 0.0, 0.0, 1.0);
   /* Below is a quaternion --> rotation matrix algorithm.
    a remnant of a past time */
@@ -202,8 +200,31 @@ NUS_vector nus_matrix_transform(NUS_matrix matrix, NUS_vector vector)
 			  matrix.ele[2][3] * 1.0);
 }
 NUS_matrix nus_matrix_inverted(NUS_matrix matrix)
-{
+{//TODO
   return nus_matrix_identity();
+}
+NUS_bool nus_matrix_cmp(NUS_matrix matrix_0, NUS_matrix matrix_1, float d)
+{
+  float sum_of_differences = (matrix_0.ele[0][0] - matrix_1.ele[0][0]) +
+    (matrix_0.ele[0][1] - matrix_1.ele[0][1]) +
+    (matrix_0.ele[0][2] - matrix_1.ele[0][2]) +
+    (matrix_0.ele[0][3] - matrix_1.ele[0][3]) +
+    (matrix_0.ele[1][0] - matrix_1.ele[1][0]) +
+    (matrix_0.ele[1][1] - matrix_1.ele[1][1]) +
+    (matrix_0.ele[1][2] - matrix_1.ele[1][2]) +
+    (matrix_0.ele[1][3] - matrix_1.ele[1][3]) +
+    (matrix_0.ele[2][0] - matrix_1.ele[2][0]) +
+    (matrix_0.ele[2][1] - matrix_1.ele[2][1]) +
+    (matrix_0.ele[2][2] - matrix_1.ele[2][2]) +
+    (matrix_0.ele[2][3] - matrix_1.ele[2][3]) +
+    (matrix_0.ele[3][0] - matrix_1.ele[3][0]) +
+    (matrix_0.ele[3][1] - matrix_1.ele[3][1]) +
+    (matrix_0.ele[3][2] - matrix_1.ele[3][2]) +
+    (matrix_0.ele[3][3] - matrix_1.ele[3][3]);
+  if(sum_of_differences < (16 * d) && sum_of_differences > -1.0 * (16 * d)){
+    return NUS_TRUE;
+  }
+  return NUS_FALSE;
 }
 void nus_matrix_print(NUS_matrix matrix)
 {
