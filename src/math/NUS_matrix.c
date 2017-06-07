@@ -200,8 +200,140 @@ NUS_vector nus_matrix_transform(NUS_matrix matrix, NUS_vector vector)
 			  matrix.ele[2][3] * 1.0);
 }
 NUS_matrix nus_matrix_inverted(NUS_matrix matrix)
-{//TODO
-  return nus_matrix_identity();
+{
+  NUS_matrix inverse;
+  double inv[16], det;
+  int i, j;
+  
+  inv[0] = matrix.ele[1][1]  * matrix.ele[2][2] * matrix.ele[3][3] - 
+    matrix.ele[1][1]  * matrix.ele[2][3] * matrix.ele[3][2] - 
+    matrix.ele[2][1]  * matrix.ele[1][2]  * matrix.ele[3][3] + 
+    matrix.ele[2][1]  * matrix.ele[1][3]  * matrix.ele[3][2] +
+    matrix.ele[3][1] * matrix.ele[1][2]  * matrix.ele[2][3] - 
+    matrix.ele[3][1] * matrix.ele[1][3]  * matrix.ele[2][2];
+  
+  inv[4] = -matrix.ele[1][0]  * matrix.ele[2][2] * matrix.ele[3][3] + 
+    matrix.ele[1][0]  * matrix.ele[2][3] * matrix.ele[3][2] + 
+    matrix.ele[2][0]  * matrix.ele[1][2]  * matrix.ele[3][3] - 
+    matrix.ele[2][0]  * matrix.ele[1][3]  * matrix.ele[3][2] - 
+    matrix.ele[3][0] * matrix.ele[1][2]  * matrix.ele[2][3] + 
+    matrix.ele[3][0] * matrix.ele[1][3]  * matrix.ele[2][2];
+  
+  inv[8] = matrix.ele[1][0]  * matrix.ele[2][1] * matrix.ele[3][3] - 
+    matrix.ele[1][0]  * matrix.ele[2][3] * matrix.ele[3][1] - 
+    matrix.ele[2][0]  * matrix.ele[1][1] * matrix.ele[3][3] + 
+    matrix.ele[2][0]  * matrix.ele[1][3] * matrix.ele[3][1] + 
+    matrix.ele[3][0] * matrix.ele[1][1] * matrix.ele[2][3] - 
+    matrix.ele[3][0] * matrix.ele[1][3] * matrix.ele[2][1];
+  
+  inv[12] = -matrix.ele[1][0]  * matrix.ele[2][1] * matrix.ele[3][2] + 
+    matrix.ele[1][0]  * matrix.ele[2][2] * matrix.ele[3][1] +
+    matrix.ele[2][0]  * matrix.ele[1][1] * matrix.ele[3][2] - 
+    matrix.ele[2][0]  * matrix.ele[1][2] * matrix.ele[3][1] - 
+    matrix.ele[3][0] * matrix.ele[1][1] * matrix.ele[2][2] + 
+    matrix.ele[3][0] * matrix.ele[1][2] * matrix.ele[2][1];
+  
+  inv[1] = -matrix.ele[0][1]  * matrix.ele[2][2] * matrix.ele[3][3] + 
+    matrix.ele[0][1]  * matrix.ele[2][3] * matrix.ele[3][2] + 
+    matrix.ele[2][1]  * matrix.ele[0][2] * matrix.ele[3][3] - 
+    matrix.ele[2][1]  * matrix.ele[0][3] * matrix.ele[3][2] - 
+    matrix.ele[3][1] * matrix.ele[0][2] * matrix.ele[2][3] + 
+    matrix.ele[3][1] * matrix.ele[0][3] * matrix.ele[2][2];
+  
+  inv[5] = matrix.ele[0][0]  * matrix.ele[2][2] * matrix.ele[3][3] - 
+    matrix.ele[0][0]  * matrix.ele[2][3] * matrix.ele[3][2] - 
+    matrix.ele[2][0]  * matrix.ele[0][2] * matrix.ele[3][3] + 
+    matrix.ele[2][0]  * matrix.ele[0][3] * matrix.ele[3][2] + 
+    matrix.ele[3][0] * matrix.ele[0][2] * matrix.ele[2][3] - 
+    matrix.ele[3][0] * matrix.ele[0][3] * matrix.ele[2][2];
+  
+  inv[9] = -matrix.ele[0][0]  * matrix.ele[2][1] * matrix.ele[3][3] + 
+    matrix.ele[0][0]  * matrix.ele[2][3] * matrix.ele[3][1] + 
+    matrix.ele[2][0]  * matrix.ele[0][1] * matrix.ele[3][3] - 
+    matrix.ele[2][0]  * matrix.ele[0][3] * matrix.ele[3][1] - 
+    matrix.ele[3][0] * matrix.ele[0][1] * matrix.ele[2][3] + 
+    matrix.ele[3][0] * matrix.ele[0][3] * matrix.ele[2][1];
+  
+  inv[13] = matrix.ele[0][0]  * matrix.ele[2][1] * matrix.ele[3][2] - 
+    matrix.ele[0][0]  * matrix.ele[2][2] * matrix.ele[3][1] - 
+    matrix.ele[2][0]  * matrix.ele[0][1] * matrix.ele[3][2] + 
+    matrix.ele[2][0]  * matrix.ele[0][2] * matrix.ele[3][1] + 
+    matrix.ele[3][0] * matrix.ele[0][1] * matrix.ele[2][2] - 
+    matrix.ele[3][0] * matrix.ele[0][2] * matrix.ele[2][1];
+  
+  inv[2] = matrix.ele[0][1]  * matrix.ele[1][2] * matrix.ele[3][3] - 
+    matrix.ele[0][1]  * matrix.ele[1][3] * matrix.ele[3][2] - 
+    matrix.ele[1][1]  * matrix.ele[0][2] * matrix.ele[3][3] + 
+    matrix.ele[1][1]  * matrix.ele[0][3] * matrix.ele[3][2] + 
+    matrix.ele[3][1] * matrix.ele[0][2] * matrix.ele[1][3] - 
+    matrix.ele[3][1] * matrix.ele[0][3] * matrix.ele[1][2];
+  
+  inv[6] = -matrix.ele[0][0]  * matrix.ele[1][2] * matrix.ele[3][3] + 
+    matrix.ele[0][0]  * matrix.ele[1][3] * matrix.ele[3][2] + 
+    matrix.ele[1][0]  * matrix.ele[0][2] * matrix.ele[3][3] - 
+    matrix.ele[1][0]  * matrix.ele[0][3] * matrix.ele[3][2] - 
+    matrix.ele[3][0] * matrix.ele[0][2] * matrix.ele[1][3] + 
+    matrix.ele[3][0] * matrix.ele[0][3] * matrix.ele[1][2];
+  
+  inv[10] = matrix.ele[0][0]  * matrix.ele[1][1] * matrix.ele[3][3] - 
+    matrix.ele[0][0]  * matrix.ele[1][3] * matrix.ele[3][1] - 
+    matrix.ele[1][0]  * matrix.ele[0][1] * matrix.ele[3][3] + 
+    matrix.ele[1][0]  * matrix.ele[0][3] * matrix.ele[3][1] + 
+    matrix.ele[3][0] * matrix.ele[0][1] * matrix.ele[1][3] - 
+    matrix.ele[3][0] * matrix.ele[0][3] * matrix.ele[1][1];
+  
+  inv[14] = -matrix.ele[0][0]  * matrix.ele[1][1] * matrix.ele[3][2] + 
+    matrix.ele[0][0]  * matrix.ele[1][2] * matrix.ele[3][1] + 
+    matrix.ele[1][0]  * matrix.ele[0][1] * matrix.ele[3][2] - 
+    matrix.ele[1][0]  * matrix.ele[0][2] * matrix.ele[3][1] - 
+    matrix.ele[3][0] * matrix.ele[0][1] * matrix.ele[1][2] + 
+    matrix.ele[3][0] * matrix.ele[0][2] * matrix.ele[1][1];
+  
+  inv[3] = -matrix.ele[0][1] * matrix.ele[1][2] * matrix.ele[2][3] + 
+    matrix.ele[0][1] * matrix.ele[1][3] * matrix.ele[2][2] + 
+    matrix.ele[1][1] * matrix.ele[0][2] * matrix.ele[2][3] - 
+    matrix.ele[1][1] * matrix.ele[0][3] * matrix.ele[2][2] - 
+    matrix.ele[2][1] * matrix.ele[0][2] * matrix.ele[1][3] + 
+    matrix.ele[2][1] * matrix.ele[0][3] * matrix.ele[1][2];
+  
+  inv[7] = matrix.ele[0][0] * matrix.ele[1][2] * matrix.ele[2][3] - 
+    matrix.ele[0][0] * matrix.ele[1][3] * matrix.ele[2][2] - 
+    matrix.ele[1][0] * matrix.ele[0][2] * matrix.ele[2][3] + 
+    matrix.ele[1][0] * matrix.ele[0][3] * matrix.ele[2][2] + 
+    matrix.ele[2][0] * matrix.ele[0][2] * matrix.ele[1][3] - 
+    matrix.ele[2][0] * matrix.ele[0][3] * matrix.ele[1][2];
+  
+  inv[11] = -matrix.ele[0][0] * matrix.ele[1][1] * matrix.ele[2][3] + 
+    matrix.ele[0][0] * matrix.ele[1][3] * matrix.ele[2][1] + 
+    matrix.ele[1][0] * matrix.ele[0][1] * matrix.ele[2][3] - 
+    matrix.ele[1][0] * matrix.ele[0][3] * matrix.ele[2][1] - 
+    matrix.ele[2][0] * matrix.ele[0][1] * matrix.ele[1][3] + 
+    matrix.ele[2][0] * matrix.ele[0][3] * matrix.ele[1][1];
+  
+  inv[15] = matrix.ele[0][0] * matrix.ele[1][1] * matrix.ele[2][2] - 
+    matrix.ele[0][0] * matrix.ele[1][2] * matrix.ele[2][1] - 
+    matrix.ele[1][0] * matrix.ele[0][1] * matrix.ele[2][2] + 
+    matrix.ele[1][0] * matrix.ele[0][2] * matrix.ele[2][1] + 
+    matrix.ele[2][0] * matrix.ele[0][1] * matrix.ele[1][2] - 
+    matrix.ele[2][0] * matrix.ele[0][2] * matrix.ele[1][1];
+
+  det = matrix.ele[0][0] * inv[0] + matrix.ele[0][1] * inv[4] +
+    matrix.ele[0][2] * inv[8] + matrix.ele[0][3] * inv[12];
+  
+  if (det * det < 0.00001){
+    NUS_LOG_ERROR("inverting matrix that is not invertable\n");
+    return nus_matrix_identity();
+  }
+  
+  det = 1.0 / det;
+  
+  for(i = 0; i < 4; ++i){
+    for(j = 0; j < 4; ++j){
+      inverse.ele[i][j] = inv[4 * i + j] * det;
+    }
+  }
+  
+  return inverse;
 }
 NUS_bool nus_matrix_cmp(NUS_matrix matrix_0, NUS_matrix matrix_1, float d)
 {
