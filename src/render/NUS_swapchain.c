@@ -135,6 +135,11 @@ static NUS_result nus_swapchain_build_info
     printf("ERROR::failed to obtain swapchain capabilities\n");
     return -1;
   }
+  if(nus_swapchain_build_length(p_swapchain) !=
+     NUS_SUCCESS){
+    printf("ERROR::failed to build swapchain length\n");
+    return NUS_FAILURE;
+  }
   if(nus_swapchain_build_format(physical_device, surface, p_swapchain) !=
      NUS_SUCCESS){
     printf("ERROR::failed to build swapchain formats\n");
@@ -143,11 +148,6 @@ static NUS_result nus_swapchain_build_info
   if(nus_swapchain_build_present_mode(physical_device, surface,
 						  p_swapchain) != NUS_SUCCESS){
     printf("ERROR::failed to build swapchain present modes\n");
-    return NUS_FAILURE;
-  }
-  if(nus_swapchain_build_length(p_swapchain) !=
-     NUS_SUCCESS){
-    printf("ERROR::failed to build swapchain length\n");
     return NUS_FAILURE;
   }
   if(nus_swapchain_build_extent(p_swapchain) !=

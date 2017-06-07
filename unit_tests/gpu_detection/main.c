@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
   if(argv){}
 
   nus_load_global_vulkan_library();
-
   
   NUS_window win;
   if(nus_window_build(PROGRAM_NAME, 600, 400, &win) != NUS_SUCCESS){
@@ -59,6 +58,7 @@ int main(int argc, char *argv[])
     printf("ERROR::build multi gpu returned NUS_FAILURE\n");
     return -1;
   }
+  
   
   NUS_presentation_surface present;
   if(nus_presentation_surface_build(win, vulkan_instance, &multi_gpu, &present)

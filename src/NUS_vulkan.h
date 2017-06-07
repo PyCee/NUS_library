@@ -38,8 +38,6 @@
 
 /* Macro to call any function on all validation instance vk function pointers */
 #if defined(NUS_DEBUG)
-//#define NUS_VK_VALIDATION_FUNCTION(function, ...)
-
 #define NUS_VK_VALIDATION_FUNCTION(function, ...)		       \
   function( vkCreateDebugReportCallbackEXT, ##__VA_ARGS__ );	       \
   function( vkDebugReportMessageEXT, ##__VA_ARGS__ );		       \
@@ -65,6 +63,7 @@
   function( vkGetPhysicalDeviceSurfaceCapabilitiesKHR, ##__VA_ARGS__ ); \
   function( vkGetPhysicalDeviceSurfaceFormatsKHR, ##__VA_ARGS__ );	\
   function( vkGetPhysicalDeviceSurfacePresentModesKHR, ##__VA_ARGS__ );	\
+  function( vkGetPhysicalDeviceMemoryProperties, ##__VA_ARGS__ );	\
   NUS_VK_VALIDATION_FUNCTION( function, ##__VA_ARGS__ )
 
 
@@ -115,7 +114,6 @@
   function( vkDestroyImage, ##__VA_ARGS__ );				\
   function( vkCreateBuffer, ##__VA_ARGS__ );				\
   function( vkGetBufferMemoryRequirements, ##__VA_ARGS__ );		\
-  function( vkGetPhysicalDeviceMemoryProperties, ##__VA_ARGS__ );	\
   function( vkAllocateMemory, ##__VA_ARGS__ );				\
   function( vkBindBufferMemory, ##__VA_ARGS__ );			\
   function( vkMapMemory, ##__VA_ARGS__ );				\

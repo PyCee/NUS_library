@@ -9,11 +9,11 @@ CFLAGS=-g -Wextra \
 	-Wstrict-prototypes \
 	-Wmissing-prototypes \
 	-Wunreachable-code \
-	-I/home/kims/VulkanSDK/1.0.39.0/x86_64/include
+	-I/home/kims/VulkanSDK/VulkanSDK/1.0.49.0/x86_64/include
 
 LFLAGS= -lNUS_library -lNUSM -lxcb -ldl -lm \
-	-L/home/kims/VulkanSDK/1.0.39.0/x86_64/lib -lVkLayer_unique_objects \
-	-lVkLayer_swapchain -lVkLayer_core_validation -lVkLayer_image \
+	-L/home/kims/VulkanSDK/VulkanSDK/1.0.49.0/x86_64/lib \
+	-lVkLayer_unique_objects -lVkLayer_swapchain -lVkLayer_core_validation \
 	-lVkLayer_object_tracker -lVkLayer_parameter_validation -lVkLayer_threading \
 	-lassimp
 

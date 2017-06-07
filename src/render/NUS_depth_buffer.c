@@ -1,20 +1,21 @@
 #include "NUS_depth_buffer.h"
 #include "../gpu/NUS_gpu.h"
+#include "../gpu/NUS_queue_info.h"
 #include "NUS_vk_format.h"
 #include <stdio.h>
 
 static NUS_result nus_depth_buffer_find_format(NUS_gpu, VkFormat *);
 
 NUS_result nus_depth_buffer_build
-(NUS_gpu gpu, unsigned int width, unsigned int height,
+(NUS_queue_info queue_info, unsigned int width, unsigned int height,
  NUS_depth_buffer *p_depth_buffer)
 {
   VkFormat format;
-  if(nus_depth_buffer_find_format(gpu, &format) != NUS_SUCCESS){
+  if(nus_depth_buffer_find_format(*queue_info.p_gpu, &format) != NUS_SUCCESS){
     printf("NUS_ERROR::failed to find format for depth buffer\n");
     return NUS_FAILURE;
   }
-  if(nus_texture_build(gpu, width, height, format,
+  if(nus_texture_build(queue_info, width, height, format,
 		       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 		       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, p_depth_buffer) !=
      NUS_SUCCESS){

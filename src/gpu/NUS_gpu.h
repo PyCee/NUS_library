@@ -13,6 +13,7 @@ typedef struct NUS_gpu{
   NUS_vk_device_functions functions;
   VkPhysicalDevice physical_device;
   VkDevice logical_device;
+  VkPhysicalDeviceMemoryProperties memory_properties;
   unsigned int queue_family_count,
     extension_property_count;
 } NUS_gpu;
@@ -23,5 +24,6 @@ void nus_gpu_print(NUS_gpu);
 NUS_result nus_gpu_find_queue_info
 (NUS_gpu *, unsigned int, struct NUS_queue_info *);
 NUS_result nus_gpu_submit_commands(NUS_gpu);
+unsigned int nus_gpu_memory_type_index(NUS_gpu, VkMemoryRequirements, unsigned int);
 
 #endif /* NUS_GPU_H */

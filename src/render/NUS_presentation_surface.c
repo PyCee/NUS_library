@@ -3,6 +3,7 @@
 #include "../gpu/NUS_multi_gpu.h"
 #include "../gpu/NUS_queue_info.h"
 #include "../gpu/NUS_vulkan_instance.h"
+#include "../NUS_log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -24,7 +25,7 @@ NUS_result nus_presentation_surface_build
   //surface_create_info.hwind = Window.Handle;
   if(vkCreateWin32SurfaceKHR(vulkan_instance.vk_instance, &surface_create_info,
 			      NULL, &p_presentation_surface.surface) != VK_SUCCESS){
-    printf("ERROR::unable to create Win32 vulkan surface\n");
+    NUS_LOG_ERROR("unable to create Win32 vulkan surface\n");
     return NUS_FAILURE;
   }
 #elif defined(NUS_OS_UNIX)
@@ -36,7 +37,7 @@ NUS_result nus_presentation_surface_build
   surface_create_info.window = window.window;
   if(vkCreateXcbSurfaceKHR(vulkan_instance.vk_instance, &surface_create_info,
 			   NULL, &p_presentation_surface->surface) != VK_SUCCESS){
-    printf("ERROR::unable to create XCB vulkan surface\n");
+    NUS_LOG_ERROR("unable to create XCB vulkan surface\n");
     return NUS_FAILURE;
   }
 #endif
@@ -53,11 +54,12 @@ NUS_result nus_presentation_surface_build
 			 p_presentation_surface->surface,
 			 &p_presentation_surface->swapchain) !=
      NUS_SUCCESS){
-    printf("ERROR::failed to build presentation surface swapchain\n");
+    NUS_LOG_ERROR("failed to build presentation surface swapchain\n");
     return NUS_FAILURE;
   }
-
-  if(nus_texture_build(*p_presentation_surface->queue_info.p_gpu,
+  
+  
+  if(nus_texture_build(p_presentation_surface->queue_info,
 		       p_presentation_surface->swapchain.extent.width,
 		       p_presentation_surface->swapchain.extent.height,
 		       p_presentation_surface->swapchain.format.format,
@@ -67,7 +69,7 @@ NUS_result nus_presentation_surface_build
 		       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 		       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		       &p_presentation_surface->render_target) != NUS_SUCCESS){
-    printf("ERROR::failed to build render_target texture\n");
+    NUS_LOG_ERROR("failed to build render_target texture\n");
     return NUS_FAILURE;
   }
   
@@ -81,28 +83,28 @@ NUS_result nus_presentation_surface_build
 		       &semaphore_create_info, NULL,
 		       &p_presentation_surface->render_copied) !=
      VK_SUCCESS){
-    printf("ERROR::failed to create surface semaphore: image_available\n");
+    NUS_LOG_ERROR("failed to create surface semaphore: image_available\n");
     return NUS_FAILURE;
   }
   if(vkCreateSemaphore(p_presentation_surface->queue_info.p_gpu->logical_device,
 		       &semaphore_create_info, NULL,
 		       &p_presentation_surface->image_available) !=
      VK_SUCCESS){
-    printf("ERROR::failed to create surface semaphore: image_available\n");
+    NUS_LOG_ERROR("failed to create surface semaphore: image_available\n");
     return NUS_FAILURE;
   }
   if(vkCreateSemaphore(p_presentation_surface->queue_info.p_gpu->logical_device,
 		       &semaphore_create_info, NULL,
 		       &p_presentation_surface->image_presentable) !=
      VK_SUCCESS){
-    printf("ERROR::failed to create surface semaphore: image_presentable\n");
+    NUS_LOG_ERROR("failed to create surface semaphore: image_presentable\n");
     return NUS_FAILURE;
   }
   if(nus_swapchain_new_image(*p_presentation_surface->queue_info.p_gpu,
 			     p_presentation_surface->surface,
 			     p_presentation_surface->image_available,
 			     &p_presentation_surface->swapchain) != NUS_SUCCESS){
-    printf("ERROR::failed to get new swapchain image upon build\n");
+    NUS_LOG_ERROR("failed to get new swapchain image upon build\n");
     return NUS_FAILURE;
   }
   nus_presentation_surface_build_command_buffers(p_presentation_surface);
@@ -151,14 +153,14 @@ NUS_result nus_presentation_surface_present
 			   p_presentation_surface->surface,
 			   p_presentation_surface->render_copied,
 			   &p_presentation_surface->swapchain) != NUS_SUCCESS){
-    printf("ERROR::failed to present to swapchain\n");
+    NUS_LOG_ERROR("failed to present to swapchain\n");
     return NUS_FAILURE;
   }
   if(nus_swapchain_new_image(*p_presentation_surface->queue_info.p_gpu,
 			     p_presentation_surface->surface,
 			     p_presentation_surface->image_available,
 			     &p_presentation_surface->swapchain) != NUS_SUCCESS){
-    printf("ERROR::failed to get new swapchain image\n");
+    NUS_LOG_ERROR("failed to get new swapchain image\n");
     return NUS_FAILURE;
   }
   return NUS_SUCCESS;

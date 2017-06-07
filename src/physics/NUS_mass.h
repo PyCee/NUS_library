@@ -5,7 +5,6 @@
 #include "NUS_physics_state.h"
 #include "NUS_movement.h"
 #include "NUS_orientation.h"
-#include "../NUS_component_key.h"
 #include <stdlib.h>
 
 typedef struct NUS_mass{
@@ -15,7 +14,7 @@ typedef struct NUS_mass{
   NUS_matrix world_transformation;
 } NUS_mass;
 
-NUS_mass nus_mass_build(NUS_component_key);
+NUS_mass nus_mass_build(void);
 void nus_mass_free(NUS_mass *);
 void nus_mass_batch_update(void *, size_t, size_t, unsigned int, double);
 void nus_mass_print(NUS_mass);

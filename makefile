@@ -9,14 +9,13 @@ CFLAGS=-g -Wall \
 	-Wstrict-prototypes \
 	-Wmissing-prototypes \
 	-Wunreachable-code \
-	-I/home/kims/VulkanSDK/1.0.39.0/x86_64/include
+	-I/home/kims/VulkanSDK/VulkanSDK/1.0.49.0/x86_64/include
 
 STR_SRC_FILES=NUS_string_group.c NUS_absolute_path.c
 STR_DIR=strings
 
 GPU_SRC_FILES=NUS_multi_gpu.c NUS_gpu.c NUS_queue_family.c NUS_command_group.c \
-	NUS_vulkan_instance.c NUS_queue_info.c NUS_memory_map.c \
-	NUS_memory_properties.c
+	NUS_vulkan_instance.c NUS_queue_info.c NUS_memory_map.c
 GPU_DIR=gpu
 
 IO_SRC_FILES=NUS_window.c NUS_system_events.c
@@ -50,7 +49,7 @@ MOD_SRC=$(addprefix $(MOD_DIR)/, $(MOD_SRC_FILES))
 PHY_SRC=$(addprefix $(PHY_DIR)/, $(PHY_SRC_FILES))
 REN_SRC=$(addprefix $(REN_DIR)/, $(REN_SRC_FILES))
 TIME_SRC=$(addprefix $(TIME_DIR)/, $(TIME_SRC_FILES))
-OTH_SRC=NUS_vulkan.c NUS_save.c
+OTH_SRC=NUS_vulkan.c NUS_save.c NUS_library.c
 
 STR_HEA=$(STR_SRC:.c=.h)
 GPU_HEA=$(GPU_SRC:.c=.h)
@@ -60,8 +59,8 @@ MOD_HEA=$(MOD_SRC:.c=.h)
 PHY_HEA=$(PHY_SRC:.c=.h)
 REN_HEA=$(REN_SRC:.c=.h)
 TIME_HEA=$(TIME_SRC:.c=.h)
-OTH_HEA=NUS_library.h NUS_result.h NUS_os.h NUS_component_key.h NUS_log.h \
-	$(OTH_SRC:.c=.h)
+OTH_HEA=NUS_result.h NUS_os.h NUS_entity.h NUS_key.h \
+	NUS_log.h NUS_bool.h $(OTH_SRC:.c=.h)
 
 NUS_SRC_FILES=$(STR_SRC) $(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(PHY_SRC) \
 	$(REN_SRC) $(OTH_SRC) $(TIME_SRC)

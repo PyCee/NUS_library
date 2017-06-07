@@ -1,18 +1,21 @@
 #include "NUS_texture.h"
 #include "../gpu/NUS_gpu.h"
 #include "../gpu/NUS_queue_info.h"
-#include "../gpu/NUS_memory_properties.h"
+#include "../gpu/NUS_memory_map.h"
 #include "../NUS_log.h"
 #include <string.h>
 
-NUS_result nus_texture_layout_to_mask(VkImageLayout, unsigned int *);
+static NUS_result nus_texture_layout_to_mask(VkImageLayout, unsigned int *);
 
 NUS_result nus_texture_build
-(NUS_gpu gpu, unsigned int width, unsigned int height,
- VkFormat format, unsigned int usage, unsigned int memory_property_flag,
+(NUS_queue_info queue_info, unsigned int width, unsigned int height,
+ VkFormat format, unsigned int usage, unsigned int memory_property_flags,
  NUS_texture *p_texture)
 {
   p_texture->format = format;
+  p_texture->width = width;
+  p_texture->height = height;
+  
   VkImageCreateInfo image_create_info = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
     .pNext = NULL,
@@ -20,8 +23,8 @@ NUS_result nus_texture_build
     .imageType = VK_IMAGE_TYPE_2D,
     .format = p_texture->format,
     .extent = {
-      .width = width,
-      .height = height,
+      .width = p_texture->width,
+      .height = p_texture->height,
       .depth = 1
     },
     .mipLevels = 1,
@@ -34,26 +37,29 @@ NUS_result nus_texture_build
     .pQueueFamilyIndices = NULL,
     .initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED
   };
-  if(vkCreateImage(gpu.logical_device, &image_create_info, NULL,
+  if(vkCreateImage(queue_info.p_gpu->logical_device, &image_create_info, NULL,
 		   &p_texture->image) != VK_SUCCESS){
     NUS_LOG_ERROR("failed to create texture image\n");
     return NUS_FAILURE;
   }
   VkMemoryRequirements image_memory_req;
-  vkGetImageMemoryRequirements(gpu.logical_device, p_texture->image, &image_memory_req);
+  vkGetImageMemoryRequirements(queue_info.p_gpu->logical_device, p_texture->image,
+			       &image_memory_req);
+  
   VkMemoryAllocateInfo memory_alloc_info = {
     .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
     .pNext = NULL,
     .allocationSize = image_memory_req.size,
-    .memoryTypeIndex =
-    nus_memory_properties_type_index(gpu, image_memory_req, memory_property_flag)
+    .memoryTypeIndex = nus_gpu_memory_type_index(*queue_info.p_gpu, image_memory_req,
+						 memory_property_flags)
   };
-  if(vkAllocateMemory(gpu.logical_device, &memory_alloc_info, NULL,
+  if(vkAllocateMemory(queue_info.p_gpu->logical_device, &memory_alloc_info, NULL,
 		      &p_texture->memory) != VK_SUCCESS){
     NUS_LOG_ERROR("failed to allocate memory for texture\n");
     return NUS_FAILURE;
   }
-  vkBindImageMemory(gpu.logical_device, p_texture->image, p_texture->memory, 0);
+  vkBindImageMemory(queue_info.p_gpu->logical_device, p_texture->image,
+		    p_texture->memory, 0);
   return NUS_SUCCESS;
 }
 void nus_texture_free(NUS_gpu gpu, NUS_texture *p_texture)
@@ -67,14 +73,45 @@ void nus_texture_free(NUS_gpu gpu, NUS_texture *p_texture)
     p_texture->image = VK_NULL_HANDLE;
   }
 }
-NUS_result nus_texture_load_data
-(NUS_gpu gpu, NUS_texture *p_texture, void *src, size_t size)
+NUS_result nus_texture_buffer_image
+(NUS_queue_info queue_info, void *data, size_t size, NUS_texture *p_texture)
 {
-  void* data;
-  vkMapMemory(gpu.logical_device, p_texture->memory, 0, size, 0, &data);
-  memcpy(data, src, size);
-  vkUnmapMemory(gpu.logical_device, p_texture->memory);
+  p_texture->image_size = size;
   
+  NUS_memory_map tmp_memory;
+  if(nus_memory_map_build(queue_info, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+			  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &tmp_memory) !=
+     NUS_SUCCESS){
+    NUS_LOG("failed to build memory map for texture\n");
+    return NUS_FAILURE;
+  }
+  if(nus_memory_map_flush(tmp_memory, queue_info, data) != NUS_SUCCESS){
+    NUS_LOG("failed to flush memory map for texture\n");
+    return NUS_FAILURE;
+  }
+  /*
+  VkCommandBuffer command_buffer;
+  nus_queue_info_add_buffer(queue_info, &command_buffer);
+  
+  // copy buffer to image
+  VkBufferImageCopy region = {
+    .bufferOffset = 0,
+    .bufferRowLength = 0,
+    .bufferImageHeight = 0,
+    .imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+    .imageSubresource.mipLevel = 0,
+    .imageSubresource.baseArrayLayer = 0,
+    .imageSubresource.layerCount = 1,
+    .imageOffset = {0, 0, 0},
+    .imageExtent = {
+      p_texture->width,
+      p_texture->height,
+      1
+    }
+  };
+  
+  */
   return NUS_SUCCESS;
 }
 NUS_result nus_texture_initial_transition
@@ -135,7 +172,7 @@ NUS_result nus_texture_initial_transition
   return NUS_SUCCESS;
 }
 
-NUS_result nus_texture_layout_to_mask(VkImageLayout layout, unsigned int *mask)
+static NUS_result nus_texture_layout_to_mask(VkImageLayout layout, unsigned int *mask)
 {
   switch(layout){
   case VK_IMAGE_LAYOUT_UNDEFINED:

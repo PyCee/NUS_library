@@ -1,21 +1,13 @@
 #include "NUS_mass.h"
 #include <stdio.h>
 
-NUS_mass nus_mass_build(NUS_component_key key)
+NUS_mass nus_mass_build()
 {
   NUS_mass mass;
-  if(key & NUS_COMPONENT_KEY_MOVEMENT){
-    mass.movement = malloc(sizeof(*mass.movement));
-    *mass.movement = nus_movement_build();
-  } else{
-    mass.movement = NULL;
-  }
-  if(key & NUS_COMPONENT_KEY_ORIENTATION){
-    mass.orientation = malloc(sizeof(*mass.orientation));
-    *mass.orientation = nus_orientation_build();
-  } else{
-    mass.orientation = NULL;
-  }
+  mass.movement = malloc(sizeof(*mass.movement));
+  *mass.movement = nus_movement_build();
+  mass.orientation = malloc(sizeof(*mass.orientation));
+  *mass.orientation = nus_orientation_build();
   mass.prev_state = nus_physics_state_build();
   mass.next_state = nus_physics_state_build();
   mass.curr_state = nus_physics_state_build();

@@ -1,4 +1,4 @@
-\
+
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -11,7 +11,7 @@
 
 #include <unistd.h>
 
-#define PROGRAM_NAME "unit_test-load_model"
+#define PROGRAM_NAME "unit_test-textured_cube"
 
 void close_win(void);
 void move_forward(void);
@@ -127,26 +127,25 @@ int main(int argc, char *argv[])
   NUS_queue_info info;
   
   if(nus_gpu_find_queue_info(present.queue_info.p_gpu,
-				 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
-				 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
-				 &info) !=
-     NUS_SUCCESS){
+			     NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
+			     NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
+			     &info) != NUS_SUCCESS){
     printf("ERROR::failed to find suitable gpu info\n");
     return NUS_FAILURE;
   }
   
-  printf("start model\n");
-  
   NUS_model model;
-  
-  nus_model_build(nus_absolute_path_build("cube.nusm"), &model);
-  nus_model_buffer(info, &model);
-  
-  printf("end model stuffz\n");
-
+  if(nus_model_build(nus_absolute_path_build("cube.nusm"), &model) != NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to build model\n");
+    return -1;
+  }
+  if(nus_model_buffer(info, &model) != NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to buffer model\n");
+    return -1;
+  }
   
   NUS_depth_buffer depth_buffer;
-  if(nus_depth_buffer_build(*present.queue_info.p_gpu, 600, 400, &depth_buffer) !=
+  if(nus_depth_buffer_build(present.queue_info, 600, 400, &depth_buffer) !=
      NUS_SUCCESS){
     printf("UNIT_TEST_ERROR::failed to build depth_buffer\n");
     return -1;
@@ -259,6 +258,7 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to set framebuffer info attachment: render target\n");
     return -1;
   }
+  
   if(nus_framebuffer_info_set_attachment(*present.queue_info.p_gpu,
 					 depth_buffer,
 					 depth_buffer.format,
@@ -267,7 +267,6 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to set framebuffer info attachment: render target\n");
     return -1;
   }
-
   NUS_framebuffer framebuffer;
   if(nus_framebuffer_build(*present.queue_info.p_gpu, render_pass, framebuffer_info,
 			   &framebuffer) != NUS_SUCCESS){
@@ -597,7 +596,8 @@ int main(int argc, char *argv[])
   
   NUS_memory_map uniform_world_memory;
   nus_memory_map_build(present.queue_info, sizeof(NUS_matrix),
-		       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, &uniform_world_memory);
+		       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &uniform_world_memory);
   nus_memory_map_flush(uniform_world_memory, present.queue_info, &tmp);
 
   VkDescriptorBufferInfo descriptor_buffer_info = {
@@ -676,6 +676,7 @@ int main(int argc, char *argv[])
   };
   
   nus_queue_info_add_buffer(info, &command_buffer);
+  
   vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
   vkCmdPipelineBarrier(command_buffer,
 		       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,

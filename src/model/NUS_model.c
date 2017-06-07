@@ -9,7 +9,7 @@
 NUS_result nus_model_build(NUS_absolute_path absolute_path, NUS_model *p_model)
 {
   if(nusm_read(absolute_path.path, &p_model->contents) != NUSM_SUCCESS){
-    printf("NUSM_ERROR::failed to read model file: %s\n", absolute_path.path);
+    NUS_LOG_ERROR("failed to read model file: %s\n", absolute_path.path);
     return NUS_FAILURE;
   }
   
@@ -25,7 +25,7 @@ NUS_result nus_model_buffer
 (NUS_queue_info queue, NUS_model *p_model)
 {
   // load texture
-  if(nus_texture_build(*queue.p_gpu, p_model->contents.texture_width,
+  if(nus_texture_build(queue, p_model->contents.texture_width,
 		       p_model->contents.texture_height, VK_FORMAT_R8G8B8A8_UNORM,
 		       VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -34,21 +34,23 @@ NUS_result nus_model_buffer
     NUS_LOG_ERROR("failed to build model texture\n");
     return NUS_FAILURE;
   }
-  if(nus_texture_load_data(*queue.p_gpu, &p_model->texture,
-			   p_model->contents.texture_data,
-			   p_model->contents.texture_data_size) != NUS_SUCCESS){
+  if(nus_texture_buffer_image(queue, p_model->contents.texture_data,
+			      p_model->contents.texture_data_size,
+			      &p_model->texture) != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to load model texture data\n");
     return NUS_FAILURE;
   }
   
   if(nus_memory_map_build(queue, p_model->contents.vertex_data_size,
 			  VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
 			  &p_model->vertex_memory) != NUS_SUCCESS){
     printf("ERROR::failed to build memory map for vertices\n");
     return NUS_FAILURE;
   }
   if(nus_memory_map_build(queue, p_model->contents.index_data_size,
 			  VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
 			  &p_model->index_memory) != NUS_SUCCESS){
     printf("ERROR::failed to build memory map for indices\n");
     return NUS_FAILURE;

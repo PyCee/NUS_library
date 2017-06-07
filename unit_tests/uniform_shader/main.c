@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 			     NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
 			     &info) != NUS_SUCCESS){
     printf("ERROR::failed to find suitable gou info\n");
-    return NUS_FAILURE;
+    return -1;
   }
   
   printf("start model\n");
@@ -110,8 +110,14 @@ int main(int argc, char *argv[])
   NUS_model model;
   // the vertex normal represents color for this unit test
   
-  nus_model_build(nus_absolute_path_build("triangle.nusm"), &model);
-  nus_model_buffer(info, &model);
+  if(nus_model_build(nus_absolute_path_build("triangle.nusm"), &model) != NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to build model\n");
+    return -1;
+  }
+  if(nus_model_buffer(info, &model) != NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to buffer model\n");
+    return -1;
+  }
   
   printf("end model stuffz\n");
 
@@ -541,7 +547,9 @@ int main(int argc, char *argv[])
   
   NUS_memory_map uniform_world_memory;
   nus_memory_map_build(present.queue_info, sizeof(NUS_matrix),
-		       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, &uniform_world_memory);
+		       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+		       &uniform_world_memory);
   nus_memory_map_flush(uniform_world_memory, present.queue_info, &tmp);
 
   VkDescriptorBufferInfo descriptor_buffer_info = {
