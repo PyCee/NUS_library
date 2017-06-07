@@ -76,6 +76,11 @@ all: $(NUS_SRC) compile
 compile: $(NUS_OBJ)
 	@echo "Files are compiled with flags: $(CFLAGS)"
 
+	@if [ -d "/usr/local/include/NUS/" ]; then \
+		sudo rm -rf /usr/local/include/NUS/*; fi
+	@if [ -f "/usr/local/lib/libNUS_library.a" ]; then \
+		sudo rm /usr/local/lib/libNUS_library.a; fi
+
 	@sudo ar rcs /usr/local/lib/libNUS_library.a $(NUS_OBJ)
 
 	@if [ ! -d "/usr/local/include/NUS" ]; then \
@@ -115,10 +120,6 @@ debug: CFLAGS += -D NUS_DEBUG
 debug: recompile
 clean:
 	@find . -type f \( -name '*.o' -o -name '*~' \) -delete
-	@if [ -d "/usr/local/include/NUS/" ]; then \
-		sudo rm -rf /usr/local/include/NUS/*; fi
-	@if [ -f "/usr/local/lib/libNUS_library.a" ]; then \
-		sudo rm /usr/local/lib/libNUS_library.a; fi
 	@cd unit_tests/; make clean
 install:
 	sudo apt-get install libx11-xcb-dev libx11-dev libxi-dev \
