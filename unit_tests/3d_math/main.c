@@ -9,7 +9,8 @@
 int main(int argc, char *argv[])
 {
   NUS_vector test_vector;
-  NUS_quaternion test_quaternion;
+  NUS_quaternion test_quaternion_0,
+    test_quaternion_1;
   NUS_axes test_axes;
   NUS_matrix test_matrix;
   printf("starting unit test %s\n", PROGRAM_NAME);
@@ -25,7 +26,6 @@ int main(int argc, char *argv[])
     UNIT_TEST_LOG_ERROR("failed to add vectors\n");
     return -1;
   }
-
   // Test vector normalization
   test_vector = nus_vector_normalize(nus_vector_build(1.0, 0.0, 1.0));
   if(nus_vector_cmp(test_vector, nus_vector_build(0.7071, 0.0, 0.7071), 0.00001)
@@ -35,7 +35,93 @@ int main(int argc, char *argv[])
   }
 
   // Test quaternion math
-  //TODO quaternion stuff
+  // Test no rotation
+  test_vector = nus_vector_build(0.0, 0.0, 1.0);
+  test_quaternion_0 = nus_quaternion_unit(nus_vector_build(0.0, 1.0, 0.0), 0);
+  test_vector = nus_quaternion_apply_rotation(test_quaternion_0, test_vector);
+  if(nus_vector_cmp(test_vector, nus_vector_build(0.0, 0.0, 1.0),
+		    0.00001) == NUS_FALSE){
+    UNIT_TEST_LOG_ERROR("failed to use quaternion rotation 1\n");
+    return -1;
+  }
+  // Test quarter cirle rotation
+  test_vector = nus_vector_build(0.0, 0.0, 1.0);
+  test_quaternion_0 = nus_quaternion_unit(nus_vector_build(0.707106, 0.707106, 0.0),
+					3.14159/4.0);
+  test_vector = nus_quaternion_apply_rotation(test_quaternion_0, test_vector);
+  if(nus_vector_cmp(test_vector, nus_vector_build(0.5,-0.5, 0.7071),
+		    0.00001) == NUS_FALSE){
+    UNIT_TEST_LOG_ERROR("failed to use quaternion rotation 2\n");
+    return -1;
+  }
+
+  test_quaternion_0 = nus_quaternion_unit(nus_vector_build(0.0, 1.0, 0.0),
+				        0);
+  test_quaternion_1 = nus_quaternion_unit(nus_vector_build(0.0, 1.0, 0.0),
+					3.14159/2.0);
+  // Test lerp
+  // Test lerp of 0
+  test_vector = nus_vector_build(0.0, 0.0, 1.0);
+  test_vector = nus_quaternion_apply_rotation(nus_quaternion_lerp(test_quaternion_0,
+								  test_quaternion_1,
+								  0.0), test_vector);
+  if(nus_vector_cmp(test_vector, nus_vector_build(0.0, 0.0, 1.0),
+		    0.00001) == NUS_FALSE){
+    UNIT_TEST_LOG_ERROR("failed to use quaternion lerp 0\n");
+    return -1;
+  }
+
+  // Test lerp of 0.5
+  test_vector = nus_vector_build(0.0, 0.0, 1.0);
+  test_vector = nus_quaternion_apply_rotation(nus_quaternion_lerp(test_quaternion_0,
+								  test_quaternion_1,
+								  0.5), test_vector);
+  if(nus_vector_cmp(test_vector, nus_vector_build(0.707106, 0.0, 0.707106),
+		    0.00001) == NUS_FALSE){
+    UNIT_TEST_LOG_ERROR("failed to use quaternion lerp 0.5\n");
+    return -1;
+  }
+  // Test lerp of 2
+  test_vector = nus_vector_build(0.0, 0.0, 1.0);
+  test_vector = nus_quaternion_apply_rotation(nus_quaternion_lerp(test_quaternion_0,
+								  test_quaternion_1,
+								  2.0), test_vector);
+  if(nus_vector_cmp(test_vector, nus_vector_build(1.0, 0.0, 0.0),
+		    0.00001) == NUS_FALSE){
+    UNIT_TEST_LOG_ERROR("failed to use quaternion lerp 2\n");
+    return -1;
+  }
+  // Test slerp
+  // Test slerp of 0
+  test_vector = nus_vector_build(0.0, 0.0, 1.0);
+  test_vector = nus_quaternion_apply_rotation(nus_quaternion_slerp(test_quaternion_0,
+								  test_quaternion_1,
+								  0.0), test_vector);
+  if(nus_vector_cmp(test_vector, nus_vector_build(0.0, 0.0, 1.0),
+		    0.00001) == NUS_FALSE){
+    UNIT_TEST_LOG_ERROR("failed to use quaternion slerp 0\n");
+    return -1;
+  }
+  // Test slerp of 0.5
+  test_vector = nus_vector_build(0.0, 0.0, 1.0);
+  test_vector = nus_quaternion_apply_rotation(nus_quaternion_slerp(test_quaternion_0,
+								  test_quaternion_1,
+								  0.5), test_vector);
+  if(nus_vector_cmp(test_vector, nus_vector_build(0.707106, 0.0, 0.707106),
+		    0.00001) == NUS_FALSE){
+    UNIT_TEST_LOG_ERROR("failed to use quaternion slerp 0.5\n");
+    return -1;
+  }
+  // Test slerp of 2
+  test_vector = nus_vector_build(0.0, 0.0, 1.0);
+  test_vector = nus_quaternion_apply_rotation(nus_quaternion_slerp(test_quaternion_0,
+								  test_quaternion_1,
+								  2.0), test_vector);
+  if(nus_vector_cmp(test_vector, nus_vector_build(1.0, 0.0, 0.0),
+		    0.00001) == NUS_FALSE){
+    UNIT_TEST_LOG_ERROR("failed to use quaternion slerp 2\n");
+    return -1;
+  }
   
   // Test axes math
   // Rotate axes by pi/2
@@ -52,7 +138,6 @@ int main(int argc, char *argv[])
   }
 
   // Test matrix math
-
   // Test translation matrix
   test_matrix = nus_matrix_translation(nus_vector_build(7.3, -2.1, 0.77));
   test_vector = nus_matrix_transform(test_matrix, nus_vector_build(-2.3, 1.0, 7.0));
@@ -63,11 +148,11 @@ int main(int argc, char *argv[])
   }
 
   // Test rotation matrix 1
-  test_quaternion = nus_quaternion_unit(nus_vector_build(0.0, 1.0, 0.0), 0.0);
+  test_quaternion_0 = nus_quaternion_unit(nus_vector_build(0.0, 1.0, 0.0), 0.0);
   test_axes = nus_axes_build(nus_vector_build(0.0, 0.0, 1.0),
 			     nus_vector_build(0.0, 1.0, 0.0),
 			     nus_vector_build(1.0, 0.0, 0.0));
-  test_axes = nus_axes_global_rotation(test_axes, test_quaternion);
+  test_axes = nus_axes_global_rotation(test_axes, test_quaternion_0);
   test_matrix = nus_matrix_rotation(test_axes);
   test_vector = nus_matrix_transform(test_matrix, nus_vector_build(0.0, 0.0, 1.0));
   if(nus_vector_cmp(nus_vector_build(0.0, 0.0, 1.0),
@@ -77,11 +162,11 @@ int main(int argc, char *argv[])
   }
   
   // Test rotation matrix 2
-  test_quaternion = nus_quaternion_unit(nus_vector_build(0.0, 1.0, 0.0), 3.14159/2.0);
+  test_quaternion_0 = nus_quaternion_unit(nus_vector_build(0.0, 1.0, 0.0), 3.14159/2.0);
   test_axes = nus_axes_build(nus_vector_build(0.0, 0.0, 1.0),
 			     nus_vector_build(0.0, 1.0, 0.0),
 			     nus_vector_build(1.0, 0.0, 0.0));
-  test_axes = nus_axes_global_rotation(test_axes, test_quaternion);
+  test_axes = nus_axes_global_rotation(test_axes, test_quaternion_0);
   test_matrix = nus_matrix_rotation(test_axes);
   test_vector = nus_matrix_transform(test_matrix, nus_vector_build(0.0, 0.0, 1.0));
   if(nus_vector_cmp(nus_vector_build(-1.0, 0.0, 0.0),
@@ -91,11 +176,11 @@ int main(int argc, char *argv[])
   }
   
   // Test transformation matrix (ordering translation and rotation)
-  test_quaternion = nus_quaternion_unit(nus_vector_build(0.0, 1.0, 0.0), 3.14159/1.5);
+  test_quaternion_0 = nus_quaternion_unit(nus_vector_build(0.0, 1.0, 0.0), 3.14159/1.5);
   test_axes = nus_axes_build(nus_vector_build(0.0, 0.0, 1.0),
 			     nus_vector_build(0.0, 1.0, 0.0),
 			     nus_vector_build(1.0, 0.0, 0.0));
-  test_axes = nus_axes_global_rotation(test_axes, test_quaternion);
+  test_axes = nus_axes_global_rotation(test_axes, test_quaternion_0);
   test_vector = nus_vector_build(-1.5, 3.14159, 2.1);
   test_matrix = nus_matrix_transformation(nus_vector_build(1.2, 2.3, 3.4), test_axes);
   test_vector = nus_matrix_transform(test_matrix, test_vector);
@@ -115,7 +200,6 @@ int main(int argc, char *argv[])
     UNIT_TEST_LOG_ERROR("failed to invert matrix\n");
     return -1;
   }
-  
   
   printf("Math tested successfully\n");
   printf("unit test %s completed\n", PROGRAM_NAME);
