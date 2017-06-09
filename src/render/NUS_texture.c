@@ -3,6 +3,7 @@
 #include "../gpu/NUS_queue_info.h"
 #include "../gpu/NUS_memory_map.h"
 #include "../NUS_log.h"
+#include "../gpu/NUS_single_command.h"
 #include <string.h>
 
 static NUS_result nus_texture_layout_to_mask(VkImageLayout, unsigned int *);
@@ -78,21 +79,19 @@ NUS_result nus_texture_buffer_image
 {
   p_texture->image_size = size;
   
-  NUS_memory_map tmp_memory;
+  NUS_memory_map tmp_memory_map;
   if(nus_memory_map_build(queue_info, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-			  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &tmp_memory) !=
-     NUS_SUCCESS){
+			  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			  &tmp_memory_map) != NUS_SUCCESS){
     NUS_LOG("failed to build memory map for texture\n");
     return NUS_FAILURE;
   }
-  if(nus_memory_map_flush(tmp_memory, queue_info, data) != NUS_SUCCESS){
+  if(nus_memory_map_flush(tmp_memory_map, queue_info, data) != NUS_SUCCESS){
     NUS_LOG("failed to flush memory map for texture\n");
     return NUS_FAILURE;
   }
-  /*
-  VkCommandBuffer command_buffer;
-  nus_queue_info_add_buffer(queue_info, &command_buffer);
+  
   
   // copy buffer to image
   VkBufferImageCopy region = {
@@ -110,11 +109,29 @@ NUS_result nus_texture_buffer_image
       1
     }
   };
+  nus_texture_transition(*p_texture, queue_info, VK_IMAGE_LAYOUT_PREINITIALIZED,
+			 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			 VK_IMAGE_ASPECT_COLOR_BIT);
   
-  */
+  VkCommandBuffer command_buffer;
+  nus_single_command_begin(queue_info, &command_buffer);
+  
+  vkCmdCopyBufferToImage(command_buffer, tmp_memory_map.buffer, p_texture->image,
+    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+  
+  if(nus_single_command_end(queue_info) != NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to copy texture buffer to image");
+    return NUS_FAILURE;
+  }
+  
+  nus_texture_transition(*p_texture, queue_info, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			 VK_IMAGE_ASPECT_COLOR_BIT);
+
+  nus_memory_map_free(&tmp_memory_map, queue_info);
   return NUS_SUCCESS;
 }
-NUS_result nus_texture_initial_transition
+NUS_result nus_texture_transition
 (NUS_texture texture, NUS_queue_info queue_info,
  VkImageLayout src_layout, VkImageLayout dst_layout, unsigned int aspect_mask)
 {
@@ -129,16 +146,6 @@ NUS_result nus_texture_initial_transition
     NUS_LOG_ERROR("invalid dst_layout in initial texture transition\n");
     return NUS_FAILURE;
   }
-  
-  VkCommandBuffer command_buffer;
-  nus_queue_info_add_buffer(queue_info, &command_buffer);
-  
-  VkCommandBufferBeginInfo command_buffer_begin_info = {
-    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-    .pNext = NULL,
-    .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-    .pInheritanceInfo = NULL
-  };
   VkImageSubresourceRange image_subresource_range = {
     aspect_mask,
     0,
@@ -158,16 +165,15 @@ NUS_result nus_texture_initial_transition
     .image = texture.image,
     .subresourceRange = image_subresource_range
   };
-  vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
+  VkCommandBuffer command_buffer;
+  nus_single_command_begin(queue_info, &command_buffer);
   vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 		       VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 		       0, 0, NULL, 0, NULL, 1, &barrier_from_old_to_new);
-  if(vkEndCommandBuffer(command_buffer) != VK_SUCCESS){
-      NUS_LOG_ERROR("Could not record command buffer!\n");
-      return NUS_FAILURE;
+  if(nus_single_command_end(queue_info) != NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to end texture transition command buffer\n");
+    return NUS_FAILURE;
   }
-  nus_command_group_append(queue_info.p_command_group, command_buffer);
-  nus_queue_info_submit(queue_info);
   
   return NUS_SUCCESS;
 }
@@ -193,7 +199,7 @@ static NUS_result nus_texture_layout_to_mask(VkImageLayout layout, unsigned int 
   case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
     *mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
       VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-      break;
+    break;
   default:
     NUS_LOG_ERROR("invalid layout\n");
     return NUS_FAILURE;

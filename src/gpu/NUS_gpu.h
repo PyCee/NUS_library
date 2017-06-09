@@ -2,6 +2,7 @@
 #define NUS_GPU_H
 
 #include "../NUS_vulkan.h"
+#include "../NUS_bool.h"
 #include "NUS_queue_family.h"
 
 struct NUS_queue_info;
@@ -25,5 +26,7 @@ NUS_result nus_gpu_find_queue_info
 (NUS_gpu *, unsigned int, struct NUS_queue_info *);
 NUS_result nus_gpu_submit_commands(NUS_gpu);
 unsigned int nus_gpu_memory_type_index(NUS_gpu, VkMemoryRequirements, unsigned int);
+NUS_bool nus_gpu_qwery_format_support
+(NUS_gpu, VkFormat, VkImageTiling, VkFormatFeatureFlags);
 
 #endif /* NUS_GPU_H */

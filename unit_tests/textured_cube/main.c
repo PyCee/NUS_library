@@ -143,18 +143,17 @@ int main(int argc, char *argv[])
     NUS_LOG_ERROR("failed to buffer model\n");
     return -1;
   }
-  
   NUS_depth_buffer depth_buffer;
   if(nus_depth_buffer_build(present.queue_info, 600, 400, &depth_buffer) !=
      NUS_SUCCESS){
     printf("UNIT_TEST_ERROR::failed to build depth_buffer\n");
     return -1;
   }
-  nus_texture_initial_transition(depth_buffer, present.queue_info,
-				 VK_IMAGE_LAYOUT_UNDEFINED,
-				 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-				 VK_IMAGE_ASPECT_DEPTH_BIT);
-
+  nus_texture_transition(depth_buffer, present.queue_info,
+			 VK_IMAGE_LAYOUT_UNDEFINED,
+			 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			 VK_IMAGE_ASPECT_DEPTH_BIT);
+  
   // code to create renderpass
   VkAttachmentDescription attachment_descriptions[] = {
     {
@@ -204,7 +203,6 @@ int main(int argc, char *argv[])
       .pPreserveAttachments = NULL
     }
   };
-  
   
   VkSubpassDependency dependencies[] = {
     {

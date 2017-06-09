@@ -210,3 +210,18 @@ unsigned int nus_gpu_memory_type_index
   NUS_LOG_ERROR("failed to find viable memory type\n");
   return UINT_MAX;
 }
+NUS_bool nus_gpu_qwery_format_support
+(NUS_gpu gpu, VkFormat format, VkImageTiling tiling,
+ VkFormatFeatureFlags features)
+{
+  VkFormatProperties properties;
+  vkGetPhysicalDeviceFormatProperties(gpu.physical_device, format, &properties);
+  if((tiling == VK_IMAGE_TILING_LINEAR &&
+      (properties.linearTilingFeatures & features) == features) ||
+     (tiling == VK_IMAGE_TILING_OPTIMAL &&
+      (properties.optimalTilingFeatures & features) == features)){
+    return NUS_TRUE;
+  }
+  NUS_LOG("didnt find\n\n\n");
+  return NUS_FALSE;
+}

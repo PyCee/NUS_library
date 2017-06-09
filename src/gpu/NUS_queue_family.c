@@ -69,7 +69,8 @@ NUS_result nus_queue_family_build_command_groups
   VkCommandPoolCreateInfo command_pool_create_info = {
     .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
     .pNext = NULL,
-    .flags = 0,
+    //.flags = 0,
+    .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
     .queueFamilyIndex = p_queue_family->family_index
   };
   if(vkCreateCommandPool(logical_device, &command_pool_create_info,

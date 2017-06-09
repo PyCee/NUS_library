@@ -15,10 +15,11 @@ NUS_result nus_model_build(NUS_absolute_path absolute_path, NUS_model *p_model)
   
   return NUS_SUCCESS;
 }
-void nus_model_free(NUS_queue_info queue, NUS_model *p_model)
+void nus_model_free(NUS_queue_info queue_info, NUS_model *p_model)
 {
-  nus_memory_map_free(&p_model->vertex_memory, queue);
-  nus_memory_map_free(&p_model->index_memory, queue);
+  nus_memory_map_free(&p_model->vertex_memory, queue_info);
+  nus_memory_map_free(&p_model->index_memory, queue_info);
+  nus_texture_free(*queue_info.p_gpu, &p_model->texture);
   // free model contents
 }
 NUS_result nus_model_buffer
@@ -27,7 +28,8 @@ NUS_result nus_model_buffer
   // load texture
   if(nus_texture_build(queue, p_model->contents.texture_width,
 		       p_model->contents.texture_height, VK_FORMAT_R8G8B8A8_UNORM,
-		       VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		       VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+		       VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
 		       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 		       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		       &p_model->texture) != NUS_SUCCESS){

@@ -54,6 +54,7 @@
   function( vkGetPhysicalDeviceProperties, ##__VA_ARGS__ );		\
   function( vkGetPhysicalDeviceFeatures, ##__VA_ARGS__ );		\
   function( vkGetPhysicalDeviceQueueFamilyProperties, ##__VA_ARGS__ );	\
+  function( vkGetPhysicalDeviceFormatProperties, ##__VA_ARGS__ );	\
   function( vkEnumerateDeviceExtensionProperties, ##__VA_ARGS__ );	\
   function( vkCreateDevice, ##__VA_ARGS__ );				\
   function( vkGetPhysicalDeviceSurfaceSupportKHR, ##__VA_ARGS__ );	\
@@ -136,7 +137,8 @@
   function( vkDestroyDescriptorSetLayout, ##__VA_ARGS__ );		\
   function( vkDestroyDescriptorPool, ##__VA_ARGS__ );			\
   function( vkGetFenceStatus, ##__VA_ARGS__ );				\
-  function( vkGetPhysicalDeviceFormatProperties, ##__VA_ARGS__ )
+  function( vkCmdCopyBufferToImage, ##__VA_ARGS__ );			\
+  function( vkResetCommandBuffer, ##__VA_ARGS__ )
 
 
 #define NUS_VK_FUNCTION_DECLARATION(fun)	\
