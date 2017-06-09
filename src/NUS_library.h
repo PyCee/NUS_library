@@ -57,6 +57,7 @@
 #include "gpu/NUS_vulkan_instance.h"
 #include "gpu/NUS_queue_info.h"
 #include "gpu/NUS_memory_map.h"
+#include "gpu/NUS_single_command.h"
 //#endif /* NUS_SYSTEM_GPU */
 
 /*  NUS_SYSTEM_RENDER must be defined in the application to enable rendering */
@@ -70,7 +71,6 @@
 #include "render/NUS_render_pass.h"
 #include "render/NUS_framebuffer.h"
 #include "render/NUS_graphics_pipeline.h"
-#include "render/NUS_vk_format.h"
 #include "render/NUS_depth_buffer.h"
 //#endif /* NUS_SYSTEM_RENDER */
 

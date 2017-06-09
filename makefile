@@ -15,7 +15,7 @@ STR_SRC_FILES=NUS_string_group.c NUS_absolute_path.c
 STR_DIR=strings
 
 GPU_SRC_FILES=NUS_multi_gpu.c NUS_gpu.c NUS_queue_family.c NUS_command_group.c \
-	NUS_vulkan_instance.c NUS_queue_info.c NUS_memory_map.c
+	NUS_vulkan_instance.c NUS_queue_info.c NUS_memory_map.c NUS_single_command.c
 GPU_DIR=gpu
 
 IO_SRC_FILES=NUS_window.c NUS_system_events.c
@@ -35,7 +35,7 @@ PHY_DIR=physics
 
 REN_SRC_FILES=NUS_presentation_surface.c NUS_image_clear.c NUS_shader.c \
 	NUS_swapchain.c NUS_texture.c NUS_subpass_info.c NUS_render_pass.c \
-	NUS_framebuffer.c NUS_graphics_pipeline.c NUS_vk_format.c NUS_depth_buffer.c
+	NUS_framebuffer.c NUS_graphics_pipeline.c NUS_depth_buffer.c
 REN_DIR=render
 
 TIME_SRC_FILES=NUS_clock.c
