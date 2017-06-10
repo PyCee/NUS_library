@@ -11,7 +11,7 @@
 
 #include <unistd.h>
 
-#define PROGRAM_NAME "unit_test-textured_cube"
+#define PROGRAM_NAME "unit_test-texture"
 
 void close_win(void);
 void move_forward(void);
