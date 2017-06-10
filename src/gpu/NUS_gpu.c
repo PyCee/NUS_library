@@ -222,6 +222,5 @@ NUS_bool nus_gpu_qwery_format_support
       (properties.optimalTilingFeatures & features) == features)){
     return NUS_TRUE;
   }
-  NUS_LOG("didnt find\n\n\n");
   return NUS_FALSE;
 }
