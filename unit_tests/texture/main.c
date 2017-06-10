@@ -14,20 +14,7 @@
 #define PROGRAM_NAME "unit_test-texture"
 
 void close_win(void);
-void move_forward(void);
-void move_back(void);
-void move_up(void);
-void move_left(void);
-void move_down(void);
-void move_right(void);
-
-void pitch_up(void);
-void pitch_down(void);
-void yaw_left(void);
-void yaw_right(void);
 char run;
-float dx = 0.0, dy = 0.0, dz = 0.0, dpitch = 0.0, dyaw = 0.0;
-float move_speed = 0.01, rotate_speed = 1.0 * 3.14159 / 180.0;
 
 int main(int argc, char *argv[])
 {
@@ -48,40 +35,8 @@ int main(int argc, char *argv[])
     return -1;
   }
   nus_event_handler_append(eve, NUS_EVENT_CLOSE_WINDOW, 0, close_win);
-  
   nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
 				    NUS_KEY_ESC, close_win);
-  //nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_E, move_forward);
-  //nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_Q, move_back);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_W, move_up);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_A, move_left);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_S, move_down);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_D, move_right);
-  
-  //nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_E, move_back);
-  //nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_Q, move_forward);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_S, move_up);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_D, move_left);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_W, move_down);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE, NUS_KEY_A, move_right);
-  
-  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
-				    NUS_KEY_ARROW_UP, pitch_up);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
-				    NUS_KEY_ARROW_DOWN, pitch_down);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
-				    NUS_KEY_ARROW_LEFT, yaw_left);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
-				    NUS_KEY_ARROW_RIGHT, yaw_right);
-  
-  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE,
-				    NUS_KEY_ARROW_UP, pitch_down);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE,
-				    NUS_KEY_ARROW_DOWN, pitch_up);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE,
-				    NUS_KEY_ARROW_LEFT, yaw_right);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_RELEASE,
-				    NUS_KEY_ARROW_RIGHT, yaw_left);
   nus_event_handler_set(&eve);
   
   NUS_vulkan_instance vulkan_instance;
@@ -135,7 +90,7 @@ int main(int argc, char *argv[])
   }
   
   NUS_model model;
-  if(nus_model_build(nus_absolute_path_build("cube.nusm"), &model) != NUS_SUCCESS){
+  if(nus_model_build(nus_absolute_path_build("plane.nusm"), &model) != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to build model\n");
     return -1;
   }
@@ -725,24 +680,16 @@ int main(int argc, char *argv[])
   
   run = 1;
   float x = 0.0f, y = 0.0f, z = 0.4;
+  
+  tmp = nus_matrix_translation(nus_vector_build(x, y, z));
+  tmp = nus_matrix_transpose(tmp);
+  
+  nus_memory_map_flush(uniform_world_memory, present.queue_info, &tmp);
+
+
   while(run){
 
-    nus_system_events_handle(win);
-
-    
-    y += dy;
-    x += dx;
-    z += dz;
-    
-    axes = nus_axes_global_pitch(axes, dpitch);
-    axes = nus_axes_global_yaw(axes, dyaw);
-    translation = nus_vector_build(x, y, z);
-    tmp = nus_matrix_transformation(translation, axes);
-    tmp = nus_matrix_transpose(tmp);
-    //nus_matrix_print(tmp);
-    
-    nus_memory_map_flush(uniform_world_memory, present.queue_info, &tmp);
-
+    nus_system_events_handle(win);  
     
     if(nus_command_group_add_semaphores(info.p_command_group, 1,
 					&present.image_available,
@@ -815,45 +762,4 @@ int main(int argc, char *argv[])
 void close_win(void)
 {
   run = 0;
-}
-
-void move_forward(void)
-{
-  dz -= move_speed;
-}
-void move_back(void)
-{
-  dz += move_speed;
-}
-void move_up(void)
-{
-  dy -= move_speed;
-}
-void move_left(void)
-{
-  dx -= move_speed;
-}
-void move_down(void)
-{
-  dy += move_speed;
-}
-void move_right(void)
-{
-  dx += move_speed;
-}
-void pitch_up(void)
-{
-  dpitch -= rotate_speed;
-}
-void pitch_down(void)
-{
-  dpitch += rotate_speed;
-}
-void yaw_left(void)
-{
-  dyaw += rotate_speed;
-}
-void yaw_right(void)
-{
-  dyaw -= rotate_speed;
 }
