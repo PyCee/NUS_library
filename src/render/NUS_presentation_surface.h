@@ -4,7 +4,7 @@
 #include "../NUS_result.h"
 #include "../NUS_vulkan.h"
 #include "../gpu/NUS_gpu.h"
-#include "../gpu/NUS_queue_info.h"
+#include "../gpu/NUS_binding.h"
 #include "NUS_swapchain.h"
 #include "NUS_texture.h"
 
@@ -15,12 +15,12 @@ struct NUS_multi_gpu;
 typedef struct NUS_presentation_surface{
   VkSurfaceKHR surface;
   NUS_swapchain swapchain;
-  NUS_queue_info queue_info;
   NUS_texture render_target;
   VkSemaphore render_copied,
     image_available,
     image_presentable;
-  VkCommandBuffer *render_target_copy_command_buffers;
+  VkCommandBuffer *render_target_copy_buffer;
+  NUS_binding binding;
 } NUS_presentation_surface;
 
 NUS_result nus_presentation_surface_build

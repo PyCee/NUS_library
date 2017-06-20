@@ -2,6 +2,7 @@
 #include "../gpu/NUS_gpu.h"
 #include <limits.h>
 #include <stdio.h>
+/*
 #include "../gpu/NUS_queue_info.h"
 #include "../gpu/NUS_command_group.h"
 
@@ -83,3 +84,4 @@ NUS_result nus_image_clear
   nus_queue_info_submit(info);
   return NUS_SUCCESS;
 }
+*/

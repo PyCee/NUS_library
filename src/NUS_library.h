@@ -53,9 +53,9 @@
 #include "gpu/NUS_multi_gpu.h"
 #include "gpu/NUS_gpu.h"
 #include "gpu/NUS_queue_family.h"
-#include "gpu/NUS_command_group.h"
+#include "gpu/NUS_submission_queue.h"
 #include "gpu/NUS_vulkan_instance.h"
-#include "gpu/NUS_queue_info.h"
+#include "gpu/NUS_binding.h"
 #include "gpu/NUS_memory_map.h"
 #include "gpu/NUS_single_command.h"
 //#endif /* NUS_SYSTEM_GPU */

@@ -5,7 +5,7 @@
 
 #include "../NUS_result.h"
 #include "../NUS_vulkan.h"
-#include "../gpu/NUS_gpu.h"
+#include "../gpu/NUS_binding.h"
 
 typedef struct NUS_swapchain{
   VkSwapchainKHR swapchain;
@@ -17,13 +17,14 @@ typedef struct NUS_swapchain{
   VkSurfaceTransformFlagBitsKHR transform_bits;
   unsigned int image_count,
     image_index;
+  NUS_binding binding;
 } NUS_swapchain;
 
-NUS_result nus_swapchain_build(NUS_gpu, VkSurfaceKHR, NUS_swapchain *);
-void nus_swapchain_free(NUS_gpu, NUS_swapchain *);
+NUS_result nus_swapchain_build(VkSurfaceKHR, NUS_swapchain *);
+void nus_swapchain_free(NUS_swapchain *);
 VkImage nus_swapchain_get_image(NUS_swapchain);
-NUS_result nus_swapchain_present(NUS_gpu *, VkSurfaceKHR, VkSemaphore, NUS_swapchain *);
-NUS_result nus_swapchain_new_image(NUS_gpu, VkSurfaceKHR, VkSemaphore, NUS_swapchain *);
+NUS_result nus_swapchain_present(VkSurfaceKHR, VkSemaphore, NUS_swapchain *);
+NUS_result nus_swapchain_new_image(VkSurfaceKHR, VkSemaphore, NUS_swapchain *);
 
 #endif /* NUS_SWAPCHAIN_H */
 /* partial code for printing swapchain

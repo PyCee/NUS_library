@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <limits.h>
 #include "../NUS_log.h"
-#include "NUS_queue_info.h"
 
 static NUS_result nus_gpu_build_logical_device(NUS_gpu *);
 
@@ -59,7 +58,7 @@ NUS_result nus_gpu_build(VkPhysicalDevice physical_device, NUS_gpu *p_gpu)
   nus_bind_device_vulkan_library(p_gpu->functions);
   
   for(i = 0; i < p_gpu->queue_family_count; ++i){
-    if(nus_queue_family_build_command_groups(p_gpu->logical_device,
+    if(nus_queue_family_build_submission_queues(p_gpu->logical_device,
 					     p_gpu->queue_families + i) !=
        NUS_SUCCESS){
       NUS_LOG_ERROR("failed to create queues\n");
@@ -102,27 +101,6 @@ void nus_gpu_print(NUS_gpu gpu)
     nus_queue_family_print(gpu.queue_families[i]);
   }
 }
-NUS_result nus_gpu_find_queue_info
-(NUS_gpu *p_gpu, unsigned int flags,
- NUS_queue_info *info)
-{
-  unsigned int i;
-  for(i = 0; i < p_gpu->queue_family_count; ++i){
-    if((p_gpu->queue_families[i].flags & flags) == flags){
-      if(nus_queue_family_find_queue_info(p_gpu->queue_families[i],
-						      info) !=
-	 NUS_SUCCESS){
-        NUS_LOG_ERROR("failed to find suitable queue\n");
-	return NUS_FAILURE;
-      }
-      info->p_queue_family = p_gpu->queue_families + i;
-      info->queue_family_index = i;
-      break;
-    }
-  }
-  info->p_gpu = p_gpu;
-  return NUS_SUCCESS;
-}
 NUS_result nus_gpu_submit_commands(NUS_gpu gpu)
 {
   unsigned int i;
@@ -145,8 +123,8 @@ static NUS_result nus_gpu_build_logical_device
   float *queue_priorities[p_gpu->queue_family_count];
   for(i = 0; i < p_gpu->queue_family_count; ++i){
     queue_priorities[i] = malloc(sizeof(*queue_priorities[i]) *
-				 p_gpu->queue_families[i].command_group_count);
-    for(j = 0; j < p_gpu->queue_families[i].command_group_count; ++j){
+				 p_gpu->queue_families[i].submission_queue_count);
+    for(j = 0; j < p_gpu->queue_families[i].submission_queue_count; ++j){
       queue_priorities[i][j] = 1.0;
     }
     queue_create_info[i] = (VkDeviceQueueCreateInfo){
@@ -154,7 +132,7 @@ static NUS_result nus_gpu_build_logical_device
       .pNext = NULL,
       .flags = 0,
       .queueFamilyIndex = i,
-      .queueCount = p_gpu->queue_families[i].command_group_count,
+      .queueCount = p_gpu->queue_families[i].submission_queue_count,
       .pQueuePriorities = queue_priorities[i]
     };
   }

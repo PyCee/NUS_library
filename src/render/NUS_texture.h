@@ -3,6 +3,7 @@
 
 #include "../NUS_vulkan.h"
 #include "../NUS_result.h"
+#include "../gpu/NUS_binding.h"
 
 struct NUS_gpu;
 struct NUS_queue_info;
@@ -13,16 +14,17 @@ typedef struct NUS_texture{
   VkFormat format;
   unsigned int width, height;
   size_t image_size;
+  NUS_binding binding;
 } NUS_texture;
 
 NUS_result nus_texture_build
-(struct NUS_queue_info, unsigned int, unsigned int, VkFormat, unsigned int, unsigned int,
+(unsigned int, unsigned int, VkFormat, unsigned int, unsigned int,
  NUS_texture *);
-void nus_texture_free(struct NUS_gpu, NUS_texture *);
+void nus_texture_free(NUS_texture *);
 NUS_result nus_texture_buffer_image
-(struct NUS_queue_info, void *, size_t, NUS_texture *);
-NUS_result nus_texture_transition
-(NUS_texture, struct NUS_queue_info, VkImageLayout, VkImageLayout, unsigned int);
+(void *, size_t, NUS_texture *);
+NUS_result nus_cmd_texture_transition
+(NUS_texture, VkCommandBuffer, VkImageLayout, VkImageLayout, unsigned int);
 
 
 #endif /* NUS_TEXTURE_H */

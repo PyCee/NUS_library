@@ -1,6 +1,5 @@
 #include "NUS_texture.h"
 #include "../gpu/NUS_gpu.h"
-#include "../gpu/NUS_queue_info.h"
 #include "../gpu/NUS_memory_map.h"
 #include "../NUS_log.h"
 #include "../gpu/NUS_single_command.h"
@@ -9,9 +8,8 @@
 static NUS_result nus_texture_layout_to_mask(VkImageLayout, unsigned int *);
 
 NUS_result nus_texture_build
-(NUS_queue_info queue_info, unsigned int width, unsigned int height,
- VkFormat format, unsigned int usage, unsigned int memory_property_flags,
- NUS_texture *p_texture)
+(unsigned int width, unsigned int height, VkFormat format, unsigned int usage,
+ unsigned int memory_property_flags, NUS_texture *p_texture)
 {
   p_texture->format = format;
   p_texture->width = width;
@@ -38,56 +36,59 @@ NUS_result nus_texture_build
     .pQueueFamilyIndices = NULL,
     .initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED
   };
-  if(vkCreateImage(queue_info.p_gpu->logical_device, &image_create_info, NULL,
+  if(vkCreateImage(nus_get_bound_device(), &image_create_info, NULL,
 		   &p_texture->image) != VK_SUCCESS){
     NUS_LOG_ERROR("failed to create texture image\n");
     return NUS_FAILURE;
   }
   VkMemoryRequirements image_memory_req;
-  vkGetImageMemoryRequirements(queue_info.p_gpu->logical_device, p_texture->image,
+  vkGetImageMemoryRequirements(nus_get_bound_device(), p_texture->image,
 			       &image_memory_req);
   
   VkMemoryAllocateInfo memory_alloc_info = {
     .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
     .pNext = NULL,
     .allocationSize = image_memory_req.size,
-    .memoryTypeIndex = nus_gpu_memory_type_index(*queue_info.p_gpu, image_memory_req,
+    .memoryTypeIndex = nus_gpu_memory_type_index(*nus_get_bound_gpu(), image_memory_req,
 						 memory_property_flags)
   };
-  if(vkAllocateMemory(queue_info.p_gpu->logical_device, &memory_alloc_info, NULL,
+  if(vkAllocateMemory(nus_get_bound_device(), &memory_alloc_info, NULL,
 		      &p_texture->memory) != VK_SUCCESS){
     NUS_LOG_ERROR("failed to allocate memory for texture\n");
     return NUS_FAILURE;
   }
-  vkBindImageMemory(queue_info.p_gpu->logical_device, p_texture->image,
+  vkBindImageMemory(nus_get_bound_device(), p_texture->image,
 		    p_texture->memory, 0);
+  p_texture->binding = nus_get_binding();
   return NUS_SUCCESS;
 }
-void nus_texture_free(NUS_gpu gpu, NUS_texture *p_texture)
+void nus_texture_free(NUS_texture *p_texture)
 {
+  nus_bind_binding(&p_texture->binding);
   if(p_texture->memory != VK_NULL_HANDLE){
-    vkFreeMemory(gpu.logical_device, p_texture->memory, NULL);
+    vkFreeMemory(nus_get_bound_device(), p_texture->memory, NULL);
     p_texture->memory = VK_NULL_HANDLE;
   }
   if(p_texture->image != VK_NULL_HANDLE){
-    vkDestroyImage(gpu.logical_device, p_texture->image, NULL);
+    vkDestroyImage(nus_get_bound_device(), p_texture->image, NULL);
     p_texture->image = VK_NULL_HANDLE;
   }
+  nus_unbind_binding(&p_texture->binding);
 }
 NUS_result nus_texture_buffer_image
-(NUS_queue_info queue_info, void *data, size_t size, NUS_texture *p_texture)
+(void *data, size_t size, NUS_texture *p_texture)
 {
+  nus_bind_binding(&p_texture->binding);
   p_texture->image_size = size;
-  
   NUS_memory_map tmp_memory_map;
-  if(nus_memory_map_build(queue_info, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+  if(nus_memory_map_build(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 			  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			  &tmp_memory_map) != NUS_SUCCESS){
     NUS_LOG("failed to build memory map for texture\n");
     return NUS_FAILURE;
   }
-  if(nus_memory_map_flush(tmp_memory_map, queue_info, data) != NUS_SUCCESS){
+  if(nus_memory_map_flush(tmp_memory_map, data) != NUS_SUCCESS){
     NUS_LOG("failed to flush memory map for texture\n");
     return NUS_FAILURE;
   }
@@ -109,35 +110,40 @@ NUS_result nus_texture_buffer_image
       1
     }
   };
-  nus_texture_transition(*p_texture, queue_info, VK_IMAGE_LAYOUT_PREINITIALIZED,
-			 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			 VK_IMAGE_ASPECT_COLOR_BIT);
   
   VkCommandBuffer command_buffer;
-  nus_single_command_begin(queue_info, &command_buffer);
+  nus_single_command_begin(&command_buffer);
+  
+  nus_cmd_texture_transition(*p_texture, command_buffer, VK_IMAGE_LAYOUT_PREINITIALIZED,
+			     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			     VK_IMAGE_ASPECT_COLOR_BIT);
   
   vkCmdCopyBufferToImage(command_buffer, tmp_memory_map.buffer, p_texture->image,
     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
   
-  if(nus_single_command_end(queue_info) != NUS_SUCCESS){
+  nus_cmd_texture_transition(*p_texture, command_buffer,
+			     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			     VK_IMAGE_ASPECT_COLOR_BIT);
+  
+  if(nus_single_command_end() != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to copy texture buffer to image");
     return NUS_FAILURE;
   }
   
-  nus_texture_transition(*p_texture, queue_info, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			 VK_IMAGE_ASPECT_COLOR_BIT);
+  nus_memory_map_free(&tmp_memory_map);
 
-  nus_memory_map_free(&tmp_memory_map, queue_info);
+  nus_bind_binding(&p_texture->binding);
   return NUS_SUCCESS;
 }
-NUS_result nus_texture_transition
-(NUS_texture texture, NUS_queue_info queue_info,
+NUS_result nus_cmd_texture_transition
+(NUS_texture texture, VkCommandBuffer cmd_buffer,
  VkImageLayout src_layout, VkImageLayout dst_layout, unsigned int aspect_mask)
 {
   unsigned int src_access_mask,
     dst_access_mask;
 
+  nus_bind_binding(&texture.binding);
   if(nus_texture_layout_to_mask(src_layout, &src_access_mask) != NUS_SUCCESS){
     NUS_LOG_ERROR("invalid src_layout in initial texture transition\n");
     return NUS_FAILURE;
@@ -165,16 +171,17 @@ NUS_result nus_texture_transition
     .image = texture.image,
     .subresourceRange = image_subresource_range
   };
-  VkCommandBuffer command_buffer;
-  nus_single_command_begin(queue_info, &command_buffer);
-  vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+  //VkCommandBuffer command_buffer;
+  //nus_single_command_begin(&command_buffer);
+  vkCmdPipelineBarrier(cmd_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 		       VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 		       0, 0, NULL, 0, NULL, 1, &barrier_from_old_to_new);
-  if(nus_single_command_end(queue_info) != NUS_SUCCESS){
+  /*if(nus_single_command_end() != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to end texture transition command buffer\n");
     return NUS_FAILURE;
-  }
+  }*/
   
+  nus_unbind_binding(&texture.binding);
   return NUS_SUCCESS;
 }
 

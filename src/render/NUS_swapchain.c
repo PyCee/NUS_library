@@ -1,24 +1,24 @@
 #include "NUS_swapchain.h"
-#include "../gpu/NUS_queue_info.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 static NUS_result nus_swapchain_build_info
-(VkPhysicalDevice, VkSurfaceKHR, NUS_swapchain *);
+(VkSurfaceKHR, NUS_swapchain *);
 static NUS_result nus_swapchain_build_format
-(VkPhysicalDevice, VkSurfaceKHR, NUS_swapchain *);
+(VkSurfaceKHR, NUS_swapchain *);
 static NUS_result nus_swapchain_build_present_mode
-(VkPhysicalDevice, VkSurfaceKHR, NUS_swapchain *);
+(VkSurfaceKHR, NUS_swapchain *);
 static NUS_result nus_swapchain_build_length(NUS_swapchain *);
 static NUS_result nus_swapchain_build_extent(NUS_swapchain *);
 static NUS_result nus_swapchain_build_transform_bits(NUS_swapchain *);
 static NUS_result nus_swapchain_rebuild
-(NUS_gpu, VkSurfaceKHR, NUS_swapchain *);
+(VkSurfaceKHR, NUS_swapchain *);
 
 NUS_result nus_swapchain_build
-(NUS_gpu gpu, VkSurfaceKHR surface, NUS_swapchain *p_swapchain)
+(VkSurfaceKHR surface, NUS_swapchain *p_swapchain)
 {
-  if(nus_swapchain_build_info(gpu.physical_device, surface, p_swapchain) !=
+  if(nus_swapchain_build_info(surface, p_swapchain) !=
      NUS_SUCCESS){
     printf("ERROR::failed to obtain swapchain info\n");
     return NUS_FAILURE;
@@ -43,13 +43,13 @@ NUS_result nus_swapchain_build
     .clipped = VK_TRUE,
     .oldSwapchain = VK_NULL_HANDLE
   };
-  if(vkCreateSwapchainKHR(gpu.logical_device, &swapchain_create_info, NULL,
+  if(vkCreateSwapchainKHR(nus_get_bound_device(), &swapchain_create_info, NULL,
 			  &p_swapchain->swapchain) != VK_SUCCESS){
     printf("ERROR::failed to create swapchain\n");    
     return NUS_FAILURE;
   }
   // Get count of images that were actually created
-  if(vkGetSwapchainImagesKHR(gpu.logical_device, p_swapchain->swapchain,
+  if(vkGetSwapchainImagesKHR(nus_get_bound_device(), p_swapchain->swapchain,
 			     &p_swapchain->image_count, NULL) != VK_SUCCESS ||
      p_swapchain->image_count == 0){
     printf("ERROR::failed to obtain swapchain images: count = %d\n",
@@ -59,28 +59,30 @@ NUS_result nus_swapchain_build
   // Get array of created swapchain images
   p_swapchain->images = malloc(sizeof(*p_swapchain->images) *
 			       p_swapchain->image_count);
-  if(vkGetSwapchainImagesKHR(gpu.logical_device, p_swapchain->swapchain,
+  if(vkGetSwapchainImagesKHR(nus_get_bound_device(), p_swapchain->swapchain,
 			     &p_swapchain->image_count, p_swapchain->images) !=
      VK_SUCCESS){
     printf("ERROR::failed to obtain swapchain images\n");
     return NUS_FAILURE;
   }
+  p_swapchain->binding = nus_get_binding();
   return NUS_SUCCESS;
 }
-void nus_swapchain_free(NUS_gpu gpu, NUS_swapchain *p_swapchain)
+void nus_swapchain_free(NUS_swapchain *p_swapchain)
 {
-  vkDeviceWaitIdle(gpu.logical_device);
-  vkDestroySwapchainKHR(gpu.logical_device, p_swapchain->swapchain, NULL);
+  nus_bind_binding(&p_swapchain->binding);
+  vkDeviceWaitIdle(nus_get_bound_device());
+  vkDestroySwapchainKHR(nus_get_bound_device(), p_swapchain->swapchain, NULL);
+  nus_unbind_binding(&p_swapchain->binding);
 }
 VkImage nus_swapchain_get_image(NUS_swapchain swapchain)
 {
   return swapchain.images[swapchain.image_index];
 }
 NUS_result nus_swapchain_present
-(NUS_gpu *gpu, VkSurfaceKHR surface, VkSemaphore wait, NUS_swapchain *p_swapchain)
+(VkSurfaceKHR surface, VkSemaphore wait, NUS_swapchain *p_swapchain)
 {
-  NUS_queue_info info;
-  nus_gpu_find_queue_info(gpu, NUS_QUEUE_FAMILY_SUPPORT_PRESENT, &info);
+  nus_bind_binding(&p_swapchain->binding);
   
   VkPresentInfoKHR present_info = {
     .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -92,45 +94,48 @@ NUS_result nus_swapchain_present
     .pImageIndices = &p_swapchain->image_index,
     .pResults = NULL
   };
-  switch(vkQueuePresentKHR(info.p_command_group->queue, &present_info)){
+  switch(vkQueuePresentKHR(nus_get_bound_submission_queue()->queue, &present_info)){
   case VK_SUCCESS:
   case VK_SUBOPTIMAL_KHR:
     break;
   case VK_ERROR_OUT_OF_DATE_KHR:
-    nus_swapchain_rebuild(*gpu, surface, p_swapchain);
+    nus_swapchain_rebuild(surface, p_swapchain);
     break;
   default:
     printf("ERROR::failed to present swapchain image\n");
     return NUS_FAILURE;
     break;
   }
+  nus_unbind_binding(&p_swapchain->binding);
   return NUS_SUCCESS;
 }
 NUS_result nus_swapchain_new_image
-(NUS_gpu gpu, VkSurfaceKHR surface, VkSemaphore signal, NUS_swapchain *p_swapchain)
+(VkSurfaceKHR surface, VkSemaphore signal, NUS_swapchain *p_swapchain)
 {
-  switch(vkAcquireNextImageKHR(gpu.logical_device, p_swapchain->swapchain, UINT_MAX,
+  nus_bind_binding(&p_swapchain->binding);
+  switch(vkAcquireNextImageKHR(nus_get_bound_device(), p_swapchain->swapchain, UINT_MAX,
 			       signal, VK_NULL_HANDLE,
 			       &p_swapchain->image_index)){
   case VK_SUCCESS:
     break;
   case VK_SUBOPTIMAL_KHR:
   case VK_ERROR_OUT_OF_DATE_KHR:
-    nus_swapchain_rebuild(gpu, surface, p_swapchain);
+    nus_swapchain_rebuild(surface, p_swapchain);
     break;
   default:
     printf("ERROR::failed to acquire image\n");
     return NUS_FAILURE;
     break;
   }
+  nus_unbind_binding(&p_swapchain->binding);
   return NUS_SUCCESS; 
 }
 
 static NUS_result nus_swapchain_build_info
-(VkPhysicalDevice physical_device, VkSurfaceKHR surface, NUS_swapchain *p_swapchain)
+(VkSurfaceKHR surface, NUS_swapchain *p_swapchain)
 {
-  if(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface,
-					       &p_swapchain->capabilities) !=
+  if(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(nus_get_bound_gpu()->physical_device,
+					       surface, &p_swapchain->capabilities) !=
      VK_SUCCESS){
     printf("ERROR::failed to obtain swapchain capabilities\n");
     return -1;
@@ -140,13 +145,12 @@ static NUS_result nus_swapchain_build_info
     printf("ERROR::failed to build swapchain length\n");
     return NUS_FAILURE;
   }
-  if(nus_swapchain_build_format(physical_device, surface, p_swapchain) !=
+  if(nus_swapchain_build_format(surface, p_swapchain) !=
      NUS_SUCCESS){
     printf("ERROR::failed to build swapchain formats\n");
     return NUS_FAILURE;
   }
-  if(nus_swapchain_build_present_mode(physical_device, surface,
-						  p_swapchain) != NUS_SUCCESS){
+  if(nus_swapchain_build_present_mode(surface, p_swapchain) != NUS_SUCCESS){
     printf("ERROR::failed to build swapchain present modes\n");
     return NUS_FAILURE;
   }
@@ -163,18 +167,19 @@ static NUS_result nus_swapchain_build_info
   return NUS_SUCCESS;
 }
 static NUS_result nus_swapchain_build_format
-(VkPhysicalDevice physical_device, VkSurfaceKHR surface, NUS_swapchain *p_swapchain)
+(VkSurfaceKHR surface, NUS_swapchain *p_swapchain)
 {
   unsigned int i,
     format_count;
-  if((vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface,
+  if((vkGetPhysicalDeviceSurfaceFormatsKHR(nus_get_bound_gpu()->physical_device, surface,
 					   &format_count, NULL) != VK_SUCCESS) ||
      (format_count == 0)){
     printf("ERROR::failed to obtain surface format count\n");
     return NUS_FAILURE;
   }
   VkSurfaceFormatKHR available_formats[format_count];
-  if((vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count,
+  if((vkGetPhysicalDeviceSurfaceFormatsKHR(nus_get_bound_gpu()->physical_device,
+					   surface, &format_count,
 					   available_formats) != VK_SUCCESS)){
     printf("ERROR::failed to obtain surface formats\n");
     return NUS_FAILURE;
@@ -201,20 +206,20 @@ static NUS_result nus_swapchain_build_format
   return NUS_SUCCESS;
 }
 static NUS_result nus_swapchain_build_present_mode
-(VkPhysicalDevice physical_device, VkSurfaceKHR surface, NUS_swapchain *p_swapchain)
+(VkSurfaceKHR surface, NUS_swapchain *p_swapchain)
 {
   unsigned int i,
     present_mode_count;
-  if((vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
-						&present_mode_count,
+  if((vkGetPhysicalDeviceSurfacePresentModesKHR(nus_get_bound_gpu()->physical_device,
+						surface, &present_mode_count,
 						NULL) != VK_SUCCESS) ||
      (present_mode_count == 0)){
     printf("ERROR::failed to obtain surface present mode count\n");
     return NUS_FAILURE;
   }
   VkPresentModeKHR available_present_modes[present_mode_count];
-  if(vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
-					       &present_mode_count,
+  if(vkGetPhysicalDeviceSurfacePresentModesKHR(nus_get_bound_gpu()->physical_device,
+					       surface, &present_mode_count,
 					       available_present_modes) !=
      VK_SUCCESS){
     printf("ERROR::failed to obtain surface present modes\n");
@@ -296,12 +301,12 @@ static NUS_result nus_swapchain_build_transform_bits
   return NUS_SUCCESS;
 }
 static NUS_result nus_swapchain_rebuild
-(NUS_gpu gpu, VkSurfaceKHR surface, NUS_swapchain *p_swapchain)
+(VkSurfaceKHR surface, NUS_swapchain *p_swapchain)
 {
   //TODO faster to wait on fences of few commands that operate on swaochain images
-  vkDeviceWaitIdle(gpu.logical_device);
-  nus_swapchain_free(gpu, p_swapchain);
-  if(nus_swapchain_build(gpu, surface, p_swapchain) != NUS_SUCCESS){
+  vkDeviceWaitIdle(nus_get_bound_device());
+  nus_swapchain_free(p_swapchain);
+  if(nus_swapchain_build(surface, p_swapchain) != NUS_SUCCESS){
     printf("ERROR::failed to rebuild swapchain: build failed\n");
     return NUS_FAILURE;
   }

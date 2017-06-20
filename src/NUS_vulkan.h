@@ -138,7 +138,8 @@
   function( vkDestroyDescriptorPool, ##__VA_ARGS__ );			\
   function( vkGetFenceStatus, ##__VA_ARGS__ );				\
   function( vkCmdCopyBufferToImage, ##__VA_ARGS__ );			\
-  function( vkResetCommandBuffer, ##__VA_ARGS__ )
+  function( vkResetCommandBuffer, ##__VA_ARGS__ );			\
+  function( vkQueueWaitIdle, ##__VA_ARGS__ )
 
 
 #define NUS_VK_FUNCTION_DECLARATION(fun)	\

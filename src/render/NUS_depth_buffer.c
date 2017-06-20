@@ -1,21 +1,20 @@
 #include "NUS_depth_buffer.h"
-#include "../gpu/NUS_gpu.h"
-#include "../gpu/NUS_queue_info.h"
+#include "../gpu/NUS_binding.h"
 #include "../NUS_log.h"
 #include <stdio.h>
 
-static NUS_result nus_depth_buffer_find_format(NUS_queue_info, VkFormat *);
+static NUS_result nus_depth_buffer_find_format(VkFormat *);
 
 NUS_result nus_depth_buffer_build
-(NUS_queue_info queue_info, unsigned int width, unsigned int height,
+(unsigned int width, unsigned int height,
  NUS_depth_buffer *p_depth_buffer)
 {
   VkFormat format;
-  if(nus_depth_buffer_find_format(queue_info, &format) != NUS_SUCCESS){
+  if(nus_depth_buffer_find_format(&format) != NUS_SUCCESS){
     printf("NUS_ERROR::failed to find format for depth buffer\n");
     return NUS_FAILURE;
   }
-  if(nus_texture_build(queue_info, width, height, format,
+  if(nus_texture_build(width, height, format,
 		       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 		       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, p_depth_buffer) !=
      NUS_SUCCESS){
@@ -24,12 +23,8 @@ NUS_result nus_depth_buffer_build
   }
   return NUS_SUCCESS;
 }
-void nus_depth_buffer_free(NUS_gpu gpu, NUS_depth_buffer *p_depth_buffer)
-{
-  nus_texture_free(gpu, p_depth_buffer);
-}
 static NUS_result nus_depth_buffer_find_format
-(NUS_queue_info queue_info, VkFormat *format)
+(VkFormat *format)
 {
   int i;
   VkFormat possible_formats[] = {
@@ -40,7 +35,7 @@ static NUS_result nus_depth_buffer_find_format
   unsigned int possible_format_count =
     sizeof(possible_formats) / sizeof(*possible_formats);
   for(i = 0; i < possible_format_count; ++i){
-    if(nus_gpu_qwery_format_support(*queue_info.p_gpu, possible_formats[i],
+    if(nus_gpu_qwery_format_support(*nus_get_bound_gpu(), possible_formats[i],
 				    VK_IMAGE_TILING_OPTIMAL,
 				    VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
        == NUS_TRUE){

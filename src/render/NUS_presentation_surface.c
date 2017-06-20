@@ -1,7 +1,6 @@
 #include "NUS_presentation_surface.h"
 #include "../io/NUS_window.h"
 #include "../gpu/NUS_multi_gpu.h"
-#include "../gpu/NUS_queue_info.h"
 #include "../gpu/NUS_vulkan_instance.h"
 #include "../NUS_log.h"
 #include <stdio.h>
@@ -13,7 +12,7 @@ static void nus_presentation_surface_build_command_buffers
 
 NUS_result nus_presentation_surface_build
 (NUS_window window, NUS_vulkan_instance vulkan_instance,
- NUS_multi_gpu *multi_gpu,
+ NUS_multi_gpu *p_multi_gpu,
  NUS_presentation_surface *p_presentation_surface)
 {
 #if defined(NUS_OS_WINDOWS)
@@ -41,26 +40,21 @@ NUS_result nus_presentation_surface_build
     return NUS_FAILURE;
   }
 #endif
-  nus_multi_gpu_check_surface_support(p_presentation_surface->surface,
-				      multi_gpu);
-
-  nus_multi_gpu_find_queue_info(*multi_gpu,
-				NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
-				&p_presentation_surface->queue_info);
+  nus_multi_gpu_check_surface_support(p_presentation_surface->surface, p_multi_gpu);
   
-  nus_bind_device_vulkan_library(p_presentation_surface->queue_info.p_gpu->functions);
+  nus_set_queue_requirements(NUS_QUEUE_FAMILY_SUPPORT_GRAPHICS |
+			     NUS_QUEUE_FAMILY_SUPPORT_TRANSFER |
+			     NUS_QUEUE_FAMILY_SUPPORT_PRESENT);
+  nus_select_gpu(*p_multi_gpu);
 
-  if(nus_swapchain_build(*p_presentation_surface->queue_info.p_gpu,
-			 p_presentation_surface->surface,
+  if(nus_swapchain_build(p_presentation_surface->surface,
 			 &p_presentation_surface->swapchain) !=
      NUS_SUCCESS){
     NUS_LOG_ERROR("failed to build presentation surface swapchain\n");
     return NUS_FAILURE;
   }
   
-  
-  if(nus_texture_build(p_presentation_surface->queue_info,
-		       p_presentation_surface->swapchain.extent.width,
+  if(nus_texture_build(p_presentation_surface->swapchain.extent.width,
 		       p_presentation_surface->swapchain.extent.height,
 		       p_presentation_surface->swapchain.format.format,
 		       VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
@@ -79,90 +73,92 @@ NUS_result nus_presentation_surface_build
     .pNext = NULL,
     .flags = 0
   };
-  if(vkCreateSemaphore(p_presentation_surface->queue_info.p_gpu->logical_device,
-		       &semaphore_create_info, NULL,
+  if(vkCreateSemaphore(nus_get_bound_device(), &semaphore_create_info, NULL,
 		       &p_presentation_surface->render_copied) !=
      VK_SUCCESS){
     NUS_LOG_ERROR("failed to create surface semaphore: image_available\n");
     return NUS_FAILURE;
   }
-  if(vkCreateSemaphore(p_presentation_surface->queue_info.p_gpu->logical_device,
-		       &semaphore_create_info, NULL,
+  if(vkCreateSemaphore(nus_get_bound_device(), &semaphore_create_info, NULL,
 		       &p_presentation_surface->image_available) !=
      VK_SUCCESS){
     NUS_LOG_ERROR("failed to create surface semaphore: image_available\n");
     return NUS_FAILURE;
   }
-  if(vkCreateSemaphore(p_presentation_surface->queue_info.p_gpu->logical_device,
-		       &semaphore_create_info, NULL,
+  if(vkCreateSemaphore(nus_get_bound_device(), &semaphore_create_info, NULL,
 		       &p_presentation_surface->image_presentable) !=
      VK_SUCCESS){
     NUS_LOG_ERROR("failed to create surface semaphore: image_presentable\n");
     return NUS_FAILURE;
   }
-  if(nus_swapchain_new_image(*p_presentation_surface->queue_info.p_gpu,
-			     p_presentation_surface->surface,
+  if(nus_swapchain_new_image(p_presentation_surface->surface,
 			     p_presentation_surface->image_available,
 			     &p_presentation_surface->swapchain) != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to get new swapchain image upon build\n");
     return NUS_FAILURE;
   }
   nus_presentation_surface_build_command_buffers(p_presentation_surface);
+  
+  p_presentation_surface->binding = nus_get_binding();
+  
   return NUS_SUCCESS;
 }
 void nus_presentation_surface_free
 (NUS_vulkan_instance vulkan_instance,
  NUS_presentation_surface *p_presentation_surface)
 {
-  nus_swapchain_free(*p_presentation_surface->queue_info.p_gpu,
-		     &p_presentation_surface->swapchain);
+  nus_bind_binding(&p_presentation_surface->binding);
+  
+  nus_swapchain_free(&p_presentation_surface->swapchain);
+  
   // Free semaphores
   if(p_presentation_surface->render_copied != VK_NULL_HANDLE){
-    vkDestroySemaphore(p_presentation_surface->queue_info.p_gpu->logical_device,
-		       p_presentation_surface->render_copied, NULL);
+    vkDestroySemaphore(nus_get_bound_device(), p_presentation_surface->render_copied,
+		       NULL);
     p_presentation_surface->render_copied = VK_NULL_HANDLE;
   }
   if(p_presentation_surface->image_presentable != VK_NULL_HANDLE){
-    vkDestroySemaphore(p_presentation_surface->queue_info.p_gpu->logical_device,
-		       p_presentation_surface->image_presentable, NULL);
+    vkDestroySemaphore(nus_get_bound_device(), p_presentation_surface->image_presentable,
+		       NULL);
     p_presentation_surface->image_presentable = VK_NULL_HANDLE;
   }
   if(p_presentation_surface->image_available != VK_NULL_HANDLE){
-    vkDestroySemaphore(p_presentation_surface->queue_info.p_gpu->logical_device,
-		       p_presentation_surface->image_available, NULL);
+    vkDestroySemaphore(nus_get_bound_device(), p_presentation_surface->image_available,
+		       NULL);
     p_presentation_surface->image_available = VK_NULL_HANDLE;
   }
-  nus_texture_free(*p_presentation_surface->queue_info.p_gpu,
-		   &p_presentation_surface->render_target);
+  nus_texture_free(&p_presentation_surface->render_target);
   
   vkDestroySurfaceKHR(vulkan_instance.vk_instance,
 		      p_presentation_surface->surface, NULL);
+  
+  nus_unbind_binding(&p_presentation_surface->binding);
 }
 NUS_result nus_presentation_surface_present
 (NUS_presentation_surface *p_presentation_surface)
 {
-  nus_command_group_add_semaphores(p_presentation_surface->queue_info.p_command_group,
-				   1, &p_presentation_surface->image_presentable,
-				   1, &p_presentation_surface->render_copied);
-  nus_command_group_append(p_presentation_surface->queue_info.p_command_group,
-			   p_presentation_surface->render_target_copy_command_buffers
-			   [p_presentation_surface->swapchain.image_index]);
-  nus_queue_info_submit(p_presentation_surface->queue_info);
+  nus_bind_binding(&p_presentation_surface->binding);
+
+  nus_add_wait_semaphore(p_presentation_surface->image_presentable,
+			 VK_PIPELINE_STAGE_TRANSFER_BIT);
+  nus_add_signal_semaphore(p_presentation_surface->render_copied);
+  nus_add_command_buffer(p_presentation_surface->render_target_copy_buffer
+			 [p_presentation_surface->swapchain.image_index]);
+  nus_submit_queue();
   
-  if(nus_swapchain_present(p_presentation_surface->queue_info.p_gpu,
-			   p_presentation_surface->surface,
+  if(nus_swapchain_present(p_presentation_surface->surface,
 			   p_presentation_surface->render_copied,
 			   &p_presentation_surface->swapchain) != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to present to swapchain\n");
     return NUS_FAILURE;
   }
-  if(nus_swapchain_new_image(*p_presentation_surface->queue_info.p_gpu,
-			     p_presentation_surface->surface,
+  if(nus_swapchain_new_image(p_presentation_surface->surface,
 			     p_presentation_surface->image_available,
 			     &p_presentation_surface->swapchain) != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to get new swapchain image\n");
     return NUS_FAILURE;
   }
+  nus_unbind_binding(&p_presentation_surface->binding);
   return NUS_SUCCESS;
 }
 
@@ -200,13 +196,14 @@ static void nus_presentation_surface_build_command_buffers
     .extent.height = p_presentation_surface->swapchain.extent.height,
     .extent.depth = 1
   };
-  p_presentation_surface->render_target_copy_command_buffers =
-    malloc(sizeof(*p_presentation_surface->render_target_copy_command_buffers) *
+  p_presentation_surface->render_target_copy_buffer =
+    malloc(sizeof(*p_presentation_surface->render_target_copy_buffer) *
 	   p_presentation_surface->swapchain.image_count);
+  
+  nus_allocate_command_buffer(p_presentation_surface->render_target_copy_buffer,
+			      p_presentation_surface->swapchain.image_count);
+  
   for(i = 0; i < p_presentation_surface->swapchain.image_count; ++i){
-    nus_queue_info_add_buffer(p_presentation_surface->queue_info,
-				  p_presentation_surface->
-				  render_target_copy_command_buffers + i);
     VkImageMemoryBarrier setup_barriers[] = {
       {
 	.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -215,8 +212,8 @@ static void nus_presentation_surface_build_command_buffers
 	.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
 	.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 	.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-	.srcQueueFamilyIndex = p_presentation_surface->queue_info.queue_family_index,
-	.dstQueueFamilyIndex = p_presentation_surface->queue_info.queue_family_index,
+	.srcQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+	.dstQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
 	.image = p_presentation_surface->render_target.image,
 	.subresourceRange = image_subresource_range
       },
@@ -227,8 +224,8 @@ static void nus_presentation_surface_build_command_buffers
 	.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
 	.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-	.srcQueueFamilyIndex = p_presentation_surface->queue_info.queue_family_index,
-	.dstQueueFamilyIndex = p_presentation_surface->queue_info.queue_family_index,
+	.srcQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+	.dstQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
 	.image = p_presentation_surface->swapchain.images[i],
 	.subresourceRange = image_subresource_range
       }
@@ -241,8 +238,8 @@ static void nus_presentation_surface_build_command_buffers
 	.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
 	.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 	.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-	.srcQueueFamilyIndex = p_presentation_surface->queue_info.queue_family_index,
-	.dstQueueFamilyIndex = p_presentation_surface->queue_info.queue_family_index,
+	.srcQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+	.dstQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
 	.image = p_presentation_surface->render_target.image,
 	.subresourceRange = image_subresource_range
       },
@@ -253,29 +250,29 @@ static void nus_presentation_surface_build_command_buffers
 	.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
 	.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 	.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-	.srcQueueFamilyIndex = p_presentation_surface->queue_info.queue_family_index,
-	.dstQueueFamilyIndex = p_presentation_surface->queue_info.queue_family_index,
+	.srcQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+	.dstQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
 	.image = p_presentation_surface->swapchain.images[i],
 	.subresourceRange = image_subresource_range
       }
     };
     
-    vkBeginCommandBuffer(p_presentation_surface->render_target_copy_command_buffers[i],
+    vkBeginCommandBuffer(p_presentation_surface->render_target_copy_buffer[i],
 			 &command_buffer_begin_info);
-    vkCmdPipelineBarrier(p_presentation_surface->render_target_copy_command_buffers[i],
+    vkCmdPipelineBarrier(p_presentation_surface->render_target_copy_buffer[i],
 			 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 			 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 			 0, 0, NULL, 0, NULL, 2, setup_barriers);
-    vkCmdCopyImage(p_presentation_surface->render_target_copy_command_buffers[i],
+    vkCmdCopyImage(p_presentation_surface->render_target_copy_buffer[i],
 		   p_presentation_surface->render_target.image,
 		   VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 		   p_presentation_surface->swapchain.images[i],
 		   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		   1, &region);
-    vkCmdPipelineBarrier(p_presentation_surface->render_target_copy_command_buffers[i],
+    vkCmdPipelineBarrier(p_presentation_surface->render_target_copy_buffer[i],
 			 VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
 			 VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
 			 0, 0, NULL, 0, NULL, 2, teardown_barriers);
-    vkEndCommandBuffer(p_presentation_surface->render_target_copy_command_buffers[i]);
+    vkEndCommandBuffer(p_presentation_surface->render_target_copy_buffer[i]);
   }
 }
