@@ -2,28 +2,19 @@
 #include "../gpu/NUS_gpu.h"
 #include <limits.h>
 #include <stdio.h>
-/*
-#include "../gpu/NUS_queue_info.h"
-#include "../gpu/NUS_command_group.h"
+#include "../NUS_log.h"
+#include "../gpu/NUS_binding.h"
 
 NUS_result nus_image_clear
 (VkSemaphore wait, VkSemaphore signal, VkClearColorValue clear_color,
- NUS_gpu *NUS_gpu_, VkImage image_to_clear)
+ VkImage image_to_clear)
 {
   VkCommandBuffer command_buffer;
-
-  NUS_queue_info info;
-  nus_gpu_find_queue_info(NUS_gpu_,
-			  NUS_QUEUE_FAMILY_SUPPORT_PRESENT,
-			  &info);
   
-  nus_queue_info_add_buffer(info, &command_buffer);
+  nus_allocate_command_buffer(&command_buffer, 1);
+  nus_add_wait_semaphore(wait, VK_PIPELINE_STAGE_TRANSFER_BIT);
+  nus_add_signal_semaphore(signal);
   
-  if(nus_command_group_add_semaphores(info.p_command_group, 1, &wait, 1, &signal) !=
-     NUS_SUCCESS){
-    printf("ERROR::failed to add semaphores in clear presentation surface\n");
-    return NUS_FAILURE;
-  }
   VkCommandBufferBeginInfo command_buffer_begin_info = {
     VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
     NULL,
@@ -44,8 +35,8 @@ NUS_result nus_image_clear
     .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
     .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
     .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-    .srcQueueFamilyIndex = info.queue_family_index,
-    .dstQueueFamilyIndex = info.queue_family_index,
+    .srcQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+    .dstQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
     .image = image_to_clear,
     .subresourceRange = image_subresource_range
   };
@@ -56,8 +47,8 @@ NUS_result nus_image_clear
     .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
     .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    .srcQueueFamilyIndex = info.queue_family_index,
-    .dstQueueFamilyIndex = info.queue_family_index,
+    .srcQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+    .dstQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
     .image = image_to_clear,
     .subresourceRange = image_subresource_range
   };
@@ -80,8 +71,9 @@ NUS_result nus_image_clear
       printf("ERROR::Could not record command buffer!\n");
       return NUS_FAILURE;
   }
-  nus_command_group_append(info.p_command_group, command_buffer);
-  nus_queue_info_submit(info);
+
+  nus_add_command_buffer(command_buffer);
+  nus_submit_queue();
   return NUS_SUCCESS;
 }
-*/
+

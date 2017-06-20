@@ -44,7 +44,8 @@ void nus_submission_queue_free
   vkDestroyFence(logical_device, p_submission_queue->queue_finished, NULL);
 }
 NUS_result nus_submission_queue_add_wait_semaphore
-(NUS_submission_queue *p_submission_queue, VkSemaphore wait_semaphore, VkPipelineStageFlags flags)
+(NUS_submission_queue *p_submission_queue, VkSemaphore wait_semaphore,
+ VkPipelineStageFlags flags)
 {
   int semaphore_index = p_submission_queue->info.waitSemaphoreCount;
   if(++p_submission_queue->info.waitSemaphoreCount >=
@@ -71,8 +72,9 @@ NUS_result nus_submission_queue_add_signal_semaphore
 NUS_result nus_submission_queue_add_buffer
 (NUS_submission_queue *p_submission_queue, VkCommandBuffer command_buffer)
 {
-  int buffer_index = p_submission_queue->info.signalSemaphoreCount;
-  if(++p_submission_queue->info.commandBufferCount >= NUS_SUBMISSION_QUEUE_BUFFER_COUNT){
+  int buffer_index = p_submission_queue->info.commandBufferCount;
+  if(++p_submission_queue->info.commandBufferCount >=
+     NUS_SUBMISSION_QUEUE_BUFFER_COUNT){
     NUS_LOG_ERROR("failed to add command buffer to submission_queue\n");
     return NUS_FAILURE;
   }
