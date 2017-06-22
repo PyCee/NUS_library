@@ -3,32 +3,26 @@
 
 #include "../NUS_result.h"
 #include "../NUS_vulkan.h"
+#include "../gpu/NUS_binding.h"
 
-struct NUS_gpu;
 struct NUS_render_pass;
 struct NUS_texture;
 
-typedef struct NUS_framebuffer_info{
-  VkImageViewCreateInfo *p_view_create_infos;
-  unsigned int view_count,
-    width,
-    height;
-} NUS_framebuffer_info;
+#define NUS_FRAMEBUFFER_ATTACHMENT_COUNT 10
 
 typedef struct NUS_framebuffer{
   VkFramebuffer vk_framebuffer;
-  VkImageView *p_views;
-  unsigned int view_count;
+  VkImageView p_views[NUS_FRAMEBUFFER_ATTACHMENT_COUNT];
+  unsigned int view_count,
+    width,
+    height;
+  NUS_binding binding;
 } NUS_framebuffer;
 
-NUS_result nus_framebuffer_info_build
-(unsigned int, unsigned int, unsigned int, NUS_framebuffer_info *);
-void nus_framebuffer_info_free(struct NUS_gpu, NUS_framebuffer_info *);
-NUS_result nus_framebuffer_info_set_attachment
-(struct NUS_gpu, struct NUS_texture, VkFormat, unsigned int,
- unsigned int, NUS_framebuffer_info *);
+void nus_framebuffer_build(unsigned int, unsigned int, unsigned int, NUS_framebuffer *);
+NUS_result nus_framebuffer_set_attachment
+(unsigned int, struct NUS_texture, unsigned int, NUS_framebuffer *);
+NUS_result nus_framebuffer_compile(VkRenderPass, NUS_framebuffer *);
+void nus_framebuffer_free(NUS_framebuffer *);
 
-NUS_result nus_framebuffer_build
-(struct NUS_gpu, VkRenderPass, NUS_framebuffer_info, NUS_framebuffer *);
-void nus_framebuffer_free(struct NUS_gpu, NUS_framebuffer *);
 #endif /* NUS_FRAMEBUFFER_H */

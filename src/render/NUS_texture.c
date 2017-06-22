@@ -208,7 +208,7 @@ static NUS_result nus_texture_layout_to_mask(VkImageLayout layout, unsigned int 
       VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
     break;
   default:
-    NUS_LOG_ERROR("invalid layout\n");
+    NUS_LOG_ERROR("invalid texture layout\n");
     return NUS_FAILURE;
   }
   return NUS_SUCCESS;

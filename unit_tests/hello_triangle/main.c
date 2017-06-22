@@ -79,21 +79,9 @@ int main(int argc, char *argv[])
   
   // temp init code
   
-  NUS_queue_info info;
-  
-  if(nus_gpu_find_queue_info(present.queue_info.p_gpu,
-				 NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
-				 NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
-				 &info) !=
-     NUS_SUCCESS){
-    printf("ERROR::failed to find suitable gpu info\n");
-    return NUS_FAILURE;
-  }
-  
   NUS_model model;
   // the vertex normal represents color for this unit test
   nus_model_build(nus_absolute_path_build("triangle.nusm"), &model);
-  nus_model_buffer(info, &model);
 
   // code to create renderpass
   VkAttachmentDescription attachment_descriptions[] = {
@@ -164,29 +152,26 @@ int main(int argc, char *argv[])
   };
 
   VkRenderPass render_pass;
-  if(vkCreateRenderPass(present.queue_info.p_gpu->logical_device,
-			&render_pass_create_info, NULL,
+  if(vkCreateRenderPass(nus_get_bound_device(), &render_pass_create_info, NULL,
 			&render_pass) != VK_SUCCESS){
     printf("ERROR::failed to create render pass\n");
     return -1;
   }
 
-  // code to create framebuffer
-  NUS_framebuffer_info framebuffer_info;
-  nus_framebuffer_info_build(600, 400, 1, &framebuffer_info);
-  if(nus_framebuffer_info_set_attachment(*present.queue_info.p_gpu,
-					 present.render_target,
-					 present.swapchain.format.format,
-					 VK_IMAGE_ASPECT_COLOR_BIT, 0,
-					 &framebuffer_info) != NUS_SUCCESS){
+  // Framebuffer creation
+  NUS_framebuffer framebuffer;
+  if(nus_framebuffer_build(1, 600, 400, &framebuffer) != NUS_SUCCESS){
+    printf("ERROR::failed to build framebuffer\n");
+    return -1;
+  }
+  if(nus_framebuffer_set_attachment(0, present.render_target,
+				    VK_IMAGE_ASPECT_COLOR_BIT,
+				    &framebuffer_info) != NUS_SUCCESS){
     printf("ERROR::failed to set framebuffer info attachment\n");
     return -1;
   }
-
-  NUS_framebuffer framebuffer;
-  if(nus_framebuffer_build(*present.queue_info.p_gpu, render_pass, framebuffer_info,
-			   &framebuffer) != NUS_SUCCESS){
-    printf("ERROR::failed to build framebuffer\n");
+  if(nus_framebuffer_compile(render_pass, &framebuffer) != NUS_SUCCESS){
+    printf("ERROR::failed to compile framebuffer\n");
     return -1;
   }
   
@@ -194,14 +179,12 @@ int main(int argc, char *argv[])
   // Create Graphics Pipeline
   NUS_shader vertex_shader,
     fragment_shader;
-  if(nus_shader_build(multi_gpu.gpus[0],
-		      nus_absolute_path_build("triangle_shader/shader.vert.spv"),
+  if(nus_shader_build(nus_absolute_path_build("triangle_shader/shader.vert.spv"),
 		      VK_SHADER_STAGE_VERTEX_BIT, &vertex_shader) != NUS_SUCCESS){
     printf("ERROR::failed to build vertex shader\n");
     return -1;
   }
-  if(nus_shader_build(multi_gpu.gpus[0],
-		      nus_absolute_path_build("triangle_shader/shader.frag.spv"),
+  if(nus_shader_build(nus_absolute_path_build("triangle_shader/shader.frag.spv"),
 		      VK_SHADER_STAGE_FRAGMENT_BIT, &fragment_shader) != NUS_SUCCESS){
     printf("ERROR::failed to build fragment shader\n");
     return -1;
@@ -351,8 +334,7 @@ int main(int argc, char *argv[])
     .pPushConstantRanges = NULL//
   };
   VkPipelineLayout pipeline_layout;
-  if(vkCreatePipelineLayout(present.queue_info.p_gpu->logical_device,
-			    &pipeline_layout_create_info, NULL,
+  if(vkCreatePipelineLayout(nus_get_bound_device(), &pipeline_layout_create_info, NULL,
 			    &pipeline_layout) != VK_SUCCESS){
     printf("ERROR::failed to create pipeline layout\n");
     return -1;
@@ -380,9 +362,9 @@ int main(int argc, char *argv[])
   };
   
   VkPipeline graphics_pipeline;
-  if(vkCreateGraphicsPipelines(present.queue_info.p_gpu->logical_device,
-			       VK_NULL_HANDLE, 1, &graphics_pipeline_create_info,
-			       NULL, &graphics_pipeline) != VK_SUCCESS){
+  if(vkCreateGraphicsPipelines(nus_get_bound_device(), VK_NULL_HANDLE, 1,
+			       &graphics_pipeline_create_info, NULL,
+			       &graphics_pipeline) != VK_SUCCESS){
     printf("ERROR::failed to create graphics pipelines\n");
     return -1;
   }
@@ -433,8 +415,8 @@ int main(int argc, char *argv[])
     .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
     .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    .srcQueueFamilyIndex = info.queue_family_index,
-    .dstQueueFamilyIndex = info.queue_family_index,
+    .srcQueueFamilyIndex = nus_get_bound_queue_family_index(),
+    .dstQueueFamilyIndex = nus_get_bound_queue_family_index(),
     .image = present.render_target.image,
     .subresourceRange = image_subresource_range
   };
@@ -445,8 +427,8 @@ int main(int argc, char *argv[])
     .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
     .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    .srcQueueFamilyIndex = info.queue_family_index,
-    .dstQueueFamilyIndex = info.queue_family_index,
+    .srcQueueFamilyIndex = nus_get_bound_queue_family_index(),
+    .dstQueueFamilyIndex = nus_get_bound_queue_family_index(),
     .image = present.render_target.image,
     .subresourceRange = image_subresource_range
   };
@@ -457,8 +439,8 @@ int main(int argc, char *argv[])
     .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
     .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    .srcQueueFamilyIndex = info.queue_family_index,
-    .dstQueueFamilyIndex = info.queue_family_index,
+    .srcQueueFamilyIndex = nus_get_bound_queue_family_index(),
+    .dstQueueFamilyIndex = nus_get_bound_queue_family_index(),
     .image = present.render_target.image,
     .subresourceRange = image_subresource_range
   };
@@ -479,7 +461,7 @@ int main(int argc, char *argv[])
     .extent = present.swapchain.extent
   };
   
-  nus_queue_info_add_buffer(info, &command_buffer);
+  nus_alllocate_command_buffer(command_buffer);
   vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
   vkCmdPipelineBarrier(command_buffer,
 		       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -527,16 +509,11 @@ int main(int argc, char *argv[])
   while(run){
 
     nus_system_events_handle(win);
-    
-    if(nus_command_group_add_semaphores(info.p_command_group, 1,
-					&present.image_available,
-					1, &present.image_presentable) !=
-       NUS_SUCCESS){
-      printf("ERROR::failed to add semaphores in clear presentation surface\n");
-      return NUS_FAILURE;
-    }
-    nus_command_group_append(info.p_command_group, command_buffer);
-    nus_queue_info_submit(info);
+
+    nus_add_wait_semaphore(present.image_available, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    nus_add_signal_semaphore(present.image_presentable);
+    nus_add_command_buffer(command_buffer);
+    nus_submit_queue();
     
     if(nus_multi_gpu_submit_commands(multi_gpu) != NUS_SUCCESS){
       printf("ERROR::failed to submit multi gpu command queues\n");
@@ -573,8 +550,7 @@ int main(int argc, char *argv[])
     graphics_pipeline = VK_NULL_HANDLE;
   }
 
-  nus_framebuffer_info_free(*present.queue_info.p_gpu, &framebuffer_info);
-  nus_framebuffer_free(*present.queue_info.p_gpu, &framebuffer);
+  nus_framebuffer_free(&framebuffer);
   
   if(render_pass != VK_NULL_HANDLE){
     vkDestroyRenderPass(present.queue_info.p_gpu->logical_device,

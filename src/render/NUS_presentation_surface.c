@@ -212,8 +212,8 @@ static void nus_presentation_surface_build_command_buffers
 	.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
 	.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 	.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-	.srcQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
-	.dstQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+	.srcQueueFamilyIndex = nus_get_bound_queue_family_index(),
+	.dstQueueFamilyIndex = nus_get_bound_queue_family_index(),
 	.image = p_presentation_surface->render_target.image,
 	.subresourceRange = image_subresource_range
       },
@@ -224,8 +224,8 @@ static void nus_presentation_surface_build_command_buffers
 	.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
 	.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-	.srcQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
-	.dstQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+	.srcQueueFamilyIndex = nus_get_bound_queue_family_index(),
+	.dstQueueFamilyIndex = nus_get_bound_queue_family_index(),
 	.image = p_presentation_surface->swapchain.images[i],
 	.subresourceRange = image_subresource_range
       }
@@ -238,8 +238,8 @@ static void nus_presentation_surface_build_command_buffers
 	.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
 	.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 	.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-	.srcQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
-	.dstQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+	.srcQueueFamilyIndex = nus_get_bound_queue_family_index(),
+	.dstQueueFamilyIndex = nus_get_bound_queue_family_index(),
 	.image = p_presentation_surface->render_target.image,
 	.subresourceRange = image_subresource_range
       },
@@ -250,8 +250,8 @@ static void nus_presentation_surface_build_command_buffers
 	.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
 	.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 	.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-	.srcQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
-	.dstQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+	.srcQueueFamilyIndex = nus_get_bound_queue_family_index(),
+	.dstQueueFamilyIndex = nus_get_bound_queue_family_index(),
 	.image = p_presentation_surface->swapchain.images[i],
 	.subresourceRange = image_subresource_range
       }

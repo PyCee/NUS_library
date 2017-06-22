@@ -37,6 +37,7 @@ NUS_gpu *nus_get_bound_gpu(void);
 NUS_queue_family *nus_get_bound_queue_family(void);
 NUS_submission_queue *nus_get_bound_submission_queue(void);
 VkDevice nus_get_bound_device(void);
+int nus_get_bound_queue_family_index(void);
 
 NUS_result nus_allocate_command_buffer(VkCommandBuffer *, char);
 NUS_result nus_add_wait_semaphore(VkSemaphore, VkPipelineStageFlags);

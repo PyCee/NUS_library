@@ -101,6 +101,10 @@ VkDevice nus_get_bound_device(void)
 {
   return nus_get_bound_gpu()->logical_device;
 }
+int nus_get_bound_queue_family_index(void)
+{
+  return nus_get_bound_queue_family()->family_index;
+}
 
 NUS_result nus_allocate_command_buffer(VkCommandBuffer *p_command_buffer, char count)
 {
