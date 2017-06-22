@@ -19,6 +19,7 @@ NUS_result nus_model_build(NUS_absolute_path absolute_path, NUS_model *p_model)
 		       VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
 		       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 		       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		       VK_IMAGE_ASPECT_COLOR_BIT,
 		       &p_model->texture) != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to build model texture\n");
     return NUS_FAILURE;

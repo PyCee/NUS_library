@@ -70,6 +70,7 @@
 #include "render/NUS_subpass_info.h"
 #include "render/NUS_render_pass.h"
 #include "render/NUS_framebuffer.h"
+#include "render/NUS_pipeline_layout.h"
 #include "render/NUS_graphics_pipeline.h"
 #include "render/NUS_depth_buffer.h"
 //#endif /* NUS_SYSTEM_RENDER */

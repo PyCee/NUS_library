@@ -35,7 +35,8 @@ PHY_DIR=physics
 
 REN_SRC_FILES=NUS_presentation_surface.c NUS_image_clear.c NUS_shader.c \
 	NUS_swapchain.c NUS_texture.c NUS_subpass_info.c NUS_render_pass.c \
-	NUS_framebuffer.c NUS_graphics_pipeline.c NUS_depth_buffer.c
+	NUS_framebuffer.c NUS_graphics_pipeline.c NUS_depth_buffer.c \
+	NUS_pipeline_layout.c
 REN_DIR=render
 
 TIME_SRC_FILES=NUS_clock.c

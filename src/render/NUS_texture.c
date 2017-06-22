@@ -8,12 +8,14 @@
 static NUS_result nus_texture_layout_to_mask(VkImageLayout, unsigned int *);
 
 NUS_result nus_texture_build
-(unsigned int width, unsigned int height, VkFormat format, unsigned int usage,
- unsigned int memory_property_flags, NUS_texture *p_texture)
+(unsigned int width, unsigned int height, VkFormat format,
+ VkImageUsageFlags usage_flags, VkMemoryPropertyFlags memory_property_flags,
+ VkImageAspectFlags aspect_flags, NUS_texture *p_texture)
 {
   p_texture->format = format;
   p_texture->width = width;
   p_texture->height = height;
+  p_texture->aspect_flags = aspect_flags;
   
   VkImageCreateInfo image_create_info = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -30,7 +32,7 @@ NUS_result nus_texture_build
     .arrayLayers = 1,
     .samples = VK_SAMPLE_COUNT_1_BIT,
     .tiling = VK_IMAGE_TILING_OPTIMAL,
-    .usage = usage,
+    .usage = usage_flags,
     .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
     .queueFamilyIndexCount = 0,
     .pQueueFamilyIndices = NULL,
@@ -115,16 +117,14 @@ NUS_result nus_texture_buffer_image
   nus_single_command_begin(&command_buffer);
   
   nus_cmd_texture_transition(*p_texture, command_buffer, VK_IMAGE_LAYOUT_PREINITIALIZED,
-			     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			     VK_IMAGE_ASPECT_COLOR_BIT);
+			     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
   
   vkCmdCopyBufferToImage(command_buffer, tmp_memory_map.buffer, p_texture->image,
     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
   
   nus_cmd_texture_transition(*p_texture, command_buffer,
 			     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			     VK_IMAGE_ASPECT_COLOR_BIT);
+			     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   
   if(nus_single_command_end() != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to copy texture buffer to image");
@@ -138,7 +138,7 @@ NUS_result nus_texture_buffer_image
 }
 NUS_result nus_cmd_texture_transition
 (NUS_texture texture, VkCommandBuffer cmd_buffer,
- VkImageLayout src_layout, VkImageLayout dst_layout, unsigned int aspect_mask)
+ VkImageLayout src_layout, VkImageLayout dst_layout)
 {
   unsigned int src_access_mask,
     dst_access_mask;
@@ -153,7 +153,7 @@ NUS_result nus_cmd_texture_transition
     return NUS_FAILURE;
   }
   VkImageSubresourceRange image_subresource_range = {
-    aspect_mask,
+    texture.aspect_flags,
     0,
     1,
     0,
