@@ -16,8 +16,8 @@ NUS_result nus_depth_buffer_build
   }
   if(nus_texture_build(width, height, format,
 		       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-		       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, p_depth_buffer) !=
-     NUS_SUCCESS){
+		       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT,
+		       p_depth_buffer) != NUS_SUCCESS){
     printf("NUS_ERROR::failed to create texture for depth buffer\n");
     return NUS_FAILURE;
   }

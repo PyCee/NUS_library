@@ -7,7 +7,7 @@
 #include "../NUS_log.h"
 #include <string.h>
 
-void nus_framebuffer_build
+NUS_result nus_framebuffer_build
 (unsigned int view_count, unsigned int width, unsigned int height,
  NUS_framebuffer *p_framebuffer)
 {
@@ -18,6 +18,7 @@ void nus_framebuffer_build
   p_framebuffer->width = width;
   p_framebuffer->height = height;
   p_framebuffer->binding = nus_get_binding();
+  return NUS_SUCCESS;
 }
 
 NUS_result nus_framebuffer_set_attachment
@@ -78,7 +79,7 @@ NUS_result nus_framebuffer_set_attachment
 }
 
 NUS_result nus_framebuffer_compile
-(VkRenderPass render_pass, NUS_framebuffer *p_framebuffer)
+(NUS_render_pass render_pass, NUS_framebuffer *p_framebuffer)
 {
   VkFramebufferCreateInfo create_info;
   
@@ -88,7 +89,7 @@ NUS_result nus_framebuffer_compile
     .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .renderPass = render_pass,
+    .renderPass = render_pass.vk_render_pass,
     .attachmentCount = p_framebuffer->view_count,
     .pAttachments = p_framebuffer->p_views,
     .width = p_framebuffer->width,
@@ -109,7 +110,6 @@ void nus_framebuffer_free(NUS_framebuffer *p_framebuffer)
 {
   unsigned int i;
   nus_bind_binding(&p_framebuffer->binding);
-  
   if(p_framebuffer->p_views != NULL){
     for(i = 0; i < p_framebuffer->view_count; ++i){
       if(p_framebuffer->p_views[i] != VK_NULL_HANDLE){

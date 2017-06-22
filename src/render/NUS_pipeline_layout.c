@@ -1,7 +1,7 @@
 #include "NUS_pipeline_layout.h"
 #include "../NUS_log.h"
 
-NUS_result nus_piepline_layout_build
+NUS_result nus_pipeline_layout_build
 (VkPipelineLayoutCreateInfo create_info, NUS_pipeline_layout *p_pipeline_layout)
 {
   if(vkCreatePipelineLayout(nus_get_bound_device(), &create_info, NULL,

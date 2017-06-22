@@ -19,10 +19,11 @@ typedef struct NUS_framebuffer{
   NUS_binding binding;
 } NUS_framebuffer;
 
-void nus_framebuffer_build(unsigned int, unsigned int, unsigned int, NUS_framebuffer *);
+NUS_result nus_framebuffer_build
+(unsigned int, unsigned int, unsigned int, NUS_framebuffer *);
 NUS_result nus_framebuffer_set_attachment
 (unsigned int, struct NUS_texture, unsigned int, NUS_framebuffer *);
-NUS_result nus_framebuffer_compile(VkRenderPass, NUS_framebuffer *);
+NUS_result nus_framebuffer_compile(struct NUS_render_pass, NUS_framebuffer *);
 void nus_framebuffer_free(NUS_framebuffer *);
 
 #endif /* NUS_FRAMEBUFFER_H */

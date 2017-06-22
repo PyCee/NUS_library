@@ -1,12 +1,10 @@
 #include "NUS_shader.h"
-#include "../gpu/NUS_gpu.h"
-#include "../strings/NUS_absolute_path.h"
-#include <stdio.h>
+#include "../NUS_log.h"
 #include <stdlib.h>
 #include <string.h>
 
 NUS_result nus_shader_build
-(NUS_gpu gpu, NUS_absolute_path absolute_path, unsigned int stage,
+(NUS_absolute_path absolute_path, VkShaderStageFlagBits stage,
  NUS_shader *p_shader)
 {
   int i,
@@ -14,7 +12,7 @@ NUS_result nus_shader_build
   char *shader_binary;
   FILE *source_file;
   if((source_file = fopen(absolute_path.path, "r")) == NULL){
-    printf("ERROR::failed to open shader file \"%s\"\n", absolute_path.path);
+    NUS_LOG_ERROR("failed to open shader file \"%s\"\n", absolute_path.path);
     return NUS_FAILURE;
   }
   shader_length = 0;
@@ -37,16 +35,18 @@ NUS_result nus_shader_build
     .codeSize = (long unsigned int)shader_length,
     .pCode = (unsigned int *)shader_binary
   };
-  if(vkCreateShaderModule(gpu.logical_device, &shader_module_create_info,
+  if(vkCreateShaderModule(nus_get_bound_device(), &shader_module_create_info,
 			  NULL, &p_shader->module) != VK_SUCCESS){
     printf("ERROR::failed to create shader module from \"%s\"\n",
 	   absolute_path.path);
     return NUS_FAILURE;
   }
-  
+  p_shader->binding = nus_get_binding();
   return NUS_SUCCESS;
 }
-void nus_shader_free(NUS_gpu gpu, NUS_shader *p_shader)
+void nus_shader_free(NUS_shader *p_shader)
 {
-  vkDestroyShaderModule(gpu.logical_device, p_shader->module, NULL);
+  nus_bind_binding(&p_shader->binding);
+  vkDestroyShaderModule(nus_get_bound_device(), p_shader->module, NULL);
+  nus_unbind_binding(&p_shader->binding);
 }

@@ -62,6 +62,7 @@ NUS_result nus_presentation_surface_build
 		       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 		       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 		       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		       VK_IMAGE_ASPECT_COLOR_BIT,
 		       &p_presentation_surface->render_target) != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to build render_target texture\n");
     return NUS_FAILURE;

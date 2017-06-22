@@ -151,10 +151,9 @@ int main(int argc, char *argv[])
     .pDependencies = dependencies
   };
 
-  VkRenderPass render_pass;
-  if(vkCreateRenderPass(nus_get_bound_device(), &render_pass_create_info, NULL,
-			&render_pass) != VK_SUCCESS){
-    printf("ERROR::failed to create render pass\n");
+  NUS_render_pass render_pass;
+  if(nus_render_pass_build(render_pass_create_info, &render_pass) != NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to build render pass\n");
     return -1;
   }
 
@@ -166,7 +165,7 @@ int main(int argc, char *argv[])
   }
   if(nus_framebuffer_set_attachment(0, present.render_target,
 				    VK_IMAGE_ASPECT_COLOR_BIT,
-				    &framebuffer_info) != NUS_SUCCESS){
+				    &framebuffer) != NUS_SUCCESS){
     printf("ERROR::failed to set framebuffer info attachment\n");
     return -1;
   }
@@ -333,10 +332,11 @@ int main(int argc, char *argv[])
     .pushConstantRangeCount = 0,//
     .pPushConstantRanges = NULL//
   };
-  VkPipelineLayout pipeline_layout;
-  if(vkCreatePipelineLayout(nus_get_bound_device(), &pipeline_layout_create_info, NULL,
-			    &pipeline_layout) != VK_SUCCESS){
-    printf("ERROR::failed to create pipeline layout\n");
+
+  NUS_pipeline_layout pipeline_layout;
+  if(nus_pipeline_layout_build(pipeline_layout_create_info, &pipeline_layout) !=
+     NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to create pipeline layout\n");
     return -1;
   }
   
@@ -355,17 +355,16 @@ int main(int argc, char *argv[])
     .pDepthStencilState = NULL,
     .pColorBlendState = &color_blend_state_create_info,
     .pDynamicState = &dynamic_state_create_info,
-    .layout = pipeline_layout,
-    .renderPass = render_pass,
+    .layout = nus_pipeline_layout_get_raw(pipeline_layout),
+    .renderPass = nus_render_pass_get_raw(render_pass),
     .basePipelineHandle = VK_NULL_HANDLE,
     .basePipelineIndex = -1
   };
-  
-  VkPipeline graphics_pipeline;
-  if(vkCreateGraphicsPipelines(nus_get_bound_device(), VK_NULL_HANDLE, 1,
-			       &graphics_pipeline_create_info, NULL,
-			       &graphics_pipeline) != VK_SUCCESS){
-    printf("ERROR::failed to create graphics pipelines\n");
+
+  NUS_graphics_pipeline graphics_pipeline;
+  if(nus_graphics_pipeline_build(graphics_pipeline_create_info, &graphics_pipeline) !=
+     NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to create graphics pipelines\n");
     return -1;
   }
 
@@ -392,7 +391,7 @@ int main(int argc, char *argv[])
   VkRenderPassBeginInfo render_pass_begin_info = {
     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
     .pNext = NULL,
-    .renderPass = render_pass,
+    .renderPass = nus_render_pass_get_raw(render_pass),
     .framebuffer = framebuffer.vk_framebuffer,
     .renderArea = {
       .offset = {
@@ -444,7 +443,7 @@ int main(int argc, char *argv[])
     .image = present.render_target.image,
     .subresourceRange = image_subresource_range
   };
-
+  
   VkViewport viewport = {
     .x = 0,
     .y = 0,
@@ -460,8 +459,10 @@ int main(int argc, char *argv[])
     },
     .extent = present.swapchain.extent
   };
+  nus_graphics_pipeline_set_viewport(viewport, &graphics_pipeline);
+  nus_graphics_pipeline_set_scissor(scissor, &graphics_pipeline);
   
-  nus_alllocate_command_buffer(command_buffer);
+  nus_allocate_command_buffer(&command_buffer, 1);
   vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
   vkCmdPipelineBarrier(command_buffer,
 		       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -474,11 +475,14 @@ int main(int argc, char *argv[])
   
   vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info,
 		       VK_SUBPASS_CONTENTS_INLINE);
+  /*
   vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 		    graphics_pipeline);
   
   vkCmdSetViewport(command_buffer, 0, 1, &viewport);
   vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+  */
+  nus_cmd_graphics_pipeline_bind(command_buffer, graphics_pipeline);
   
   VkDeviceSize vertex_memory_offset = 0,
     index_memory_offset = 0;
@@ -531,32 +535,19 @@ int main(int argc, char *argv[])
   
   printf("freeing unit test %s\n", PROGRAM_NAME);
 
-  vkDeviceWaitIdle(present.queue_info.p_gpu->logical_device);
+  vkDeviceWaitIdle(nus_get_bound_device());
   
   
-  nus_model_free(info, &model);
+  nus_model_free(&model);
   
-  nus_shader_free(*present.queue_info.p_gpu, &vertex_shader);
-  nus_shader_free(*present.queue_info.p_gpu, &fragment_shader);
-
-  if(pipeline_layout != VK_NULL_HANDLE){
-    vkDestroyPipelineLayout(present.queue_info.p_gpu->logical_device,
-			    pipeline_layout, NULL);
-    pipeline_layout = VK_NULL_HANDLE;
-  }
-  if(graphics_pipeline != VK_NULL_HANDLE){
-    vkDestroyPipeline(present.queue_info.p_gpu->logical_device,
-		      graphics_pipeline, NULL);
-    graphics_pipeline = VK_NULL_HANDLE;
-  }
-
+  nus_shader_free(&vertex_shader);
+  nus_shader_free(&fragment_shader);
+  
+  nus_graphics_pipeline_free(&graphics_pipeline);
+  nus_pipeline_layout_free(&pipeline_layout);
+  
   nus_framebuffer_free(&framebuffer);
-  
-  if(render_pass != VK_NULL_HANDLE){
-    vkDestroyRenderPass(present.queue_info.p_gpu->logical_device,
-		      render_pass, NULL);
-    render_pass = VK_NULL_HANDLE;
-  }
+  nus_render_pass_free(&render_pass);
   
   nus_presentation_surface_free(vulkan_instance, &present);
   nus_multi_gpu_free(&multi_gpu);
