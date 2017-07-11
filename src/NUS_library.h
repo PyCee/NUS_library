@@ -57,6 +57,7 @@
 #include "gpu/NUS_vulkan_instance.h"
 #include "gpu/NUS_binding.h"
 #include "gpu/NUS_memory_map.h"
+#include "gpu/NUS_uniform_buffer.h"
 #include "gpu/NUS_single_command.h"
 //#endif /* NUS_SYSTEM_GPU */
 

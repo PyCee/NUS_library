@@ -3,7 +3,7 @@
 layout(location = 0) in vec3 vert_position;
 layout(location = 1) in vec3 vert_color;
 
-layout(binding = 0) uniform transformation_block{
+layout(set = 0, binding = 0) uniform transformation_block{
   mat4 world;
 } transformation;
 

@@ -22,7 +22,8 @@ NUS_result nus_gpu_build(VkPhysicalDevice, NUS_gpu *);
 void nus_gpu_free(NUS_gpu *);
 void nus_gpu_print(NUS_gpu);
 NUS_result nus_gpu_submit_commands(NUS_gpu);
-unsigned int nus_gpu_memory_type_index(NUS_gpu, VkMemoryRequirements, unsigned int);
+unsigned int nus_gpu_memory_type_index
+(NUS_gpu, VkMemoryRequirements, VkMemoryPropertyFlags);
 NUS_bool nus_gpu_qwery_format_support
 (NUS_gpu, VkFormat, VkImageTiling, VkFormatFeatureFlags);
 

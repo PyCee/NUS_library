@@ -1,0 +1,10 @@
+#ifndef NUS_DESCRIPTOR_POOL_H
+#define NUS_DESCRIPTOR_POOL_H
+
+#include "../NUS_vulkan.h"
+
+typedef struct NUS_descriptor_pool{
+
+} NUS_descriptor_pool;
+
+#endif /* NUS_DESCRIPTOR_POOL_H */

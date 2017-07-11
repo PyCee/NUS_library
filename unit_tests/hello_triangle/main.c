@@ -81,7 +81,10 @@ int main(int argc, char *argv[])
   
   NUS_model model;
   // the vertex normal represents color for this unit test
-  nus_model_build(nus_absolute_path_build("triangle.nusm"), &model);
+  if(nus_model_build(nus_absolute_path_build("triangle.nusm"), &model) != NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to build model\n");
+    return -1;
+  }
 
   // code to create renderpass
   VkAttachmentDescription attachment_descriptions[] = {
@@ -475,13 +478,7 @@ int main(int argc, char *argv[])
   
   vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info,
 		       VK_SUBPASS_CONTENTS_INLINE);
-  /*
-  vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		    graphics_pipeline);
   
-  vkCmdSetViewport(command_buffer, 0, 1, &viewport);
-  vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-  */
   nus_cmd_graphics_pipeline_bind(command_buffer, graphics_pipeline);
   
   VkDeviceSize vertex_memory_offset = 0,

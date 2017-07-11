@@ -175,7 +175,7 @@ static NUS_result nus_gpu_build_logical_device
 }
 
 unsigned int nus_gpu_memory_type_index
-(NUS_gpu gpu, VkMemoryRequirements mem_req, unsigned int flags)
+(NUS_gpu gpu, VkMemoryRequirements mem_req, VkMemoryPropertyFlags flags)
 {
   unsigned int i;
   for(i = 0; i < gpu.memory_properties.memoryTypeCount; ++i){

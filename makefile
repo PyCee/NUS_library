@@ -9,13 +9,14 @@ CFLAGS=-g -Wall \
 	-Wstrict-prototypes \
 	-Wmissing-prototypes \
 	-Wunreachable-code \
-	-I/home/kims/VulkanSDK/VulkanSDK/1.0.49.0/x86_64/include
+	-I/home/kims/VulkanSDK/1.0.51.0/x86_64/include
 
 STR_SRC_FILES=NUS_string_group.c NUS_absolute_path.c
 STR_DIR=strings
 
 GPU_SRC_FILES=NUS_multi_gpu.c NUS_gpu.c NUS_queue_family.c NUS_submission_queue.c \
-	NUS_vulkan_instance.c NUS_binding.c NUS_memory_map.c NUS_single_command.c
+	NUS_vulkan_instance.c NUS_binding.c NUS_memory_map.c NUS_uniform_buffer.c \
+	NUS_single_command.c
 GPU_DIR=gpu
 
 IO_SRC_FILES=NUS_window.c NUS_system_events.c

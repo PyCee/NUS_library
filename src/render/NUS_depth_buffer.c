@@ -5,6 +5,8 @@
 
 static NUS_result nus_depth_buffer_find_format(VkFormat *);
 
+void (*nus_depth_buffer_free)(NUS_depth_buffer *) = nus_texture_free;
+
 NUS_result nus_depth_buffer_build
 (unsigned int width, unsigned int height,
  NUS_depth_buffer *p_depth_buffer)
