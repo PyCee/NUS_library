@@ -1,13 +1,25 @@
 #include "NUS_memory_map.h"
+#include "../NUS_log.h"
 #include <stdio.h>
 #include <string.h>
 
 NUS_result nus_memory_map_build
-(size_t memory_size, unsigned int usage,
- unsigned int memory_properties, NUS_memory_map *p_memory_map)
+(size_t memory_size, VkBufferUsageFlags usage,
+ VkMemoryPropertyFlags memory_property_flags, NUS_memory_map *p_memory_map)
 {
   p_memory_map->binding = nus_get_binding();
   p_memory_map->size = memory_size;
+  
+  if(memory_property_flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT){
+    memory_property_flags ^= VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    NUS_LOG_WARNING("using memory map property VK_MEMORY_PROPERTY_HOST_COHERENT_BIT\n");
+  }
+  // vkFlushMappedMemory and vkInvalidateMappedMemoryRanges are not needed if the
+  // map is created with the memory property VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+  // but it is assumed disabled for minor preformance reasons. Attempting to
+  // create a map with it currently only triggers a warning, but that may change
+  // in the future
+  
   VkBufferCreateInfo buffer_create_info = {
     .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
     .pNext = NULL,
@@ -33,7 +45,7 @@ NUS_result nus_memory_map_build
     .allocationSize = buffer_memory_req.size,
     .memoryTypeIndex =
     nus_gpu_memory_type_index(*nus_get_bound_gpu(), buffer_memory_req,
-			      memory_properties)
+			      memory_property_flags)
   };
   if(vkAllocateMemory(nus_get_bound_gpu()->logical_device, &memory_allocate_info,
 		      NULL, &p_memory_map->device_memory) != VK_SUCCESS){
@@ -70,6 +82,16 @@ NUS_result nus_memory_map_flush
 
   nus_bind_binding(&memory_map.binding);
   
+  // Map gpu memory to the cpu
+  if(vkMapMemory(nus_get_bound_device(), memory_map.device_memory, 0,
+		 memory_map.size, 0, &p_map) != VK_SUCCESS){
+    NUS_LOG_ERROR("failed to map buffer memory\n");
+    return NUS_FAILURE;
+  }
+  
+  // Copy data to cpu-mapped memory
+  memcpy(p_map, p_src, memory_map.size);
+  
   memory_range = (VkMappedMemoryRange){
     .sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
     .pNext = NULL,
@@ -77,17 +99,6 @@ NUS_result nus_memory_map_flush
     .offset = 0,
     .size = VK_WHOLE_SIZE
   };
-  
-  // Map gpu memory to the cpu
-  if(vkMapMemory(nus_get_bound_device(), memory_map.device_memory, 0,
-		 memory_map.size, 0, &p_map) != VK_SUCCESS){
-    printf("ERROR::failed to map buffer memory\n");
-    return NUS_FAILURE;
-  }
-  
-  // Copy data to cpu-mapped memory
-  memcpy(p_map, p_src, memory_map.size);
-  
   // Makes sure the memory is mapped to the gpu
   vkFlushMappedMemoryRanges(nus_get_bound_device(), 1, &memory_range);
   
