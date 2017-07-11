@@ -635,8 +635,6 @@ int main(int argc, char *argv[])
     transformation = nus_matrix_transpose(transformation);
     
     nus_uniform_buffer_flush(world_trans_buffer, (void*)&transformation);
-    
-    
 
     nus_add_wait_semaphore(present.image_available, VK_PIPELINE_STAGE_TRANSFER_BIT);
     nus_add_signal_semaphore(present.image_presentable);
@@ -661,6 +659,10 @@ int main(int argc, char *argv[])
 
   vkDeviceWaitIdle(nus_get_bound_device());
   
+  vkDestroyDescriptorPool(nus_get_bound_device(), descriptor_pool, NULL);
+  vkDestroyDescriptorSetLayout(nus_get_bound_device(), desc_set_layout, NULL);
+  
+  nus_uniform_buffer_free(&world_trans_buffer);
   
   nus_model_free(&model);
   
