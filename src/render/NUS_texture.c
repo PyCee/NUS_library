@@ -84,8 +84,7 @@ NUS_result nus_texture_buffer_image
   p_texture->image_size = size;
   NUS_memory_map tmp_memory_map;
   if(nus_memory_map_build(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-			  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
 			  &tmp_memory_map) != NUS_SUCCESS){
     NUS_LOG("failed to build memory map for texture\n");
     return NUS_FAILURE;
