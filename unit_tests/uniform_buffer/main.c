@@ -182,19 +182,17 @@ int main(int argc, char *argv[])
   }
 
   // Framebuffer creation
+  NUS_image_view framebuffer_img_views[1];
+  if(nus_image_view_build(framebuffer_img_views + 0, present.render_target,
+			  VK_IMAGE_ASPECT_COLOR_BIT) != NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to build framebuffer image views\n");
+    return -1;
+  }
+  
   NUS_framebuffer framebuffer;
-  if(nus_framebuffer_build(1, 600, 400, &framebuffer) != NUS_SUCCESS){
+  if(nus_framebuffer_build(&framebuffer, render_pass, framebuffer_img_views, 1,
+			   600, 400) != NUS_SUCCESS){
     printf("ERROR::failed to build framebuffer\n");
-    return -1;
-  }
-  if(nus_framebuffer_set_attachment(0, present.render_target,
-				    VK_IMAGE_ASPECT_COLOR_BIT,
-				    &framebuffer) != NUS_SUCCESS){
-    printf("ERROR::failed to set framebuffer info attachment\n");
-    return -1;
-  }
-  if(nus_framebuffer_compile(render_pass, &framebuffer) != NUS_SUCCESS){
-    printf("ERROR::failed to compile framebuffer\n");
     return -1;
   }
   
@@ -673,6 +671,7 @@ int main(int argc, char *argv[])
   nus_pipeline_layout_free(&pipeline_layout);
   
   nus_framebuffer_free(&framebuffer);
+  nus_image_view_free(framebuffer_img_views + 0);
   nus_render_pass_free(&render_pass);
   
   nus_presentation_surface_free(vulkan_instance, &present);
