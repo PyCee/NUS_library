@@ -76,28 +76,76 @@ int main(int argc, char *argv[])
     printf("ERROR::failed to build presentaion surface\n");
     return -1;
   }
-
+  
+  VkCommandBuffer command_buffer;
+  nus_allocate_command_buffer(&command_buffer, 1);
+  
+  VkCommandBufferBeginInfo command_buffer_begin_info = {
+    VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    NULL,
+    VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
+    NULL
+  };
+  VkImageSubresourceRange image_subresource_range = {
+    VK_IMAGE_ASPECT_COLOR_BIT,
+    0,
+    1,
+    0,
+    1
+  };
+  VkImageMemoryBarrier barrier_from_present_to_clear = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    .pNext = NULL,
+    .srcAccessMask = 0,
+    .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+    .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+    .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    .srcQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+    .dstQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+    .image = present.render_target.image,
+    .subresourceRange = image_subresource_range
+  };
+  VkImageMemoryBarrier barrier_from_clear_to_present = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    .pNext = NULL,
+    .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+    .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+    .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    .srcQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+    .dstQueueFamilyIndex = nus_get_bound_queue_family()->family_index,
+    .image = present.render_target.image,
+    .subresourceRange = image_subresource_range
+  };
+  VkClearColorValue clear_color = {{0.0f, 0.0f, 0.0f, 0.0f}};
+  
+  vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
+  
+  vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
+		       VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL,
+		       1, &barrier_from_present_to_clear);
+  
+  vkCmdClearColorImage(command_buffer, present.render_target.image,
+		       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		       &clear_color, 1, &image_subresource_range);
+  
+  vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
+		       VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL,
+		       0, NULL, 1, &barrier_from_clear_to_present);
+  
+  if(vkEndCommandBuffer(command_buffer) != VK_SUCCESS){
+      printf("ERROR::Could not record command buffer!\n");
+      return NUS_FAILURE;
+  }
+  
   run = 1;
-
-  NUS_clock timekeeper;
-  nus_clock_build(&timekeeper);
-  double t;
-  float b = 0.0;
   while(run){
     nus_system_events_handle(win);
     
-    t = nus_clock_elapsed(timekeeper);
-    while(t > 2) t -= 2;
-    if(t > 1) t = 2 - t;
-    b = (float)t;
-    if(nus_image_clear(present.image_available,
-		       present.image_presentable,
-		       (VkClearColorValue){{0.0f, 0.0f, b, 0.0f}},
-		       present.render_target.image) !=
-       NUS_SUCCESS){
-      printf("ERROR::failed to clear window\n");
-      return -1;
-    }
+    nus_add_wait_semaphore(present.image_available, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    nus_add_signal_semaphore(present.image_presentable);
+    nus_add_command_buffer(command_buffer);
+    nus_submit_queue();
     
     if(nus_multi_gpu_submit_commands(multi_gpu) != NUS_SUCCESS){
       printf("ERROR::failed to submit multi gpu command queues\n");
@@ -107,7 +155,6 @@ int main(int argc, char *argv[])
       printf("ERROR::failed to present window\n");
       return -1;
     }
-    //run = 0;
   }
   
   printf("freeing unit test %s\n", PROGRAM_NAME);
