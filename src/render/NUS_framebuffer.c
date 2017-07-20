@@ -22,7 +22,7 @@ NUS_result nus_framebuffer_build
 }
 
 NUS_result nus_framebuffer_set_attachment
-(unsigned int index, NUS_texture texture, unsigned int aspect_mask,
+(unsigned int index, NUS_texture texture, VkImageAspectFlags aspect_mask,
  NUS_framebuffer *p_framebuffer)
 {
   if(index >= NUS_FRAMEBUFFER_ATTACHMENT_COUNT || index < 0){
