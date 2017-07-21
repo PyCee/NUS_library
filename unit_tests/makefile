@@ -11,11 +11,6 @@ CFLAGS=-g -Wextra \
 	-Wunreachable-code \
 	-I/home/kims/VulkanSDK/1.0.51.0/x86_64/include
 
-#LFLAGS= -lNUS_library -lNUSM -lxcb -ldl -lm \
-#	-L/home/kims/VulkanSDK/1.0.51.0/x86_64/lib \
-#	-lVkLayer_unique_objects -lVkLayer_swapchain -lVkLayer_core_validation \
-#	-lVkLayer_object_tracker -lVkLayer_parameter_validation -lVkLayer_threading \
-#	-lassimp
 LFLAGS= -lNUS_library -lNUSM -lxcb -ldl -lm \
 	-L/home/kims/VulkanSDK/1.0.51.0/x86_64/lib \
 	-lVkLayer_unique_objects -lVkLayer_core_validation \
@@ -38,7 +33,7 @@ SPACE=$(EMPTY) $(EMPTY)
 
 all: recompile
 
-run: compile
+run: shaders compile
 	for test in $(TEST:/=/unit_test); do ./$$test; done
 shaders: $(SHADERS)
 valgrind: $(SHADERS)

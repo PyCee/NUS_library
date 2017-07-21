@@ -9,12 +9,14 @@
 //#endif /* NUS_USE_VULKAN */
 
 /* Include files that should be present in any instance of this engine*/
+#include "NUS_handle.h"
 #include "NUS_result.h"
 #include "NUS_save.h"
 #include "NUS_log.h"
 #include "NUS_key.h"
 #include "NUS_bool.h"
 #include "NUS_entity.h"
+#include "NUS_population.h"
 
 #include "strings/NUS_string_group.h"
 #include "strings/NUS_absolute_path.h"
@@ -65,15 +67,16 @@
 //#if defined(NUS_SYSTEM_RENDER)
 #include "render/NUS_presentation_surface.h"
 #include "render/NUS_swapchain.h"
-#include "render/NUS_image_clear.h"
 #include "render/NUS_shader.h"
 #include "render/NUS_texture.h"
+#include "render/NUS_image_view.h"
 #include "render/NUS_subpass_info.h"
 #include "render/NUS_render_pass.h"
 #include "render/NUS_framebuffer.h"
 #include "render/NUS_pipeline_layout.h"
 #include "render/NUS_graphics_pipeline.h"
 #include "render/NUS_depth_buffer.h"
+#include "render/NUS_sampler.h"
 //#endif /* NUS_SYSTEM_RENDER */
 
 #endif /* NUS_LIBRARY_H */

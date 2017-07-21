@@ -14,7 +14,9 @@
 #define PROGRAM_NAME "unit_test-texture"
 
 void close_win(void);
+
 char run;
+
 
 int main(int argc, char *argv[])
 {
@@ -35,8 +37,8 @@ int main(int argc, char *argv[])
     return -1;
   }
   nus_event_handler_append(eve, NUS_EVENT_CLOSE_WINDOW, 0, close_win);
-  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS,
-				    NUS_KEY_ESC, close_win);
+  nus_event_handler_append(eve, NUS_EVENT_KEY_PRESS, NUS_KEY_ESC, close_win);
+  
   nus_event_handler_set(&eve);
   
   NUS_vulkan_instance vulkan_instance;
@@ -79,35 +81,13 @@ int main(int argc, char *argv[])
   
   // temp init code
   
-  NUS_queue_info info;
-  
-  if(nus_gpu_find_queue_info(present.queue_info.p_gpu,
-			     NUS_QUEUE_FAMILY_SUPPORT_PRESENT |
-			     NUS_QUEUE_FAMILY_SUPPORT_TRANSFER,
-			     &info) != NUS_SUCCESS){
-    printf("ERROR::failed to find suitable gpu info\n");
-    return NUS_FAILURE;
-  }
-  
   NUS_model model;
-  if(nus_model_build(nus_absolute_path_build("plane.nusm"), &model) != NUS_SUCCESS){
+  // the vertex normal represents color for this unit test
+  if(nus_model_build(nus_absolute_path_build("triangle.nusm"), &model) != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to build model\n");
     return -1;
   }
-  if(nus_model_buffer(info, &model) != NUS_SUCCESS){
-    NUS_LOG_ERROR("failed to buffer model\n");
-    return -1;
-  }
-  NUS_depth_buffer depth_buffer;
-  if(nus_depth_buffer_build(present.queue_info, 600, 400, &depth_buffer) !=
-     NUS_SUCCESS){
-    printf("UNIT_TEST_ERROR::failed to build depth_buffer\n");
-    return -1;
-  }
-  nus_texture_transition(depth_buffer, present.queue_info,
-			 VK_IMAGE_LAYOUT_UNDEFINED,
-			 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-  
+
   // code to create renderpass
   VkAttachmentDescription attachment_descriptions[] = {
     {
@@ -120,27 +100,12 @@ int main(int argc, char *argv[])
       .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
       .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
       .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-    },
-    {
-      .flags = 0,
-      .format = depth_buffer.format,
-      .samples = VK_SAMPLE_COUNT_1_BIT,
-      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-      .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-      .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      .initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-      .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
     }
   };
-  VkAttachmentReference attachment_refs[] = {
+  VkAttachmentReference color_attachment_references[] = {
     {
       .attachment = 0,
       .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    },
-    {
-      .attachment = 1,
-      .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
     }
   };
   VkSubpassDescription subpass_descriptions[] = {
@@ -150,9 +115,9 @@ int main(int argc, char *argv[])
       .inputAttachmentCount = 0,
       .pInputAttachments = NULL,
       .colorAttachmentCount = 1,
-      .pColorAttachments = attachment_refs + 0,
+      .pColorAttachments = color_attachment_references,
       .pResolveAttachments = NULL,
-      .pDepthStencilAttachment = attachment_refs + 1,
+      .pDepthStencilAttachment = NULL,
       .preserveAttachmentCount = 0,
       .pPreserveAttachments = NULL
     }
@@ -183,7 +148,7 @@ int main(int argc, char *argv[])
     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .attachmentCount = 2,
+    .attachmentCount = 1,
     .pAttachments = attachment_descriptions,
     .subpassCount = 1,
     .pSubpasses = subpass_descriptions,
@@ -191,52 +156,37 @@ int main(int argc, char *argv[])
     .pDependencies = dependencies
   };
 
-  VkRenderPass render_pass;
-  if(vkCreateRenderPass(present.queue_info.p_gpu->logical_device,
-			&render_pass_create_info, NULL,
-			&render_pass) != VK_SUCCESS){
-    printf("ERROR::failed to create render pass\n");
+  NUS_render_pass render_pass;
+  if(nus_render_pass_build(render_pass_create_info, &render_pass) != NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to build render pass\n");
+    return -1;
+  }
+
+  // Framebuffer creation
+  NUS_image_view framebuffer_img_views[1];
+  if(nus_image_view_build(framebuffer_img_views + 0, present.render_target,
+			  VK_IMAGE_ASPECT_COLOR_BIT) != NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to build framebuffer image views\n");
     return -1;
   }
   
-  // code to create framebuffer
-  NUS_framebuffer_info framebuffer_info;
-  nus_framebuffer_info_build(600, 400, 2, &framebuffer_info);
-  if(nus_framebuffer_info_set_attachment(*present.queue_info.p_gpu,
-					 present.render_target,
-					 present.swapchain.format.format,
-					 VK_IMAGE_ASPECT_COLOR_BIT, 0,
-					 &framebuffer_info) != NUS_SUCCESS){
-    printf("ERROR::failed to set framebuffer info attachment: render target\n");
-    return -1;
-  }
-  
-  if(nus_framebuffer_info_set_attachment(*present.queue_info.p_gpu,
-					 depth_buffer,
-					 depth_buffer.format,
-					 VK_IMAGE_ASPECT_DEPTH_BIT, 1,
-					 &framebuffer_info) != NUS_SUCCESS){
-    printf("ERROR::failed to set framebuffer info attachment: render target\n");
-    return -1;
-  }
   NUS_framebuffer framebuffer;
-  if(nus_framebuffer_build(*present.queue_info.p_gpu, render_pass, framebuffer_info,
-			   &framebuffer) != NUS_SUCCESS){
+  if(nus_framebuffer_build(&framebuffer, render_pass, framebuffer_img_views, 1,
+			   600, 400) != NUS_SUCCESS){
     printf("ERROR::failed to build framebuffer\n");
     return -1;
   }
+  
 
   // Create Graphics Pipeline
   NUS_shader vertex_shader,
     fragment_shader;
-  if(nus_shader_build(multi_gpu.gpus[0],
-		      nus_absolute_path_build("triangle_shader/shader.vert.spv"),
+  if(nus_shader_build(nus_absolute_path_build("triangle_shader/shader.vert.spv"),
 		      VK_SHADER_STAGE_VERTEX_BIT, &vertex_shader) != NUS_SUCCESS){
     printf("ERROR::failed to build vertex shader\n");
     return -1;
   }
-  if(nus_shader_build(multi_gpu.gpus[0],
-		      nus_absolute_path_build("triangle_shader/shader.frag.spv"),
+  if(nus_shader_build(nus_absolute_path_build("triangle_shader/shader.frag.spv"),
 		      VK_SHADER_STAGE_FRAGMENT_BIT, &fragment_shader) != NUS_SUCCESS){
     printf("ERROR::failed to build fragment shader\n");
     return -1;
@@ -264,22 +214,28 @@ int main(int argc, char *argv[])
   };
 
   VkVertexInputBindingDescription vertex_binding_description = {
-    .binding = 0,
-    .stride = (unsigned int)NUSM_VERTEX_BYTE_COUNT,
-    .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+    .binding = 0,//
+    .stride = (unsigned int)NUSM_VERTEX_BYTE_COUNT,//
+    .inputRate = VK_VERTEX_INPUT_RATE_VERTEX//
   };
   VkVertexInputAttributeDescription vertex_attribute_description[] = {
     {
-      .location = 0,
-      .binding = vertex_binding_description.binding,
-      .format = VK_FORMAT_R32G32B32_SFLOAT,
-      .offset = sizeof(float) * 0
+      .location = 0,//
+      .binding = vertex_binding_description.binding,//
+      .format = VK_FORMAT_R32G32B32_SFLOAT,//
+      .offset = sizeof(float) * 0//
     },
     {
-      .location = 1,
-      .binding = vertex_binding_description.binding,
-      .format = VK_FORMAT_R32G32B32_SFLOAT,
-      .offset = sizeof(float) * 3
+      .location = 1,//
+      .binding = vertex_binding_description.binding,//
+      .format = VK_FORMAT_R32G32B32_SFLOAT,//
+      .offset = sizeof(float) * 3//
+    },
+    {
+      .location = 2,//
+      .binding = vertex_binding_description.binding,//
+      .format = VK_FORMAT_R32G32_SFLOAT,//
+      .offset = sizeof(float) * 6//
     }
   };
   
@@ -289,7 +245,7 @@ int main(int argc, char *argv[])
     .flags = 0,
     .vertexBindingDescriptionCount = 1,
     .pVertexBindingDescriptions = &vertex_binding_description,
-    .vertexAttributeDescriptionCount = 2,
+    .vertexAttributeDescriptionCount = 3,
     .pVertexAttributeDescriptions = vertex_attribute_description
   };
   
@@ -297,8 +253,7 @@ int main(int argc, char *argv[])
     .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    //.topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP,
-    .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+    .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,//
     .primitiveRestartEnable = VK_FALSE
   };
   
@@ -322,152 +277,98 @@ int main(int argc, char *argv[])
     .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .dynamicStateCount = 2,
-    .pDynamicStates = dynamics_states
+    .dynamicStateCount = 2,//
+    .pDynamicStates = dynamics_states//
   };
   
   VkPipelineRasterizationStateCreateInfo rasterization_state_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .depthClampEnable = VK_FALSE,
-    .rasterizerDiscardEnable = VK_FALSE,
-    .polygonMode = VK_POLYGON_MODE_FILL,
-    //.cullMode = VK_CULL_MODE_NONE,
-    .cullMode = VK_CULL_MODE_BACK_BIT,
-    .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
-    .depthBiasEnable = VK_FALSE,
-    .depthBiasConstantFactor = 0.0f,
-    .depthBiasClamp = 0.0f,
-    .depthBiasSlopeFactor = 0.0f,
-    .lineWidth = 1.0f
+    .depthClampEnable = VK_FALSE,//
+    .rasterizerDiscardEnable = VK_FALSE,//
+    .polygonMode = VK_POLYGON_MODE_FILL,//
+    .cullMode = VK_CULL_MODE_BACK_BIT,//
+    .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,//
+    .depthBiasEnable = VK_FALSE,//
+    .depthBiasConstantFactor = 0.0f,//
+    .depthBiasClamp = 0.0f,//
+    .depthBiasSlopeFactor = 0.0f,//
+    .lineWidth = 1.0f//
   };
   
   VkPipelineMultisampleStateCreateInfo multisample_state_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-    .sampleShadingEnable = VK_FALSE,
-    .minSampleShading = 1.0f,
-    .pSampleMask = NULL,
-    .alphaToCoverageEnable = VK_FALSE,
-    .alphaToOneEnable = VK_FALSE
+    .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,//
+    .sampleShadingEnable = VK_FALSE,//
+    .minSampleShading = 1.0f,//
+    .pSampleMask = NULL,//
+    .alphaToCoverageEnable = VK_FALSE,//
+    .alphaToOneEnable = VK_FALSE//
   };
   
   VkPipelineColorBlendAttachmentState color_blend_attachment_state = {
-    .blendEnable = VK_FALSE,
-    .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
-    .dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,
-    .colorBlendOp = VK_BLEND_OP_ADD,
-    .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
-    .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
-    .alphaBlendOp = VK_BLEND_OP_ADD,
+    .blendEnable = VK_FALSE,//
+    .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,//
+    .dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,//
+    .colorBlendOp = VK_BLEND_OP_ADD,//
+    .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,//
+    .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,//
+    .alphaBlendOp = VK_BLEND_OP_ADD,//
     .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-    VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+    VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT//
   };
   
   VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
-    .logicOpEnable = VK_FALSE,
-    .logicOp = VK_LOGIC_OP_COPY,
-    .attachmentCount = 1,
-    .pAttachments = &color_blend_attachment_state,
-    .blendConstants = { 0.0f, 0.0f, 0.0f, 0.0f }
+    .logicOpEnable = VK_FALSE,//
+    .logicOp = VK_LOGIC_OP_COPY,//
+    .attachmentCount = 1,//
+    .pAttachments = &color_blend_attachment_state,//
+    .blendConstants = {0.0f, 0.0f, 0.0f, 0.0f}//
   };
-
-  // Create descriptor set layout
-  VkDescriptorSetLayoutBinding descriptor_set_layout_binding = {
-    .binding = 0,
-    .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-    .descriptorCount = 1,
-    .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-    .pImmutableSamplers = NULL
-  };
-  VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info = {
-    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-    .pNext = NULL,
-    .flags = 0,
-    .bindingCount = 1,
-    .pBindings = &descriptor_set_layout_binding
-  };
-  VkDescriptorSetLayout descriptor_set_layout;
-  if(vkCreateDescriptorSetLayout(present.queue_info.p_gpu->logical_device,
-				 &descriptor_set_layout_create_info, NULL,
-				 &descriptor_set_layout) != VK_SUCCESS){
-    printf("ERROR::failed to create descriptor set layout\n");
-    return -1;
-  }
-
-  // create descriptor pool
-  VkDescriptorPoolSize descriptor_pool_size = {
-    .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-    .descriptorCount = 1
-  };
-  VkDescriptorPoolCreateInfo descriptor_pool_create_info = {
-    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-    .pNext = NULL,
-    .flags = 0,
-    .maxSets = 1,
-    .poolSizeCount = 1,
-    .pPoolSizes = &descriptor_pool_size
-  };
-  VkDescriptorPool descriptor_pool;
-  if(vkCreateDescriptorPool(present.queue_info.p_gpu->logical_device,
-			    &descriptor_pool_create_info, NULL, &descriptor_pool) !=
-     VK_SUCCESS){
-    printf("ERROR::failed to create descriptor pool\n");
-    return -1;
-  }
   
-  VkDescriptorSetAllocateInfo descriptor_set_allocate_info = {
-    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-    .pNext = NULL,
-    .descriptorPool = descriptor_pool,
-    .descriptorSetCount = 1,
-    .pSetLayouts = &descriptor_set_layout
+  VkDescriptorSetLayoutBinding desc_set_layout_bindings[] = {
+    {
+      .binding = 0,
+      .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      .descriptorCount = 1,
+      .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+      .pImmutableSamplers = NULL
+    }
   };
-  VkDescriptorSet descriptor_set;
-  if(vkAllocateDescriptorSets(present.queue_info.p_gpu->logical_device,
-			      &descriptor_set_allocate_info, &descriptor_set) !=
-     VK_SUCCESS){
-    printf("ERROR::failed to allocate descriptor set\n");
-    return -1;
-  }
-  
+    
+  VkDescriptorSetLayoutCreateInfo desc_set_layout_create_info = {
+      .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+      .pNext = NULL,
+      .flags = 0,
+      .bindingCount = 1,
+      .pBindings = desc_set_layout_bindings
+  };
+  VkDescriptorSetLayout desc_set_layout;
+  vkCreateDescriptorSetLayout(nus_get_bound_device(), &desc_set_layout_create_info,
+			      NULL, &desc_set_layout);
+    
   VkPipelineLayoutCreateInfo pipeline_layout_create_info = {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
     .pNext = NULL,
     .flags = 0,
     .setLayoutCount = 1,
-    .pSetLayouts = &descriptor_set_layout,
-    .pushConstantRangeCount = 0,
-    .pPushConstantRanges = NULL
+    .pSetLayouts = &desc_set_layout,
+    .pushConstantRangeCount = 0,//
+    .pPushConstantRanges = NULL//
   };
-  VkPipelineLayout pipeline_layout;
-  if(vkCreatePipelineLayout(present.queue_info.p_gpu->logical_device,
-			    &pipeline_layout_create_info, NULL,
-			    &pipeline_layout) != VK_SUCCESS){
-    printf("ERROR::failed to create pipeline layout\n");
+
+  NUS_pipeline_layout pipeline_layout;
+  if(nus_pipeline_layout_build(pipeline_layout_create_info, &pipeline_layout) !=
+     NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to create pipeline layout\n");
     return -1;
   }
-  
-  VkPipelineDepthStencilStateCreateInfo depth_create_info = {
-    .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-    .pNext = NULL,
-    .flags = 0,
-    .depthTestEnable = VK_TRUE,
-    .depthWriteEnable = VK_TRUE,
-    .depthCompareOp = VK_COMPARE_OP_LESS,
-    .depthBoundsTestEnable = VK_FALSE,
-    .minDepthBounds = 0.0f,
-    .maxDepthBounds = 1.0f,
-    .stencilTestEnable = VK_FALSE,
-    .front = {},
-    .back = {}
-  };
   
   VkGraphicsPipelineCreateInfo graphics_pipeline_create_info = {
     .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
@@ -481,25 +382,95 @@ int main(int argc, char *argv[])
     .pViewportState = &viewport_state_create_info,
     .pRasterizationState = &rasterization_state_create_info,
     .pMultisampleState = &multisample_state_create_info,
-    .pDepthStencilState = &depth_create_info,
+    .pDepthStencilState = NULL,
     .pColorBlendState = &color_blend_state_create_info,
     .pDynamicState = &dynamic_state_create_info,
-    .layout = pipeline_layout,
-    .renderPass = render_pass,
+    .layout = nus_pipeline_layout_get_raw(pipeline_layout),
+    .renderPass = nus_render_pass_get_raw(render_pass),
     .basePipelineHandle = VK_NULL_HANDLE,
     .basePipelineIndex = -1
   };
+
+  NUS_graphics_pipeline graphics_pipeline;
+  if(nus_graphics_pipeline_build(graphics_pipeline_create_info, &graphics_pipeline) !=
+     NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to create graphics pipelines\n");
+    return -1;
+  }
+
+  // end of render pass init
   
-  VkPipeline graphics_pipeline;
-  if(vkCreateGraphicsPipelines(present.queue_info.p_gpu->logical_device,
-			       VK_NULL_HANDLE, 1, &graphics_pipeline_create_info,
-			       NULL, &graphics_pipeline) != VK_SUCCESS){
-    printf("ERROR::failed to create graphics pipelines\n");
+  
+  VkDescriptorPoolSize pool_sizes[] = {
+    {
+      .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      .descriptorCount = 1
+    }
+  };
+  
+  VkDescriptorPoolCreateInfo desc_pool_create_info = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+    .pNext = NULL,
+    .flags = 0,
+    .maxSets = 1,
+    .poolSizeCount = 1,
+    .pPoolSizes = pool_sizes
+  };
+  
+  VkDescriptorPool descriptor_pool;
+  if(vkCreateDescriptorPool(nus_get_bound_device(), &desc_pool_create_info,
+			    NULL, &descriptor_pool) != VK_SUCCESS){
+    NUS_LOG_ERROR("failed to create descriptor pool\n");
     return -1;
   }
   
-  VkCommandBuffer command_buffer;
+  VkDescriptorSetAllocateInfo desc_set_alloc_info = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+    .pNext = NULL,
+    .descriptorPool = descriptor_pool,
+    .descriptorSetCount = 1,
+    .pSetLayouts = &desc_set_layout
+  };
+
+  VkDescriptorSet descriptor_set;
+  if(vkAllocateDescriptorSets(nus_get_bound_device(), &desc_set_alloc_info,
+			      &descriptor_set) != VK_SUCCESS){
+    NUS_LOG_ERROR("failed to allocate descriptor set\n");
+    return -1;
+  }
+
+
+  NUS_image_view texture_img_view;
+  if(nus_image_view_build(&texture_img_view, model.texture,
+			  VK_IMAGE_ASPECT_COLOR_BIT) != NUS_SUCCESS){
+    return -1;
+  }
+  NUS_sampler sampler;
+  if(nus_sampler_build(&sampler, VK_FILTER_LINEAR) != NUS_SUCCESS){
+    return -1;
+  }
+  VkDescriptorImageInfo desc_image_info = {
+    .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    .imageView = texture_img_view.vk_image_view,
+    .sampler = sampler.vk_sampler
+  };
   
+  VkWriteDescriptorSet write_desc_set = {
+    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+    .pNext = NULL,
+    .dstSet = descriptor_set,
+    .dstBinding = 0,
+    .dstArrayElement = 0,
+    .descriptorCount = 1,
+    .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+    .pImageInfo = &desc_image_info,
+    .pBufferInfo = NULL,
+    .pTexelBufferView = NULL
+  };
+  
+  vkUpdateDescriptorSets(nus_get_bound_device(), 1, &write_desc_set, 0, NULL);
+  
+  VkCommandBuffer command_buffer;
   VkCommandBufferBeginInfo command_buffer_begin_info = {
     VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
     NULL,
@@ -513,19 +484,12 @@ int main(int argc, char *argv[])
     0,
     1
   };
-  VkClearValue clear_value[] = {
-    {
-      .color = {{0.4f, 0.1f, 0.3f, 1.0f}},
-    },
-    {
-      .depthStencil = {1.0f, 0}
-    }
-  };
+  VkClearValue clear_value = { .color = {{0.4f, 0.1f, 0.3f, 1.0f}} };
 
   VkRenderPassBeginInfo render_pass_begin_info = {
     .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
     .pNext = NULL,
-    .renderPass = render_pass,
+    .renderPass = nus_render_pass_get_raw(render_pass),
     .framebuffer = framebuffer.vk_framebuffer,
     .renderArea = {
       .offset = {
@@ -534,45 +498,9 @@ int main(int argc, char *argv[])
       },
       .extent = present.swapchain.extent
     },
-    .clearValueCount = 2,
-    .pClearValues = clear_value
+    .clearValueCount = 1,
+    .pClearValues = &clear_value
   };
-  
-
-  //
-  NUS_axes axes = nus_axes_build(nus_vector_build(0.0, 0.0, 1.0),
-				 nus_vector_build(0.0, 1.0, 0.0),
-				 nus_vector_build(1.0, 0.0, 0.0));
-  NUS_vector translation = nus_vector_build(0.0, 0.0, 0.0);
-  NUS_matrix tmp = nus_matrix_transformation(translation, axes);
-  
-  NUS_memory_map uniform_world_memory;
-  nus_memory_map_build(present.queue_info, sizeof(NUS_matrix),
-		       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-		       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &uniform_world_memory);
-  nus_memory_map_flush(uniform_world_memory, present.queue_info, &tmp);
-
-  VkDescriptorBufferInfo descriptor_buffer_info = {
-    .buffer = uniform_world_memory.buffer,
-    .offset = 0,
-    .range = VK_WHOLE_SIZE
-  };
-  VkWriteDescriptorSet write_descriptor_set = {
-    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-    .pNext = NULL,
-    .dstSet = descriptor_set,
-    .dstBinding = 0,
-    .dstArrayElement = 0,
-    .descriptorCount = 1,
-    .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-    .pImageInfo = NULL,
-    .pBufferInfo = &descriptor_buffer_info,
-    .pTexelBufferView = NULL
-  };
-  
-  vkUpdateDescriptorSets(present.queue_info.p_gpu->logical_device, 1,
-			 &write_descriptor_set, 0, NULL);
-  
   
   VkImageMemoryBarrier barrier_from_undefined_to_present = {
     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -581,8 +509,8 @@ int main(int argc, char *argv[])
     .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
     .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    .srcQueueFamilyIndex = info.queue_family_index,
-    .dstQueueFamilyIndex = info.queue_family_index,
+    .srcQueueFamilyIndex = nus_get_bound_queue_family_index(),
+    .dstQueueFamilyIndex = nus_get_bound_queue_family_index(),
     .image = present.render_target.image,
     .subresourceRange = image_subresource_range
   };
@@ -593,8 +521,8 @@ int main(int argc, char *argv[])
     .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
     .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    .srcQueueFamilyIndex = info.queue_family_index,
-    .dstQueueFamilyIndex = info.queue_family_index,
+    .srcQueueFamilyIndex = nus_get_bound_queue_family_index(),
+    .dstQueueFamilyIndex = nus_get_bound_queue_family_index(),
     .image = present.render_target.image,
     .subresourceRange = image_subresource_range
   };
@@ -605,12 +533,12 @@ int main(int argc, char *argv[])
     .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
     .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-    .srcQueueFamilyIndex = info.queue_family_index,
-    .dstQueueFamilyIndex = info.queue_family_index,
+    .srcQueueFamilyIndex = nus_get_bound_queue_family_index(),
+    .dstQueueFamilyIndex = nus_get_bound_queue_family_index(),
     .image = present.render_target.image,
     .subresourceRange = image_subresource_range
   };
-
+  
   VkViewport viewport = {
     .x = 0,
     .y = 0,
@@ -626,9 +554,10 @@ int main(int argc, char *argv[])
     },
     .extent = present.swapchain.extent
   };
+  nus_graphics_pipeline_set_viewport(viewport, &graphics_pipeline);
+  nus_graphics_pipeline_set_scissor(scissor, &graphics_pipeline);
   
-  nus_queue_info_add_buffer(info, &command_buffer);
-  
+  nus_allocate_command_buffer(&command_buffer, 1);
   vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
   vkCmdPipelineBarrier(command_buffer,
 		       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -641,25 +570,22 @@ int main(int argc, char *argv[])
   
   vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info,
 		       VK_SUBPASS_CONTENTS_INLINE);
-  vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		    graphics_pipeline);
+  
+  nus_cmd_graphics_pipeline_bind(command_buffer, graphics_pipeline);
   
   vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			  pipeline_layout, 0, 1, &descriptor_set, 0, NULL);
-  
-  vkCmdSetViewport(command_buffer, 0, 1, &viewport);
-  vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+			  nus_pipeline_layout_get_raw(pipeline_layout),
+			  0, 1, &descriptor_set, 0, NULL);
   
   VkDeviceSize vertex_memory_offset = 0,
     index_memory_offset = 0;
   vkCmdBindVertexBuffers(command_buffer, 0, 1, &model.vertex_memory.buffer,
 			 &vertex_memory_offset);
   vkCmdBindIndexBuffer(command_buffer, model.index_memory.buffer, index_memory_offset,
-		       VK_INDEX_TYPE_UINT32);
+			VK_INDEX_TYPE_UINT32);
 
   vkCmdDrawIndexed(command_buffer, model.contents.index_data_size/4, 1, 0, 0, 0);
-  //TODO store NUSM index and vertex counts insted of sizes
-  
+    
   vkCmdEndRenderPass(command_buffer);
   
   vkCmdPipelineBarrier(command_buffer,
@@ -672,33 +598,15 @@ int main(int argc, char *argv[])
     return NUS_FAILURE;
   }
   
-  printf("finished init\n");
-  
-  // end of temp init code
-  
-  
   run = 1;
-  float x = 0.0f, y = 0.0f, z = 0.4;
-  
-  tmp = nus_matrix_translation(nus_vector_build(x, y, z));
-  tmp = nus_matrix_transpose(tmp);
-  
-  nus_memory_map_flush(uniform_world_memory, present.queue_info, &tmp);
-
-
   while(run){
 
-    nus_system_events_handle(win);  
-    
-    if(nus_command_group_add_semaphores(info.p_command_group, 1,
-					&present.image_available,
-					1, &present.image_presentable) !=
-       NUS_SUCCESS){
-      printf("ERROR::failed to add semaphores in clear presentation surface\n");
-      return NUS_FAILURE;
-    }
-    nus_command_group_append(info.p_command_group, command_buffer);
-    nus_queue_info_submit(info);
+    nus_system_events_handle(win);
+
+    nus_add_wait_semaphore(present.image_available, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    nus_add_signal_semaphore(present.image_presentable);
+    nus_add_command_buffer(command_buffer);
+    nus_submit_queue();
     
     if(nus_multi_gpu_submit_commands(multi_gpu) != NUS_SUCCESS){
       printf("ERROR::failed to submit multi gpu command queues\n");
@@ -709,45 +617,32 @@ int main(int argc, char *argv[])
       printf("ERROR::failed to present window\n");
       return -1;
     }
-    
+
+    //run = 0;
   }
   
   printf("freeing unit test %s\n", PROGRAM_NAME);
 
-  vkDeviceWaitIdle(present.queue_info.p_gpu->logical_device);
-
-  nus_memory_map_free(&uniform_world_memory, present.queue_info);
-
-  vkDestroyDescriptorSetLayout(present.queue_info.p_gpu->logical_device,
-			       descriptor_set_layout, NULL);
-  vkDestroyDescriptorPool(present.queue_info.p_gpu->logical_device,
-			  descriptor_pool, NULL);
+  vkDeviceWaitIdle(nus_get_bound_device());
   
-  nus_model_free(info, &model);
-  
-  nus_shader_free(*present.queue_info.p_gpu, &vertex_shader);
-  nus_shader_free(*present.queue_info.p_gpu, &fragment_shader);
+  vkDestroyDescriptorPool(nus_get_bound_device(), descriptor_pool, NULL);
+  vkDestroyDescriptorSetLayout(nus_get_bound_device(), desc_set_layout, NULL);
 
-  nus_depth_buffer_free(*present.queue_info.p_gpu, &depth_buffer);
-
-  if(pipeline_layout != VK_NULL_HANDLE){
-    vkDestroyPipelineLayout(present.queue_info.p_gpu->logical_device,
-			    pipeline_layout, NULL);
-    pipeline_layout = VK_NULL_HANDLE;
-  }
-  if(graphics_pipeline != VK_NULL_HANDLE){
-    vkDestroyPipeline(present.queue_info.p_gpu->logical_device,
-		      graphics_pipeline, NULL);
-    graphics_pipeline = VK_NULL_HANDLE;
-  }
-  if(render_pass != VK_NULL_HANDLE){
-    vkDestroyRenderPass(present.queue_info.p_gpu->logical_device,
-		      render_pass, NULL);
-    render_pass = VK_NULL_HANDLE;
-  }
+  nus_sampler_free(&sampler);
+  nus_image_view_free(&texture_img_view);
   
-  nus_framebuffer_info_free(*present.queue_info.p_gpu, &framebuffer_info);
-  nus_framebuffer_free(*present.queue_info.p_gpu, &framebuffer);
+  nus_model_free(&model);
+  
+  nus_shader_free(&vertex_shader);
+  nus_shader_free(&fragment_shader);
+  
+  nus_graphics_pipeline_free(&graphics_pipeline);
+  nus_pipeline_layout_free(&pipeline_layout);
+  
+  nus_framebuffer_free(&framebuffer);
+  nus_image_view_free(&framebuffer_img_views[0]);
+  
+  nus_render_pass_free(&render_pass);
   
   nus_presentation_surface_free(vulkan_instance, &present);
   nus_multi_gpu_free(&multi_gpu);

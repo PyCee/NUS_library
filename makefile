@@ -34,10 +34,10 @@ PHY_SRC_FILES=NUS_kinematic_property.c NUS_physics_state.c NUS_orientation.c \
 	NUS_movement.c NUS_mass.c
 PHY_DIR=physics
 
-REN_SRC_FILES=NUS_presentation_surface.c NUS_image_clear.c NUS_shader.c \
+REN_SRC_FILES=NUS_presentation_surface.c NUS_shader.c NUS_image_view.c \
 	NUS_swapchain.c NUS_texture.c NUS_subpass_info.c NUS_render_pass.c \
 	NUS_framebuffer.c NUS_graphics_pipeline.c NUS_depth_buffer.c \
-	NUS_pipeline_layout.c
+	NUS_pipeline_layout.c NUS_sampler.c
 REN_DIR=render
 
 TIME_SRC_FILES=NUS_clock.c
@@ -51,7 +51,7 @@ MOD_SRC=$(addprefix $(MOD_DIR)/, $(MOD_SRC_FILES))
 PHY_SRC=$(addprefix $(PHY_DIR)/, $(PHY_SRC_FILES))
 REN_SRC=$(addprefix $(REN_DIR)/, $(REN_SRC_FILES))
 TIME_SRC=$(addprefix $(TIME_DIR)/, $(TIME_SRC_FILES))
-OTH_SRC=NUS_vulkan.c NUS_save.c NUS_library.c
+OTH_SRC=NUS_vulkan.c NUS_save.c NUS_library.c NUS_entity.c NUS_population.c
 
 STR_HEA=$(STR_SRC:.c=.h)
 GPU_HEA=$(GPU_SRC:.c=.h)
@@ -61,7 +61,7 @@ MOD_HEA=$(MOD_SRC:.c=.h)
 PHY_HEA=$(PHY_SRC:.c=.h)
 REN_HEA=$(REN_SRC:.c=.h)
 TIME_HEA=$(TIME_SRC:.c=.h)
-OTH_HEA=NUS_result.h NUS_os.h NUS_entity.h NUS_key.h \
+OTH_HEA=NUS_result.h NUS_os.h NUS_key.h NUS_handle.h \
 	NUS_log.h NUS_bool.h $(OTH_SRC:.c=.h)
 
 NUS_SRC_FILES=$(STR_SRC) $(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(PHY_SRC) \

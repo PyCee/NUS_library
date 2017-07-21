@@ -2,20 +2,17 @@
 
 layout(location = 0) in vec3 vert_position;
 layout(location = 1) in vec3 vert_color;
-
-layout(binding = 0) uniform transformation_block{
-  mat4 world;
-} transformation;
+layout(location = 2) in vec2 vert_uv_coords;
 
 out gl_PerVertex
 {
   vec4 gl_Position;
 };
 
-layout(location = 0) out vec4 frag_color; 
+layout(location = 0) out vec2 frag_uv_coords; 
 	 
 void main()
 {
-  gl_Position = transformation.world * vec4(vert_position.xyz, 1.0);
-  frag_color = vec4(vert_color.xyz, 1.0);
+  gl_Position = vec4(vert_position.xyz, 1.0);
+  frag_uv_coords = vert_uv_coords;
 }
