@@ -36,6 +36,16 @@
 #include "physics/NUS_movement.h"
 #include "physics/NUS_orientation.h"
 
+#include "physics/collision/NUS_collidable.h"
+#include "physics/collision/NUS_aabb.h"
+#include "physics/collision/NUS_collision_info.h"
+#include "physics/collision/NUS_collision_type.h"
+#include "physics/collision/NUS_rigid_body.h"
+#include "physics/collision/NUS_point.h"
+#include "physics/collision/NUS_sphere.h"
+#include "physics/collision/NUS_box.h"
+#include "physics/collision/NUS_capsule.h"
+
 #include "model/NUS_model.h"
 #include "model/NUS_vertex.h"
 #include "model/NUS_skeleton.h"

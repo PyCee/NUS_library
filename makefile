@@ -30,8 +30,12 @@ MOD_SRC_FILES=NUS_model.c NUS_vertex.c NUS_skeleton.c NUS_joint.c \
 	NUS_pose_skeleton.c NUS_pose_joint.c
 MOD_DIR=model
 
+COL_SRC_FILES=NUS_collidable.c NUS_aabb.c NUS_collision_info.c NUS_collision_type.c \
+	NUS_rigid_body.c NUS_point.c NUS_sphere.c  NUS_box.c NUS_capsule.c
+COL_DIR=collision
+
 PHY_SRC_FILES=NUS_kinematic_property.c NUS_physics_state.c NUS_orientation.c \
-	NUS_movement.c NUS_mass.c
+	NUS_movement.c NUS_mass.c $(addprefix $(COL_DIR)/, $(COL_SRC_FILES))
 PHY_DIR=physics
 
 REN_SRC_FILES=NUS_presentation_surface.c NUS_shader.c NUS_image_view.c \
