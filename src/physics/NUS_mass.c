@@ -63,6 +63,7 @@ void nus_mass_batch_update
 				    p_mass->next_state, t);
     p_mass->world_transformation =
       nus_matrix_transformation(p_mass->curr_state.position,
+				nus_vector_build(1.0, 1.0, 1.0),
 				p_mass->curr_state.local_orientation);
   }
 }
