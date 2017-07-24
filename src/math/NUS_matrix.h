@@ -18,14 +18,14 @@ NUS_matrix nus_matrix_build(float, float, float, float,
 NUS_matrix nus_matrix_identity(void);
 NUS_matrix nus_matrix_zero(void);
 NUS_matrix nus_matrix_transpose(NUS_matrix);
-NUS_matrix nus_matrix_scale(NUS_matrix, float);
 NUS_matrix nus_matrix_multiply(NUS_matrix, NUS_matrix);
 
 NUS_matrix nus_matrix_translation(struct NUS_vector);
+NUS_matrix nus_matrix_scale(struct NUS_vector);
 NUS_matrix nus_matrix_rotation(struct NUS_axes);
 
 NUS_matrix nus_matrix_transformation
-(struct NUS_vector, struct NUS_axes);
+(struct NUS_vector, struct NUS_vector, struct NUS_axes);
 struct NUS_vector nus_matrix_transform(NUS_matrix, struct NUS_vector);
 
 NUS_matrix nus_matrix_inverted(NUS_matrix);

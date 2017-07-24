@@ -38,17 +38,6 @@ NUS_matrix nus_matrix_transpose(const NUS_matrix matrix)
 			  matrix.ele[0][3], matrix.ele[1][3],
 			  matrix.ele[2][3], matrix.ele[3][3]);
 }
-NUS_matrix nus_matrix_scale(const NUS_matrix matrix, const float s)
-{
-  return nus_matrix_build(matrix.ele[0][0] * s, matrix.ele[0][1] * s,
-			  matrix.ele[0][2] * s, matrix.ele[0][3] * s,
-			  matrix.ele[1][0] * s, matrix.ele[1][1] * s,
-			  matrix.ele[1][2] * s, matrix.ele[1][3] * s,
-			  matrix.ele[2][0] * s, matrix.ele[2][1] * s,
-			  matrix.ele[2][2] * s, matrix.ele[2][3] * s,
-			  matrix.ele[3][0] * s, matrix.ele[3][1] * s,
-			  matrix.ele[3][2] * s, matrix.ele[3][3] * s);
-}
 NUS_matrix nus_matrix_multiply
 (const NUS_matrix matrix_0, const NUS_matrix matrix_1)
 {
@@ -154,6 +143,13 @@ NUS_matrix nus_matrix_translation(const struct NUS_vector vector)
 			  0.0, 0.0, 1.0, vector.z,
 			  0.0, 0.0, 0.0, 1.0);
 }
+NUS_matrix nus_matrix_scale(NUS_vector scale)
+{
+  return nus_matrix_build(scale.x, 0.0, 0.0, 0.0,
+			  0.0, scale.y, 0.0, 0.0,
+			  0.0, 0.0, scale.z, 0.0,
+			  0.0, 0.0, 0.0, 1.0);
+}
 NUS_matrix nus_matrix_rotation(NUS_axes axes)
 {
   return nus_matrix_build(axes.right.x, axes.right.y, axes.right.z, 0.0,
@@ -174,12 +170,11 @@ NUS_matrix nus_matrix_rotation(NUS_axes axes)
 }
 
 NUS_matrix nus_matrix_transformation
-(NUS_vector vector, NUS_axes axes)
+(NUS_vector vector, NUS_vector scale, NUS_axes axes)
 {
-  NUS_matrix scale = nus_matrix_scale(nus_matrix_identity(), 1.0),
-    rotation = nus_matrix_rotation(axes),
-    translation = nus_matrix_translation(vector);
-  return nus_matrix_multiply(nus_matrix_multiply(translation, rotation), scale);
+  return nus_matrix_multiply(nus_matrix_multiply(nus_matrix_translation(vector),
+						 nus_matrix_scale(scale)),
+			     nus_matrix_rotation(axes));
 }
 NUS_vector nus_matrix_transform(NUS_matrix matrix, NUS_vector vector)
 {
