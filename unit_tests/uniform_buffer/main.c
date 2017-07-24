@@ -617,7 +617,7 @@ int main(int argc, char *argv[])
   // end of temp init code
   
   NUS_matrix transformation;
-  NUS_axes default_axes = nus_axes_build(nus_vector_build(0.0, 0.0, -1.0),
+  NUS_axes default_axes = nus_axes_build(nus_vector_build(0.0, 0.0, 1.0),
 					 nus_vector_build(0.0, 1.0, 0.0),
 					 nus_vector_build(1.0, 0.0, 0.0));
   
@@ -629,6 +629,7 @@ int main(int argc, char *argv[])
     x += dx;
     y += dy;
     transformation = nus_matrix_transformation(nus_vector_build(x, y, 0.5),
+					       nus_vector_build(1.0, 1.0, 1.0),
 					       default_axes);
     transformation = nus_matrix_transpose(transformation);
     

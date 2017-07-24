@@ -182,7 +182,8 @@ int main(int argc, char *argv[])
 			     nus_vector_build(1.0, 0.0, 0.0));
   test_axes = nus_axes_global_rotation(test_axes, test_quaternion_0);
   test_vector = nus_vector_build(-1.5, 3.14159, 2.1);
-  test_matrix = nus_matrix_transformation(nus_vector_build(1.2, 2.3, 3.4), test_axes);
+  test_matrix = nus_matrix_transformation(nus_vector_build(1.2, 2.3, 3.4),
+					  nus_vector_build(1.0, 1.0, 1.0), test_axes);
   test_vector = nus_matrix_transform(test_matrix, test_vector);
   if(nus_vector_cmp(nus_vector_build(0.131343, 5.441590, 1.050964),
 		    test_vector, 0.00001) == NUS_FALSE){
