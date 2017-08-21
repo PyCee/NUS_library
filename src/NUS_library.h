@@ -15,8 +15,8 @@
 #include "NUS_log.h"
 #include "NUS_key.h"
 #include "NUS_bool.h"
-#include "NUS_entity.h"
-#include "NUS_population.h"
+//#include "NUS_entity.h"
+//#include "NUS_population.h"
 
 #include "strings/NUS_string_group.h"
 #include "strings/NUS_absolute_path.h"
@@ -47,12 +47,18 @@
 #include "physics/collision/NUS_capsule.h"
 
 #include "model/NUS_model.h"
+#include "model/NUS_binary_model.h"
 #include "model/NUS_vertex.h"
 #include "model/NUS_skeleton.h"
-#include "model/NUS_joint.h"
 #include "model/NUS_pose_skeleton.h"
-#include "model/NUS_pose_joint.h"
-#include <NUSM/NUSM_library.h>
+#include "model/NUS_joint_pose.h"
+#include "model/NUS_keyframe.h"
+#include "model/NUS_animation.h"
+
+#include "NUSM/NUS_load.h"
+#include "NUSM/NUS_store.h"
+#include "NUSM/NUS_read.h"
+#include "NUSM/NUS_validate.h"
 
 /*  NUS_SYSTEM_WINDOW must be defined in the application to enable windowing */
 //#if defined(NUS_SYSTEM_WINDOW)

@@ -17,17 +17,17 @@ void nus_physics_state_free(NUS_physics_state *p_physics_state)
   // reset physics state
   *p_physics_state = nus_physics_state_build();
 }
-NUS_physics_state nus_physics_state_interpolate
+NUS_physics_state nus_physics_state_lerp
 (NUS_physics_state physics_state_0,
  NUS_physics_state physics_state_1, double t)
 {
   t = (t < 1.0) ? t : 1.0;
   t = (t > 0.0) ? t : 0.0;
 
-  physics_state_0.position = nus_vector_interpolate(physics_state_0.position,
+  physics_state_0.position = nus_vector_lerp(physics_state_0.position,
 						    physics_state_1.position, t);
   physics_state_0.local_orientation =
-    nus_axes_interpolate(physics_state_0.local_orientation,
+    nus_axes_lerp(physics_state_0.local_orientation,
 			 physics_state_1.local_orientation, t);
   return physics_state_0;
 }

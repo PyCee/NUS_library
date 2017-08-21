@@ -17,7 +17,7 @@ typedef struct NUS_physics_state{
 
 NUS_physics_state nus_physics_state_build(void);
 void nus_physics_state_free(NUS_physics_state *);
-NUS_physics_state nus_physics_state_interpolate
+NUS_physics_state nus_physics_state_lerp
 (NUS_physics_state, NUS_physics_state, double);
 NUS_physics_state nus_physics_state_step
 (NUS_physics_state, struct NUS_movement *, struct NUS_orientation *);

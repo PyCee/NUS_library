@@ -45,7 +45,7 @@ NUS_vector nus_vector_cross(NUS_vector vector_0, NUS_vector vector_1)
 			  vector_0.x * vector_1.y -
 			  vector_0.y * vector_1.x);
 }
-NUS_vector nus_vector_interpolate
+NUS_vector nus_vector_lerp
 (NUS_vector vector_0, NUS_vector vector_1, double t)
 {
   double b;

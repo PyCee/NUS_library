@@ -59,8 +59,8 @@ void nus_mass_batch_update
   for(i = 0; i < mass_count; i++){
     p_mass = (NUS_mass *)((char *)start + offset + (sizeof(*p_mass) + stride) * i);
     p_mass->curr_state =
-      nus_physics_state_interpolate(p_mass->prev_state,
-				    p_mass->next_state, t);
+      nus_physics_state_lerp(p_mass->prev_state,
+			     p_mass->next_state, t);
     p_mass->world_transformation =
       nus_matrix_transformation(p_mass->curr_state.position,
 				nus_vector_build(1.0, 1.0, 1.0),

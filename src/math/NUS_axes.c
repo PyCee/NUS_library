@@ -6,13 +6,13 @@ NUS_axes nus_axes_build(NUS_vector forward, NUS_vector upward, NUS_vector right)
 {
   return (NUS_axes){forward, upward, right};
 }
-NUS_axes nus_axes_interpolate(NUS_axes axes_0, NUS_axes axes_1, double t)
+NUS_axes nus_axes_lerp(NUS_axes axes_0, NUS_axes axes_1, double t)
 {
-  return nus_axes_build(nus_vector_interpolate(axes_0.forward,
+  return nus_axes_build(nus_vector_lerp(axes_0.forward,
 					       axes_1.forward, t),
-		        nus_vector_interpolate(axes_0.upward,
+		        nus_vector_lerp(axes_0.upward,
 					       axes_1.upward, t),
-			nus_vector_interpolate(axes_0.right,
+			nus_vector_lerp(axes_0.right,
 					       axes_1.right, t));
 }
 NUS_axes nus_axes_invert(NUS_axes axes)
