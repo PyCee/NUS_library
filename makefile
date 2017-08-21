@@ -26,16 +26,19 @@ MATH_SRC_FILES=NUS_vector.c NUS_octree.c NUS_matrix.c NUS_axes.c NUS_quaternion.
 	NUS_frustum.c NUS_reference_vector.c
 MATH_DIR=math
 
-MOD_SRC_FILES=NUS_model.c NUS_vertex.c NUS_skeleton.c NUS_joint.c \
-	NUS_pose_skeleton.c NUS_pose_joint.c
+MOD_SRC_FILES=NUS_model.c NUS_binary_model.c NUS_vertex.c NUS_skeleton.c \
+	NUS_joint_pose.c NUS_pose_skeleton.c NUS_keyframe.c NUS_animation.c
 MOD_DIR=model
+
+NUSM_SRC_FILES=NUS_load.c NUS_read.c NUS_store.c NUS_validate.c
+NUSM_DIR=NUSM
 
 COL_SRC_FILES=NUS_collidable.c NUS_aabb.c NUS_collision_info.c NUS_collision_type.c \
 	NUS_rigid_body.c NUS_point.c NUS_sphere.c  NUS_box.c NUS_capsule.c
-COL_DIR=collision
+COL_DIR=physics/collision
 
 PHY_SRC_FILES=NUS_kinematic_property.c NUS_physics_state.c NUS_orientation.c \
-	NUS_movement.c NUS_mass.c $(addprefix $(COL_DIR)/, $(COL_SRC_FILES))
+	NUS_movement.c NUS_mass.c
 PHY_DIR=physics
 
 REN_SRC_FILES=NUS_presentation_surface.c NUS_shader.c NUS_image_view.c \
@@ -52,24 +55,28 @@ GPU_SRC=$(addprefix $(GPU_DIR)/, $(GPU_SRC_FILES))
 IO_SRC=$(addprefix $(IO_DIR)/, $(IO_SRC_FILES))
 MATH_SRC=$(addprefix $(MATH_DIR)/, $(MATH_SRC_FILES))
 MOD_SRC=$(addprefix $(MOD_DIR)/, $(MOD_SRC_FILES))
+NUSM_SRC=$(addprefix $(NUSM_DIR)/, $(NUSM_SRC_FILES))
+COL_SRC=$(addprefix $(COL_DIR)/, $(COL_SRC_FILES))
 PHY_SRC=$(addprefix $(PHY_DIR)/, $(PHY_SRC_FILES))
 REN_SRC=$(addprefix $(REN_DIR)/, $(REN_SRC_FILES))
 TIME_SRC=$(addprefix $(TIME_DIR)/, $(TIME_SRC_FILES))
-OTH_SRC=NUS_vulkan.c NUS_save.c NUS_library.c NUS_entity.c NUS_population.c
+OTH_SRC=NUS_vulkan.c NUS_save.c NUS_library.c #NUS_entity.c NUS_population.c
 
 STR_HEA=$(STR_SRC:.c=.h)
 GPU_HEA=$(GPU_SRC:.c=.h)
 IO_HEA=$(IO_SRC:.c=.h)
 MATH_HEA=$(MATH_SRC:.c=.h)
 MOD_HEA=$(MOD_SRC:.c=.h)
+NUSM_HEA=$(NUSM_SRC:.c=.h)
+COL_HEA=$(COL_SRC:.c=.h)
 PHY_HEA=$(PHY_SRC:.c=.h)
 REN_HEA=$(REN_SRC:.c=.h)
 TIME_HEA=$(TIME_SRC:.c=.h)
 OTH_HEA=NUS_result.h NUS_os.h NUS_key.h NUS_handle.h \
 	NUS_log.h NUS_bool.h $(OTH_SRC:.c=.h)
 
-NUS_SRC_FILES=$(STR_SRC) $(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(PHY_SRC) \
-	$(REN_SRC) $(OTH_SRC) $(TIME_SRC)
+NUS_SRC_FILES=$(STR_SRC) $(GPU_SRC) $(IO_SRC) $(MATH_SRC) $(MOD_SRC) $(NUSM_SRC) \
+	$(PHY_SRC) $(REN_SRC) $(OTH_SRC) $(TIME_SRC)
 NUS_HEA_PRE_PREFIX=$(OTH_HEA) $(NUS_SRC_FILES:.c=.h)
 SRC_DIR=src
 NUS_SRC=$(addprefix $(SRC_DIR)/, $(NUS_SRC_FILES))
@@ -101,8 +108,12 @@ compile: $(NUS_OBJ)
 		sudo mkdir /usr/local/include/NUS/$(MATH_DIR); fi
 	@if [ ! -d "/usr/local/include/NUS/$(MOD_DIR)" ]; then \
 		sudo mkdir /usr/local/include/NUS/$(MOD_DIR); fi
+	@if [ ! -d "/usr/local/include/NUS/$(NUSM_DIR)" ]; then \
+		sudo mkdir /usr/local/include/NUS/$(NUSM_DIR); fi
 	@if [ ! -d "/usr/local/include/NUS/$(PHY_DIR)" ]; then \
 		sudo mkdir /usr/local/include/NUS/$(PHY_DIR); fi
+	@if [ ! -d "/usr/local/include/NUS/$(COL_DIR)" ]; then \
+		sudo mkdir /usr/local/include/NUS/$(COL_DIR); fi
 	@if [ ! -d "/usr/local/include/NUS/$(REN_DIR)" ]; then \
 		sudo mkdir /usr/local/include/NUS/$(REN_DIR); fi
 	@if [ ! -d "/usr/local/include/NUS/$(TIME_DIR)" ]; then \
@@ -112,6 +123,8 @@ compile: $(NUS_OBJ)
 	@sudo cp $(addprefix $(SRC_DIR)/, $(IO_HEA)) /usr/local/include/NUS/$(IO_DIR)/
 	@sudo cp $(addprefix $(SRC_DIR)/, $(MATH_HEA)) /usr/local/include/NUS/$(MATH_DIR)/
 	@sudo cp $(addprefix $(SRC_DIR)/, $(MOD_HEA)) /usr/local/include/NUS/$(MOD_DIR)/
+	@sudo cp $(addprefix $(SRC_DIR)/, $(NUSM_HEA)) /usr/local/include/NUS/$(NUSM_DIR)/
+	@sudo cp $(addprefix $(SRC_DIR)/, $(COL_HEA)) /usr/local/include/NUS/$(COL_DIR)/
 	@sudo cp $(addprefix $(SRC_DIR)/, $(PHY_HEA)) /usr/local/include/NUS/$(PHY_DIR)/
 	@sudo cp $(addprefix $(SRC_DIR)/, $(REN_HEA)) /usr/local/include/NUS/$(REN_DIR)/
 	@sudo cp $(addprefix $(SRC_DIR)/, $(TIME_HEA)) /usr/local/include/NUS/$(TIME_DIR)/
