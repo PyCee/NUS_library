@@ -90,8 +90,6 @@ NUS_result nusm_validate
       }
     }
   }
-  NUS_LOG("freeing\n");
   nus_binary_model_free(&read_model);
-  NUS_LOG("freed\n");
   return NUS_SUCCESS;
 }

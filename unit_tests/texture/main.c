@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
   
   NUS_model model;
   // the vertex normal represents color for this unit test
-  if(nus_model_build(nus_absolute_path_build("butterfly.nusm"), &model) != NUS_SUCCESS){
+  if(nus_model_build(nus_absolute_path_build("triangle.nusm"), &model) != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to build model\n");
     return -1;
   }
