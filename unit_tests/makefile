@@ -19,10 +19,11 @@ LFLAGS= -lNUS_library -lNUSM -lxcb -ldl -lm \
 
 SHADERS:= hello_triangle/triangle_shader/shader.vert.spv hello_triangle/triangle_shader/shader.frag.spv \
 	uniform_buffer/triangle_shader/shader.vert.spv uniform_buffer/triangle_shader/shader.frag.spv \
-	texture/triangle_shader/shader.vert.spv texture/triangle_shader/shader.frag.spv
+	texture/triangle_shader/shader.vert.spv texture/triangle_shader/shader.frag.spv \
+	posed_model/triangle_shader/shader.vert.spv posed_model/triangle_shader/shader.frag.spv
 
 TEST?=3d_math/ gravity_simulation/ save_file/ basic_window/ gpu_detection/ \
-	vulkan_clear/ hello_triangle/ uniform_buffer/ texture/
+	vulkan_clear/ hello_triangle/ uniform_buffer/ texture/ posed_model/
 
 VALGRIND_RUN= valgrind --tool=memcheck --leak-check=yes --track-origins=yes
 

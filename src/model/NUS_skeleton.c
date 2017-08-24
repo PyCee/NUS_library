@@ -1,18 +1,15 @@
 #include "NUS_skeleton.h"
 #include <stdlib.h>
+#include <string.h>
 
-NUS_skeleton nus_skeleton_build(int joint_count/* ... */)
+NUS_skeleton nus_skeleton_build(void *data)
 {
   NUS_skeleton skeleton;
-  skeleton.joint_count = joint_count;
-  skeleton.joints = malloc(sizeof(*skeleton.joints) * joint_count);
-  for(int i = 0; i < joint_count; ++i){
-    /*
-      skeleton.joints[i].inv_bind_pose = ;
-      skeleton.joints[i].parant_index = ;
-      strcpy(skeleton.joints[i].name, ...);
-    */
-  }
+  size_t joint_data_size;
+  skeleton.joint_count = *(uint32_t*)data;
+  joint_data_size = sizeof(*skeleton.joints) * skeleton.joint_count;
+  skeleton.joints = malloc(joint_data_size);
+  memcpy(skeleton.joints, data, joint_data_size);
   return skeleton;
 }
 void nus_skeleton_free(NUS_skeleton *p_skeleton)

@@ -2,21 +2,22 @@
 #define NUS_SKELETON_H
 
 #include "../math/NUS_matrix.h"
+#include <stdint.h>
 
 #define NUS_SKELETON_JOINT_NAME_SIZE 20
 
 typedef struct NUS_skeleton_joint{
   NUS_matrix inv_bind_pose;
-  int parent_index;
+  uint16_t parent_index;
   char name[NUS_SKELETON_JOINT_NAME_SIZE];
 } NUS_skeleton_joint;
 
 typedef struct NUS_skeleton{
+  uint32_t joint_count;
   NUS_skeleton_joint *joints;
-  int joint_count;
 } NUS_skeleton;
 
-NUS_skeleton nus_skeleton_build(int /* ... */);
+NUS_skeleton nus_skeleton_build(void *);
 void nus_skeleton_free(NUS_skeleton *);
 
 typedef struct NUS_skeleton_pose{

@@ -12,7 +12,6 @@ typedef struct NUS_keyframe_joint{
 
 typedef struct NUS_keyframe{
   NUS_keyframe_joint *joints;
-  float time;// Time of the animation in (0, 1) of the animations duration
 } NUS_keyframe;
 
 NUS_keyframe nus_keyframe_build(unsigned int);

@@ -26,11 +26,11 @@ MATH_SRC_FILES=NUS_vector.c NUS_octree.c NUS_matrix.c NUS_axes.c NUS_quaternion.
 	NUS_frustum.c NUS_reference_vector.c
 MATH_DIR=math
 
-MOD_SRC_FILES=NUS_model.c NUS_binary_model.c NUS_vertex.c NUS_skeleton.c \
-	NUS_joint_pose.c NUS_pose_skeleton.c NUS_keyframe.c NUS_animation.c
+MOD_SRC_FILES=NUS_model.c NUS_vertex.c NUS_skeleton.c \
+	NUS_keyframe.c NUS_animation.c NUS_binary_model.c
 MOD_DIR=model
 
-NUSM_SRC_FILES=NUS_load.c NUS_read.c NUS_store.c NUS_validate.c
+NUSM_SRC_FILES=NUS_load.c NUS_store.c NUS_read.c NUS_validate.c
 NUSM_DIR=NUSM
 
 COL_SRC_FILES=NUS_collidable.c NUS_aabb.c NUS_collision_info.c NUS_collision_type.c \

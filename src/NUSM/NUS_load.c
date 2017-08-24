@@ -11,13 +11,13 @@
 #include <stb_image.h> // Include library for loading images
 
 struct aiNode *nusm_find_node(struct aiNode *, char *);
-NUS_result nusm_load_animation(NUS_binary_model_animation *, struct aiAnimation *);
+NUS_result nusm_load_animation(NUS_animation *, struct aiAnimation *);
 
 NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
 {
   const struct aiScene* scene;
   struct aiMesh *mesh;
-  NUS_binary_model_vertex *p_vertex;
+  NUS_vertex *p_vertex;
   unsigned int i,
     j,
     k;
@@ -41,15 +41,16 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
     return NUS_FAILURE;
   }
   
-  int vertex_count = mesh->mNumVertices;
-  int index_count = mesh->mNumFaces * 3;
+  p_binary_model->vertex_count = mesh->mNumVertices;
+  p_binary_model->index_count = mesh->mNumFaces * 3;
 
   printf("Vertices\n");
-
-  p_binary_model->vertex_data_size = vertex_count * NUS_BINARY_MODEL_VERTEX_SIZE;
-  p_binary_model->vertices = malloc(p_binary_model->vertex_data_size);
   
-  for(i = 0; i < vertex_count; ++i){
+  printf("\tCount: %d\n", p_binary_model->vertex_count);
+  p_binary_model->vertices = malloc(p_binary_model->vertex_count *
+				    sizeof(*p_binary_model->vertices));
+  
+  for(i = 0; i < p_binary_model->vertex_count; ++i){
     // Strores vertex position data
     p_binary_model->vertices[i].position[0] = mesh->mVertices[i].x;
     p_binary_model->vertices[i].position[1] = mesh->mVertices[i].y;
@@ -74,20 +75,17 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
     p_binary_model->vertices[i].bone_indices[2] = 0;
     p_binary_model->vertices[i].bone_indices[3] = 0;
   }
-  printf("\tCount: %d\n\tSize: %zu\n", vertex_count,
-	 p_binary_model->vertex_data_size);
   
   printf("Indices\n");
-  p_binary_model->index_data_size = index_count * NUS_BINARY_MODEL_INDEX_SIZE;
-  p_binary_model->indices = malloc(p_binary_model->index_data_size);
+  printf("\tCount: %d\n", p_binary_model->index_count);
+  p_binary_model->indices = malloc(p_binary_model->index_count *
+				   sizeof(*p_binary_model->indices));
   // Store index data
   for(i = 0; i < mesh->mNumFaces; ++i){
     p_binary_model->indices[(3 * i)] = mesh->mFaces[i].mIndices[0];
     p_binary_model->indices[(3 * i) + 1] = mesh->mFaces[i].mIndices[1];
     p_binary_model->indices[(3 * i) + 2] = mesh->mFaces[i].mIndices[2];
   }
-  printf("\tCount: %d\n\tSize: %zu\n", index_count,
-	 p_binary_model->index_data_size);
   
   printf("Texture\n");
   // Load texture file path
@@ -97,39 +95,36 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
   printf("\tFile Name: %s\n", texture_path.data);
   
   // Load texture
-  int texture_channels,
-    width,
-    height;
+  int texture_channels;
   
-  void *data = stbi_load(texture_path.data, &width, &height,
+  void *data = stbi_load(texture_path.data, (int*)&p_binary_model->texture_width,
+			 (int*)&p_binary_model->texture_height,
 			 &texture_channels, STBI_rgb_alpha);
   if (data == NULL) {
     printf("NUSM_ERROR::failed to load texture data\n");
       return NUS_FAILURE;
   }
   
-  p_binary_model->texture_width = width;
-  p_binary_model->texture_height = height;
-  p_binary_model->texture_data_size = width * height * 4;
+  p_binary_model->texture_data_size = p_binary_model->texture_width *
+    p_binary_model->texture_height * texture_channels;
   
-  printf("\tWidth: %zu\n\tHeight: %zu\n\tSize: %zu\n", p_binary_model->texture_width,
+  printf("\tWidth: %d\n\tHeight: %d\n\tSize: %d\n", p_binary_model->texture_width,
 	 p_binary_model->texture_height, p_binary_model->texture_data_size);
-  // 1 byte for each component of rgba
   
   p_binary_model->texture_data = malloc(p_binary_model->texture_data_size);
   memcpy(p_binary_model->texture_data, data, p_binary_model->texture_data_size);
   free(data);
 
   printf("Skeleton\n");
-  p_binary_model->joint_count = 0;
-  p_binary_model->skeleton_data_size = 0;
+  p_binary_model->skeleton.joint_count = 0;
   p_binary_model->animation_count = 0;
   if(mesh->mNumBones){
     printf("\tBone Count: %d\n", mesh->mNumBones);
-    p_binary_model->joint_count = mesh->mNumBones;
-    p_binary_model->skeleton_data_size =
-      sizeof(*p_binary_model->skeleton_joints) * mesh->mNumBones;
-    p_binary_model->skeleton_data = malloc(p_binary_model->skeleton_data_size);
+    p_binary_model->skeleton.joint_count = mesh->mNumBones;
+    p_binary_model->skeleton.joints = malloc(sizeof(*p_binary_model->skeleton.joints) *
+					     mesh->mNumBones);
+    memset(p_binary_model->skeleton.joints, 0,
+	   sizeof(*p_binary_model->skeleton.joints) * mesh->mNumBones);
     
     for(i = 0; i < mesh->mNumBones; ++i){
       // For each bone
@@ -138,7 +133,7 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
       printf("\t\tCount of affected vertices: %d\n", mesh->mBones[i]->mNumWeights);
 
       // Record skeleton data
-      memcpy(&p_binary_model->skeleton_joints[i].inv_bind_pose,
+      memcpy(&p_binary_model->skeleton.joints[i].inv_bind_pose,
 	     &mesh->mBones[i]->mOffsetMatrix, sizeof(mesh->mBones[i]->mOffsetMatrix));
 
       char parent_name[100];
@@ -149,13 +144,13 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
 
       for(j = 0; j < mesh->mNumBones; ++j){
 	if(strcmp(parent_name, mesh->mBones[j]->mName.data) == 0){
-	  p_binary_model->skeleton_joints[i].parent_index = j;
+	  p_binary_model->skeleton.joints[i].parent_index = j;
 	  break;
 	}
       }
-      memset(p_binary_model->skeleton_joints[i].name, 0,
-	     sizeof(p_binary_model->skeleton_joints[i].name));
-      strcpy(p_binary_model->skeleton_joints[i].name, mesh->mBones[i]->mName.data);
+      memset(p_binary_model->skeleton.joints[i].name, 0,
+	     sizeof(p_binary_model->skeleton.joints[i].name));
+      strcpy(p_binary_model->skeleton.joints[i].name, mesh->mBones[i]->mName.data);
       
       int lowest_weight_i = 0;
       for(j = 0; j < mesh->mBones[i]->mNumWeights; ++j){
@@ -181,11 +176,11 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
       printf("Animations\n");
       printf("\tCount: %d\n", scene->mNumAnimations);
       p_binary_model->animation_count = scene->mNumAnimations;
-      p_binary_model->p_animations = malloc(sizeof(*p_binary_model->p_animations) *
+      p_binary_model->animations = malloc(sizeof(*p_binary_model->animations) *
 					    scene->mNumAnimations);
       for(i = 0; i < scene->mNumAnimations; ++i){
 	printf("\tAnimation %d\n", i);
-	if(nusm_load_animation(p_binary_model->p_animations + i,
+	if(nusm_load_animation(p_binary_model->animations + i,
 			       scene->mAnimations[i]) != NUS_SUCCESS){
 	  printf("NUSM_ERROR::failed to load animation %d\n", i);
 	  return NUS_FAILURE;
@@ -219,7 +214,7 @@ struct aiNode *nusm_find_node(struct aiNode *node, char *node_name)
   return NULL;
 }
 NUS_result nusm_load_animation
-(NUS_binary_model_animation *p_binary_animation, struct aiAnimation *p_animation)
+(NUS_animation *p_animation, struct aiAnimation *p_ai_animation)
 {
   float t;
   int frame_count,
@@ -230,21 +225,21 @@ NUS_result nusm_load_animation
     k;
   struct aiNodeAnim *p_channel;
   
-  char frame_exist_tracker[(int)p_animation->mDuration + 1];
+  char frame_exist_tracker[(int)p_ai_animation->mDuration + 1];
   memset(frame_exist_tracker, 0, sizeof(frame_exist_tracker));
   
-  printf("\t\tFull Name: %s\n", p_animation->mName.data);
+  printf("\t\tFull Name: %s\n", p_ai_animation->mName.data);
   // Name skips the "Armature|" that is seen at the beginning of the full name
   printf("\t\tName: %s\n",
-	 p_animation->mName.data + 9);
+	 p_ai_animation->mName.data + 9);
   printf("\t\tDuration: %f seconds\n",
-	 p_animation->mDuration /
-	 p_animation->mTicksPerSecond);
-  printf("\t\tChannel Count: %d\n", p_animation->mNumChannels);
+	 p_ai_animation->mDuration /
+	 p_ai_animation->mTicksPerSecond);
+  printf("\t\tChannel Count: %d\n", p_ai_animation->mNumChannels);
   frame_count = 0;
-  for(i = 0; i < p_animation->mNumChannels; ++i){
+  for(i = 0; i < p_ai_animation->mNumChannels; ++i){
     // For each bone
-    p_channel = p_animation->mChannels[i];
+    p_channel = p_ai_animation->mChannels[i];
     printf("\t\t\tChannel: %s\n", p_channel->mNodeName.data);
     if(p_channel->mNumPositionKeys != p_channel->mNumRotationKeys ||
        p_channel->mNumRotationKeys != p_channel->mNumScalingKeys){
@@ -261,16 +256,14 @@ NUS_result nusm_load_animation
   }
   
   printf("\t\tFrame Count: %d\n", frame_count);
-  p_binary_animation->keyframe_count = frame_count;
-  p_binary_animation->p_keyframe_joints =
-    malloc(sizeof(*p_binary_animation->p_keyframe_joints) *
-	   (p_animation->mNumChannels - 1) * frame_count);
-  p_binary_animation->p_times =
-    malloc(sizeof(*p_binary_animation->p_times) * frame_count);
+  p_animation->frame_count = frame_count;
+  p_animation->keyframes = malloc(sizeof(*p_animation->keyframes) *
+				  (p_ai_animation->mNumChannels - 1) * frame_count);
+  p_animation->times = malloc(sizeof(*p_animation->times) * frame_count);
   
   frame_count = 0;
   
-  for(i = 0; i <= (int)p_animation->mDuration; ++i){
+  for(i = 0; i <= (int)p_ai_animation->mDuration; ++i){
     // For each tick
     
     if(frame_exist_tracker[i] == 0){
@@ -278,11 +271,14 @@ NUS_result nusm_load_animation
       continue;
     }
     // Time in [0, 1] of animation duration
-    p_binary_animation->p_times[frame_count] = (float)i / p_animation->mDuration;
+    p_animation->times[frame_count] = (float)i / p_ai_animation->mDuration;
+    p_animation->keyframes[frame_count].joints =
+      malloc(sizeof(*p_animation->keyframes[frame_count].joints) *
+	     (p_ai_animation->mNumChannels - 1));
     
-    for(j = 0; j < p_animation->mNumChannels - 1; ++j){
+    for(j = 0; j < p_ai_animation->mNumChannels - 1; ++j){
       // For each bone
-      p_channel = p_animation->mChannels[j + 1];
+      p_channel = p_ai_animation->mChannels[j + 1];
       pre_index = 0;
       post_index = 0;
       
@@ -294,13 +290,12 @@ NUS_result nusm_load_animation
 	  break;
 	}
       }
-      
       t = (float)(i - p_channel->mRotationKeys[pre_index].mTime) /
 	(p_channel->mRotationKeys[post_index].mTime -
 	 p_channel->mRotationKeys[pre_index].mTime);
+      
       // Lerp and store each transformation element
-      p_binary_animation->p_keyframe_joints[frame_count *
-					    (p_animation->mNumChannels - 1) + j] =
+      p_animation->keyframes[frame_count].joints[j] =
 	(NUS_keyframe_joint){
 	.rotation = {
 	  .w = t * p_channel->mRotationKeys[pre_index].mValue.w + 

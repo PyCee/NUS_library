@@ -2,56 +2,29 @@
 #define NUS_BINARY_MODEL_H
 
 #include <stdlib.h>
+#include "NUS_vertex.h"
 #include "NUS_skeleton.h"
-#include "NUS_pose_skeleton.h"
-#include "NUS_keyframe.h"
+#include "NUS_animation.h"
+#include <stdint.h>
 
-typedef struct NUS_binary_model_vertex{
-  float position[3],
-    normal[3],
-    tex_coords[2],
-    bone_weight[4];
-  int bone_indices[4];
-} NUS_binary_model_vertex;
-#define NUS_BINARY_MODEL_VERTEX_SIZE sizeof(NUS_binary_model_vertex)
-
-#define NUS_BINARY_MODEL_INDEX_SIZE sizeof(unsigned int)
-
-typedef struct NUS_binary_model_animation{
-  NUS_keyframe_joint *p_keyframe_joints;
-  unsigned int *p_times,
-    keyframe_count;
-} NUS_binary_model_animation;
-#define NUS_BINARY_MODEL_JOINT_SIZE sizeof(NUS_keyframe_joint)
-
-#define NUS_BINARY_MODEL_SIZE_COUNT 8
+#define NUS_BINARY_MODEL_SIZE_COUNT 6
 // Number of size_t at the beginning of NUS_binary_model
 
+typedef uint32_t NUS_indice;
+
 typedef struct NUS_binary_model{
-  size_t vertex_data_size,
-    index_data_size,
+  uint32_t vertex_count,
+    index_count,
     texture_width,
     texture_height,
     texture_data_size,
-    joint_count,
-    skeleton_data_size,
     animation_count;
 
-  union{
-    NUS_binary_model_vertex *vertices;
-    void *vertex_data;
-  };
-  union{
-    unsigned int *indices;
-    void *index_data;
-  };
+  NUS_vertex *vertices;
+  NUS_indice *indices;
   void *texture_data;
-  union{
-    NUS_skeleton_joint *skeleton_joints;
-    void *skeleton_data;
-  };
-  NUS_binary_model_animation *p_animations;
-  
+  NUS_skeleton skeleton;
+  NUS_animation *animations;
 } NUS_binary_model;
 
 void nus_binary_model_free(NUS_binary_model *);

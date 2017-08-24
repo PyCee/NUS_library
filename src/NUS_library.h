@@ -47,13 +47,11 @@
 #include "physics/collision/NUS_capsule.h"
 
 #include "model/NUS_model.h"
-#include "model/NUS_binary_model.h"
 #include "model/NUS_vertex.h"
 #include "model/NUS_skeleton.h"
-#include "model/NUS_pose_skeleton.h"
-#include "model/NUS_joint_pose.h"
 #include "model/NUS_keyframe.h"
 #include "model/NUS_animation.h"
+#include "model/NUS_binary_model.h"
 
 #include "NUSM/NUS_load.h"
 #include "NUSM/NUS_store.h"

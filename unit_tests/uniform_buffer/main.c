@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
 
   VkVertexInputBindingDescription vertex_binding_description = {
     .binding = 0,//
-    .stride = (unsigned int)NUSM_VERTEX_BYTE_COUNT,//
+    .stride = (unsigned int)sizeof(NUS_vertex),//
     .inputRate = VK_VERTEX_INPUT_RATE_VERTEX//
   };
   VkVertexInputAttributeDescription vertex_attribute_description[] = {
@@ -598,7 +598,8 @@ int main(int argc, char *argv[])
   vkCmdBindIndexBuffer(command_buffer, model.index_memory.buffer, index_memory_offset,
 			VK_INDEX_TYPE_UINT32);
 
-  vkCmdDrawIndexed(command_buffer, model.contents.index_data_size/4, 1, 0, 0, 0);
+  vkCmdDrawIndexed(command_buffer, model.index_memory.size/sizeof(NUS_indice),
+		   1, 0, 0, 0);
     
   vkCmdEndRenderPass(command_buffer);
   
