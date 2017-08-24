@@ -16,11 +16,14 @@ LINK=-lNUS_library -lassimp -lm
 OBJ=src/main.o
 
 TARGET=NUSM
+EXE:=~/bin/$(TARGET)
 
 rebuild: clean $(TARGET)
 
 $(TARGET): $(OBJ)
 	gcc -o $@ $(OBJ) $(LINK)
+	@if [ "-a $(EXE)" ] ; then rm $(EXE) ; fi;
+	@cp $(TARGET) ~/bin/
 .c.o:
 	@echo "Compiling File: $<"
 	@$(CC) $(CFLAGS) -c $<  -o $@

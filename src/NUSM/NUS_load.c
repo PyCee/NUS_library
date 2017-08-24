@@ -1,4 +1,5 @@
 #include "NUS_load.h"
+#include "../NUS_log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,11 +37,6 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
   }
   mesh = scene->mMeshes[0];
   
-  if(!mesh->mTextureCoords[0]){
-    printf("NUSM_ERROR::model does not support texturing\n");
-    return NUS_FAILURE;
-  }
-  
   p_binary_model->vertex_count = mesh->mNumVertices;
   p_binary_model->index_count = mesh->mNumFaces * 3;
 
@@ -49,6 +45,8 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
   printf("\tCount: %d\n", p_binary_model->vertex_count);
   p_binary_model->vertices = malloc(p_binary_model->vertex_count *
 				    sizeof(*p_binary_model->vertices));
+  memset(p_binary_model->vertices, 0,
+	 p_binary_model->vertex_count * sizeof(*p_binary_model->vertices));
   
   for(i = 0; i < p_binary_model->vertex_count; ++i){
     // Strores vertex position data
@@ -60,20 +58,6 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
     p_binary_model->vertices[i].normal[0] = mesh->mNormals[i].x;
     p_binary_model->vertices[i].normal[1] = mesh->mNormals[i].y;
     p_binary_model->vertices[i].normal[2] = mesh->mNormals[i].z;
-
-    // Stores vertex texture coord data
-    p_binary_model->vertices[i].tex_coords[0] = mesh->mTextureCoords[0][i].x;
-    p_binary_model->vertices[i].tex_coords[1] = mesh->mTextureCoords[0][i].y;
-
-    p_binary_model->vertices[i].bone_weight[0] = 0.0;
-    p_binary_model->vertices[i].bone_weight[1] = 0.0;
-    p_binary_model->vertices[i].bone_weight[2] = 0.0;
-    p_binary_model->vertices[i].bone_weight[3] = 0.0;
-    
-    p_binary_model->vertices[i].bone_indices[0] = 0;
-    p_binary_model->vertices[i].bone_indices[1] = 0;
-    p_binary_model->vertices[i].bone_indices[2] = 0;
-    p_binary_model->vertices[i].bone_indices[3] = 0;
   }
   
   printf("Indices\n");
@@ -86,35 +70,49 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
     p_binary_model->indices[(3 * i) + 1] = mesh->mFaces[i].mIndices[1];
     p_binary_model->indices[(3 * i) + 2] = mesh->mFaces[i].mIndices[2];
   }
+
   
-  printf("Texture\n");
-  // Load texture file path
-  struct aiString texture_path;
-  aiGetMaterialString(scene->mMaterials[mesh->mMaterialIndex],
-		      AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), &texture_path);
-  printf("\tFile Name: %s\n", texture_path.data);
-  
-  // Load texture
-  int texture_channels;
-  
-  void *data = stbi_load(texture_path.data, (int*)&p_binary_model->texture_width,
-			 (int*)&p_binary_model->texture_height,
-			 &texture_channels, STBI_rgb_alpha);
-  if (data == NULL) {
-    printf("NUSM_ERROR::failed to load texture data\n");
+  if(mesh->mTextureCoords[0]){
+    printf("Texture\n");
+    
+    for(i = 0; i < p_binary_model->vertex_count; ++i){
+      // Stores vertex texture coord data
+      p_binary_model->vertices[i].tex_coords[0] = mesh->mTextureCoords[0][i].x;
+      p_binary_model->vertices[i].tex_coords[1] = mesh->mTextureCoords[0][i].y;
+    }
+    
+    // Load texture file path
+    struct aiString texture_path;
+    aiGetMaterialString(scene->mMaterials[mesh->mMaterialIndex],
+			AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), &texture_path);
+    printf("\tFile Name: %s\n", texture_path.data);
+    
+    // TODO: check texture name to determine if texturing is supported
+    
+    // Load texture
+    int texture_channels;
+    
+    void *data = stbi_load(texture_path.data, (int*)&p_binary_model->texture_width,
+			   (int*)&p_binary_model->texture_height,
+			   &texture_channels, STBI_rgb_alpha);
+    if(data == NULL) {
+      NUS_LOG_ERROR("texturing supported, but texture data not found\n");
       return NUS_FAILURE;
+    }
+    p_binary_model->texture_data_size = p_binary_model->texture_width *
+      p_binary_model->texture_height * texture_channels;
+    
+    printf("\tWidth: %d\n\tHeight: %d\n\tSize: %d\n", p_binary_model->texture_width,
+	   p_binary_model->texture_height, p_binary_model->texture_data_size);
+    
+    p_binary_model->texture_data = malloc(p_binary_model->texture_data_size);
+    memcpy(p_binary_model->texture_data, data, p_binary_model->texture_data_size);
+    free(data);
+  } else {
+    p_binary_model->texture_data_size = 0;
+    NUS_LOG_WARNING("model has no texture\n");
   }
   
-  p_binary_model->texture_data_size = p_binary_model->texture_width *
-    p_binary_model->texture_height * texture_channels;
-  
-  printf("\tWidth: %d\n\tHeight: %d\n\tSize: %d\n", p_binary_model->texture_width,
-	 p_binary_model->texture_height, p_binary_model->texture_data_size);
-  
-  p_binary_model->texture_data = malloc(p_binary_model->texture_data_size);
-  memcpy(p_binary_model->texture_data, data, p_binary_model->texture_data_size);
-  free(data);
-
   printf("Skeleton\n");
   p_binary_model->skeleton.joint_count = 0;
   p_binary_model->animation_count = 0;

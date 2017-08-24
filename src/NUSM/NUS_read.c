@@ -60,12 +60,14 @@ NUS_result nusm_read
   }
   
   /* Read Texture Data */
-  p_binary_model->texture_data = malloc(p_binary_model->texture_data_size);
-  if(!fread(p_binary_model->texture_data, p_binary_model->texture_data_size, 1,
-		    input_file)){
-    NUS_LOG_ERROR("could not read texture data\n");
-    NUS_LOG_ERROR("ferror = %d\nfeof = %d\n", ferror(input_file), feof(input_file));
-    return NUS_FAILURE;
+  if(p_binary_model->texture_data_size){
+    p_binary_model->texture_data = malloc(p_binary_model->texture_data_size);
+    if(!fread(p_binary_model->texture_data, p_binary_model->texture_data_size, 1,
+	      input_file)){
+      NUS_LOG_ERROR("could not read texture data\n");
+      NUS_LOG_ERROR("ferror = %d\nfeof = %d\n", ferror(input_file), feof(input_file));
+      return NUS_FAILURE;
+    }
   }
 
   /* Read Skeleton Data */
@@ -75,14 +77,15 @@ NUS_result nusm_read
     NUS_LOG_ERROR("ferror = %d\nfeof = %d\n", ferror(input_file), feof(input_file));
     return NUS_FAILURE;
   }
-
-  size_t joint_data_size = p_binary_model->skeleton.joint_count *
-    sizeof(*p_binary_model->skeleton.joints);
-  p_binary_model->skeleton.joints = malloc(joint_data_size);
-  if(!fread(p_binary_model->skeleton.joints, joint_data_size, 1, input_file)){
-    NUS_LOG_ERROR("could not read skeleton joints\n");
-    NUS_LOG_ERROR("ferror = %d\nfeof = %d\n", ferror(input_file), feof(input_file));
-    return NUS_FAILURE;
+  if(p_binary_model->skeleton.joint_count){
+    size_t joint_data_size = p_binary_model->skeleton.joint_count *
+      sizeof(*p_binary_model->skeleton.joints);
+    p_binary_model->skeleton.joints = malloc(joint_data_size);
+    if(!fread(p_binary_model->skeleton.joints, joint_data_size, 1, input_file)){
+      NUS_LOG_ERROR("could not read skeleton joints\n");
+      NUS_LOG_ERROR("ferror = %d\nfeof = %d\n", ferror(input_file), feof(input_file));
+      return NUS_FAILURE;
+    }
   }
   
   /* Read Animation Data */

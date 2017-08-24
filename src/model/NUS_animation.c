@@ -41,9 +41,11 @@ NUS_animation nus_animation_build
 void nus_animation_free(NUS_animation *p_animation)
 {
   int i;
-  for(i = 0; i < p_animation->frame_count; ++i){
-    free(p_animation->keyframes[i].joints);
+  if(p_animation->frame_count){
+    for(i = 0; i < p_animation->frame_count; ++i){
+      free(p_animation->keyframes[i].joints);
+    }
+    free(p_animation->keyframes);
+    free(p_animation->times);
   }
-  free(p_animation->keyframes);
-  free(p_animation->times);
 }

@@ -130,6 +130,7 @@ compile: $(NUS_OBJ)
 	@sudo cp $(addprefix $(SRC_DIR)/, $(TIME_HEA)) /usr/local/include/NUS/$(TIME_DIR)/
 	@sudo cp $(addprefix $(SRC_DIR)/, $(OTH_HEA)) /usr/local/include/NUS/
 recompile: clean all
+	cd NUSM/; make
 .c.o:
 	@echo "Compiling File: $<"
 	@$(CC) $(CFLAGS) -c $<  -o $@

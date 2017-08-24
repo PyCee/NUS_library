@@ -14,8 +14,10 @@ NUS_skeleton nus_skeleton_build(void *data)
 }
 void nus_skeleton_free(NUS_skeleton *p_skeleton)
 {
-  free(p_skeleton->joints);
-  p_skeleton->joints = NULL;
+  if(p_skeleton->joint_count){
+    free(p_skeleton->joints);
+    p_skeleton->joints = NULL;
+  }
   p_skeleton->joint_count = 0;
 }
 

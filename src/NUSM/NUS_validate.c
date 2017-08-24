@@ -42,21 +42,25 @@ NUS_result nusm_validate
   }
   
   // Validate Texture Data
-  if(memcmp(read_model.texture_data, p_binary_model->texture_data,
-	     read_model.texture_data_size)){
-    NUS_LOG_ERROR("failed to validate texture data\n");
+  if(read_model.texture_data_size){
+    if(memcmp(read_model.texture_data, p_binary_model->texture_data,
+	      read_model.texture_data_size)){
+      NUS_LOG_ERROR("failed to validate texture data\n");
       return NUS_FAILURE;
+    }
   }
 
-  // Validate Skeleton Data 
+  // Validate Skeleton Data
   if(read_model.skeleton.joint_count != p_binary_model->skeleton.joint_count){
     NUS_LOG_ERROR("failed to validate skeleton joint count\n");
     return NUS_FAILURE;
   }
-  if(memcmp(read_model.skeleton.joints, p_binary_model->skeleton.joints,
-	     sizeof(*read_model.skeleton.joints) * read_model.skeleton.joint_count)){
-    NUS_LOG_ERROR("failed to validate skeleton joints\n");
-    return NUS_FAILURE;
+  if(read_model.skeleton.joint_count){
+    if(memcmp(read_model.skeleton.joints, p_binary_model->skeleton.joints,
+	      sizeof(*read_model.skeleton.joints) * read_model.skeleton.joint_count)){
+      NUS_LOG_ERROR("failed to validate skeleton joints\n");
+      return NUS_FAILURE;
+    }
   }
   
   // Validate Animation Data 
@@ -86,7 +90,8 @@ NUS_result nusm_validate
       }
     }
   }
-
+  NUS_LOG("freeing\n");
   nus_binary_model_free(&read_model);
+  NUS_LOG("freed\n");
   return NUS_SUCCESS;
 }
