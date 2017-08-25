@@ -73,10 +73,7 @@ NUS_result nus_model_build(NUS_absolute_path absolute_path, NUS_model *p_model)
       for(i = 0; i < binary_model.animation_count; ++i){
 	p_model->animations[i] =
 	  nus_animation_build(&p_model->skeleton, (void*)(binary_model.animations + i));
-	p_model->has_animations = NUS_TRUE;
       }
-    } else{
-      p_model->has_animations = NUS_FALSE;
     }
     p_model->has_skeleton = NUS_TRUE;
   } else{
@@ -98,7 +95,7 @@ void nus_model_free(NUS_model *p_model)
   if(p_model->has_skeleton == NUS_TRUE){
     nus_skeleton_free(&p_model->skeleton);
   }
-  if(p_model->has_animations == NUS_TRUE){
+  if(p_model->animation_count){
     for(int i = 0; i < p_model->animation_count; ++i){
       nus_animation_free(p_model->animations + i);
     }

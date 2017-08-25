@@ -5,10 +5,14 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#define NUS_ANIMATION_NAME_SIZE 64
+
 struct NUS_skeleton;
 
 typedef struct NUS_animation{
   struct NUS_skeleton *p_skeleton;
+  char name[NUS_ANIMATION_NAME_SIZE];
+  float duration;// Duration of the animation (in seconds)
   uint32_t frame_count;
   float *times;// Time of each keyframe in (0, 1) of the animations duration
   NUS_keyframe *keyframes;

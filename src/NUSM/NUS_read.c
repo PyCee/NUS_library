@@ -94,7 +94,23 @@ NUS_result nusm_read
 					sizeof(*p_binary_model->animations));
   for(i = 0; i < p_binary_model->animation_count; ++i){
     // For each animation
-
+    
+    // Read name
+    if(!fread(&p_binary_model->animations[i].name,
+	      NUS_ANIMATION_NAME_SIZE, 1, input_file)){
+      NUS_LOG_ERROR("could not read animation name\n");
+      NUS_LOG_ERROR("ferror = %d\nfeof = %d\n", ferror(input_file), feof(input_file));
+      return NUS_FAILURE;
+    }
+    
+    // Read duration
+    if(!fread(&p_binary_model->animations[i].duration,
+	      sizeof(p_binary_model->animations[i].duration), 1, input_file)){
+      NUS_LOG_ERROR("could not read animation duration\n");
+      NUS_LOG_ERROR("ferror = %d\nfeof = %d\n", ferror(input_file), feof(input_file));
+      return NUS_FAILURE;
+    }
+    
     // Read keyframe count
     if(!fread(&p_binary_model->animations[i].frame_count,
 	      sizeof(p_binary_model->animations[i].frame_count), 1, input_file)){

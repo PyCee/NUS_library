@@ -11,24 +11,36 @@ NUS_animation nus_animation_build
   size_t joint_data_size,
     times_data_size;
   animation.p_skeleton = p_skeleton;
-
-  // Increment data to point to the frame_count
+  // Increment data to point to the name
   data = ((char*)data) + sizeof(animation.p_skeleton);
-  
-  animation.frame_count = *(unsigned int*)data;
 
+  // Get animation name
+  memcpy(animation.name, data, NUS_ANIMATION_NAME_SIZE);
+  // Increment data to point to the duration
+  data = ((char*)data) + NUS_ANIMATION_NAME_SIZE;
+
+  // Get duration
+  animation.duration = *(float*)data;
   // Increment data to point to the first time
-  data = ((uint16_t*)data) + 1;
+  data = ((float*)data) + 1;
   
+  // Get frame count
+  animation.frame_count = *(uint32_t*)data;
+  // Increment data to point to the first time
+  data = ((uint32_t*)data) + 1;
+
+  // Get frame times
   times_data_size = sizeof(*animation.times) * animation.frame_count;
   animation.times = malloc(times_data_size);
   memcpy(animation.times, data, times_data_size);
-
   // Increment data to point to the first joint
   data = (char*)data + times_data_size;
-  
+
+  // Get all keyframe joint data
   animation.keyframes = malloc(sizeof(*animation.keyframes) * animation.frame_count);
   for(i = 0; i < animation.frame_count; ++i){
+    // For each frame
+    // Get frame data (of all joints)
     joint_data_size = sizeof(*animation.keyframes[i].joints) * p_skeleton->joint_count;
     animation.keyframes[i].joints = malloc(joint_data_size);
     memcpy(animation.keyframes[i].joints, data, joint_data_size);

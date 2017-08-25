@@ -65,9 +65,19 @@ NUS_result nusm_store(char *file_path, NUS_binary_model *p_binary_model)
   
   /* Output Animation Data  */
   for(uint32_t i = 0; i < p_binary_model->animation_count; ++i){
+    if(!fwrite(&p_binary_model->animations[i].name,
+	       NUS_ANIMATION_NAME_SIZE, 1, output_file)){
+      NUS_LOG_ERROR("failed to write animation name\n");
+      return NUS_FAILURE;
+    }
+    if(!fwrite(&p_binary_model->animations[i].duration,
+	       sizeof(p_binary_model->animations[i].duration), 1, output_file)){
+      NUS_LOG_ERROR("failed to write animation duration\n");
+      return NUS_FAILURE;
+    }
     if(!fwrite(&p_binary_model->animations[i].frame_count,
 	       sizeof(p_binary_model->animations[i].frame_count), 1, output_file)){
-      NUS_LOG_ERROR("failed to write animation %d keyframe count data\n", i);
+      NUS_LOG_ERROR("failed to write animation %d keyframe count\n", i);
       return NUS_FAILURE;
     }
     if(!fwrite(p_binary_model->animations[i].times,

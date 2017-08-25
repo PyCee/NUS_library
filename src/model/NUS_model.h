@@ -20,7 +20,6 @@ typedef struct NUS_model{
   NUS_animation *animations;
   unsigned int has_texture,
     has_skeleton,
-    has_animations,
     animation_count;
   NUS_binding binding;
 } NUS_model;

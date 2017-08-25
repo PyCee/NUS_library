@@ -87,6 +87,10 @@ int main(int argc, char *argv[])
     return -1;
   }
 
+  for(unsigned int i = 0; i < model.animation_count; ++i){
+    NUS_LOG("animation %d name: %s\n", i, model.animations[i].name);
+  }
+
   
   run = 0;
   while(run){
@@ -111,6 +115,7 @@ int main(int argc, char *argv[])
 
   vkDeviceWaitIdle(nus_get_bound_device());
   
+  nus_model_free(&model);
   
   nus_presentation_surface_free(vulkan_instance, &present);
   nus_multi_gpu_free(&multi_gpu);

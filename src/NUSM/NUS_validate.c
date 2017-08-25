@@ -66,12 +66,30 @@ NUS_result nusm_validate
   // Validate Animation Data 
   for(i = 0; i < p_binary_model->animation_count; ++i){
     // For each animation
+
+    // Validate animation name
+    if(strcmp(read_model.animations[i].name,
+	      p_binary_model->animations[i].name)){
+      NUS_LOG_ERROR("failed to validate animation name\n");
+      return NUS_FAILURE;
+    }
+
+    // Validate animation frame count
+    if(memcmp(&read_model.animations[i].duration,
+	      &p_binary_model->animations[i].duration,
+	      sizeof(read_model.animations[i].duration))){
+      NUS_LOG_ERROR("failed to validate animation duration\n");
+      return NUS_FAILURE;
+    }
     
+    // Validate animation frame count
     if(read_model.animations[i].frame_count !=
        p_binary_model->animations[i].frame_count){
       NUS_LOG_ERROR("failed to validate animation keyframe count\n");
       return NUS_FAILURE;
     }
+
+    // Validate animation times
     if(memcmp(read_model.animations[i].times, p_binary_model->animations[i].times,
 	       sizeof(*read_model.animations[i].times) *
 	       read_model.animations[i].frame_count)){

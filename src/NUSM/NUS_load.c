@@ -228,11 +228,15 @@ NUS_result nusm_load_animation
   
   printf("\t\tFull Name: %s\n", p_ai_animation->mName.data);
   // Name skips the "Armature|" that is seen at the beginning of the full name
-  printf("\t\tName: %s\n",
-	 p_ai_animation->mName.data + 9);
-  printf("\t\tDuration: %f seconds\n",
-	 p_ai_animation->mDuration /
-	 p_ai_animation->mTicksPerSecond);
+
+  if(strlen(p_ai_animation->mName.data) - 9 > NUS_ANIMATION_NAME_SIZE){
+    NUS_LOG_ERROR("animation name is too long\n");
+    return NUS_FAILURE;
+  }
+  strcpy(p_animation->name, p_ai_animation->mName.data + 9);
+  printf("\t\tName: %s\n", p_animation->name);
+  p_animation->duration = p_ai_animation->mDuration / p_ai_animation->mTicksPerSecond;
+  printf("\t\tDuration: %f seconds\n", p_animation->duration);
   printf("\t\tChannel Count: %d\n", p_ai_animation->mNumChannels);
   frame_count = 0;
   for(i = 0; i < p_ai_animation->mNumChannels; ++i){
