@@ -182,8 +182,9 @@ int main(int argc, char *argv[])
 			     nus_vector_build(1.0, 0.0, 0.0));
   test_axes = nus_axes_global_rotation(test_axes, test_quaternion_0);
   test_vector = nus_vector_build(-1.5, 3.14159, 2.1);
-  test_matrix = nus_matrix_transformation(nus_vector_build(1.2, 2.3, 3.4),
-					  nus_vector_build(1.0, 1.0, 1.0), test_axes);
+  test_matrix = nus_matrix_build_transformation(nus_vector_build(1.2, 2.3, 3.4),
+						nus_vector_build(1.0, 1.0, 1.0),
+						test_axes);
   test_vector = nus_matrix_transform(test_matrix, test_vector);
   if(nus_vector_cmp(nus_vector_build(0.131343, 5.441590, 1.050964),
 		    test_vector, 0.00001) == NUS_FALSE){
@@ -194,13 +195,22 @@ int main(int argc, char *argv[])
   // Test inverse matrix
   // Inverts and applies the transformation from the previous test to get
   //   the original vector
-  test_matrix = nus_matrix_inverted(test_matrix);
+  test_matrix = nus_matrix_inverse(test_matrix);
   test_vector = nus_matrix_transform(test_matrix, test_vector);
   if(nus_vector_cmp(test_vector, nus_vector_build(-1.5, 3.14159, 2.1),
 		    0.00001) == NUS_FALSE){
     UNIT_TEST_LOG_ERROR("failed to invert matrix\n");
     return -1;
   }
+  
+  
+  test_quaternion_0 = nus_quaternion_unit(nus_vector_build(0.0, 1.0, 0.0), 3.14159/2);
+  test_axes = nus_axes_build(nus_vector_build(0.0, 0.0, 1.0),
+			     nus_vector_build(0.0, 1.0, 0.0),
+			     nus_vector_build(1.0, 0.0, 0.0));
+  test_axes = nus_axes_global_rotation(test_axes, test_quaternion_0);
+  test_matrix = nus_matrix_rotation(test_axes);
+  nus_matrix_print(test_matrix);
   
   printf("Math tested successfully\n");
   printf("unit test %s completed\n", PROGRAM_NAME);

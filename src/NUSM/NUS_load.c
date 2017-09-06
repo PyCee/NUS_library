@@ -22,6 +22,7 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
   unsigned int i,
     j,
     k;
+  float weight_normalization;
   scene = aiImportFile(file_path,
 		       aiProcess_CalcTangentSpace       |
 		       aiProcess_FlipWindingOrder       |
@@ -58,6 +59,18 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
     p_binary_model->vertices[i].normal[0] = mesh->mNormals[i].x;
     p_binary_model->vertices[i].normal[1] = mesh->mNormals[i].y;
     p_binary_model->vertices[i].normal[2] = mesh->mNormals[i].z;
+
+    // Zero out the rest of the vertex data
+    p_binary_model->vertices[i].tex_coords[0] = 0.0;
+    p_binary_model->vertices[i].tex_coords[1] = 0.0;
+    p_binary_model->vertices[i].bone_weights[0] = 0.0;
+    p_binary_model->vertices[i].bone_weights[1] = 0.0;
+    p_binary_model->vertices[i].bone_weights[2] = 0.0;
+    p_binary_model->vertices[i].bone_weights[3] = 0.0;
+    p_binary_model->vertices[i].bone_indices[0] = 0;
+    p_binary_model->vertices[i].bone_indices[1] = 0;
+    p_binary_model->vertices[i].bone_indices[2] = 0;
+    p_binary_model->vertices[i].bone_indices[3] = 0;
   }
   
   printf("Indices\n");
@@ -87,8 +100,6 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
 			AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), &texture_path);
     printf("\tFile Name: %s\n", texture_path.data);
     
-    // TODO: check texture name to determine if texturing is supported
-    
     // Load texture
     int texture_channels;
     
@@ -102,8 +113,9 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
     p_binary_model->texture_data_size = p_binary_model->texture_width *
       p_binary_model->texture_height * texture_channels;
     
-    printf("\tWidth: %d\n\tHeight: %d\n\tSize: %d\n", p_binary_model->texture_width,
-	   p_binary_model->texture_height, p_binary_model->texture_data_size);
+    printf("\tWidth: %d\n\tHeight: %d\n\tChannel Count: %d\n\tSize: %d\n",
+	   p_binary_model->texture_width, p_binary_model->texture_height,
+	   texture_channels, p_binary_model->texture_data_size);
     
     p_binary_model->texture_data = malloc(p_binary_model->texture_data_size);
     memcpy(p_binary_model->texture_data, data, p_binary_model->texture_data_size);
@@ -140,12 +152,15 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
 			    mesh->mBones[i]->mName.data)->mParent->mName.data);
       printf("\t\tParent bone name: %s\n", parent_name);
 
+      p_binary_model->skeleton.joints[i].parent_index = -1;
       for(j = 0; j < mesh->mNumBones; ++j){
 	if(strcmp(parent_name, mesh->mBones[j]->mName.data) == 0){
 	  p_binary_model->skeleton.joints[i].parent_index = j;
 	  break;
 	}
       }
+      printf("\t\tParent index: %d\n", p_binary_model->skeleton.joints[i].parent_index);
+      
       memset(p_binary_model->skeleton.joints[i].name, 0,
 	     sizeof(p_binary_model->skeleton.joints[i].name));
       strcpy(p_binary_model->skeleton.joints[i].name, mesh->mBones[i]->mName.data);
@@ -156,17 +171,37 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
 	p_vertex = p_binary_model->vertices + mesh->mBones[i]->mWeights[j].mVertexId;
 	for(k = 1; k < 4; ++k){
 	  // For each weight of the current vertex
-	  if(p_vertex->bone_weight[k] < p_vertex->bone_weight[lowest_weight_i]){
+	  if(p_vertex->bone_weights[k] < p_vertex->bone_weights[lowest_weight_i]){
 	    // If k is the index of the lowest weight so far
 	    lowest_weight_i = k;
 	  }
 	}
 	if(mesh->mBones[i]->mWeights[j].mWeight >
-	   p_vertex->bone_weight[lowest_weight_i]){
+	   p_vertex->bone_weights[lowest_weight_i]){
 	  // If the bone's weight is greater than the vertexes lowest weight
-	  p_vertex->bone_weight[lowest_weight_i] = mesh->mBones[i]->mWeights[j].mWeight;
+	  p_vertex->bone_weights[lowest_weight_i] = mesh->mBones[i]->mWeights[j].mWeight;
 	  p_vertex->bone_indices[lowest_weight_i] = i;
 	}
+      }
+    }
+    // Normalize bone weights
+    for(i = 0; i < p_binary_model->vertex_count; ++i){
+      // For each vertex
+      
+      // Zero out the rest of the vertex data
+      weight_normalization = p_binary_model->vertices[i].bone_weights[0] +
+	p_binary_model->vertices[i].bone_weights[1] +
+	p_binary_model->vertices[i].bone_weights[2] +
+	p_binary_model->vertices[i].bone_weights[3];
+      if(weight_normalization < 0.0000001 &&
+	 weight_normalization > -0.0000001){
+	p_binary_model->vertices[i].bone_weights[0] = 1.0;
+	p_binary_model->vertices[i].bone_indices[0] = 0;
+      } else {
+	p_binary_model->vertices[i].bone_weights[0] /= weight_normalization;
+	p_binary_model->vertices[i].bone_weights[1] /= weight_normalization;
+	p_binary_model->vertices[i].bone_weights[2] /= weight_normalization;
+	p_binary_model->vertices[i].bone_weights[3] /= weight_normalization;
       }
     }
     

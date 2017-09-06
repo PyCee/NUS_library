@@ -23,7 +23,8 @@ NUS_result nus_model_build(NUS_absolute_path absolute_path, NUS_model *p_model)
     printf("ERROR::failed to build memory map for vertices\n");
     return NUS_FAILURE;
   }
-  if(nus_memory_map_flush(p_model->vertex_memory, binary_model.vertices) !=
+  if(nus_memory_map_flush(p_model->vertex_memory, binary_model.vertices,
+			  binary_model.vertex_count * sizeof(*binary_model.vertices)) !=
      NUS_SUCCESS){
     printf("ERROR::failed to flush vertex memory\n");
     return NUS_FAILURE;
@@ -35,7 +36,8 @@ NUS_result nus_model_build(NUS_absolute_path absolute_path, NUS_model *p_model)
     printf("ERROR::failed to build memory map for indices\n");
     return NUS_FAILURE;
   }
-  if(nus_memory_map_flush(p_model->index_memory, binary_model.indices) !=
+  if(nus_memory_map_flush(p_model->index_memory, binary_model.indices,
+			  binary_model.index_count * sizeof(*binary_model.indices)) !=
      NUS_SUCCESS){
     printf("ERROR::failed to flush index memory\n");
     return NUS_FAILURE;
@@ -72,7 +74,7 @@ NUS_result nus_model_build(NUS_absolute_path absolute_path, NUS_model *p_model)
 				   binary_model.animation_count);
       for(i = 0; i < binary_model.animation_count; ++i){
 	p_model->animations[i] =
-	  nus_animation_build(&p_model->skeleton, (void*)(binary_model.animations + i));
+	  nus_animation_build(&p_model->skeleton, binary_model.animations + i);
       }
     }
     p_model->has_skeleton = NUS_TRUE;

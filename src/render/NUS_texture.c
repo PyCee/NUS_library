@@ -82,6 +82,7 @@ NUS_result nus_texture_buffer_image
 {
   nus_bind_binding(&p_texture->binding);
   p_texture->image_size = size;
+  
   NUS_memory_map tmp_memory_map;
   if(nus_memory_map_build(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
@@ -89,7 +90,7 @@ NUS_result nus_texture_buffer_image
     NUS_LOG("failed to build memory map for texture\n");
     return NUS_FAILURE;
   }
-  if(nus_memory_map_flush(tmp_memory_map, data) != NUS_SUCCESS){
+  if(nus_memory_map_flush(tmp_memory_map, data, size) != NUS_SUCCESS){
     NUS_LOG("failed to flush memory map for texture\n");
     return NUS_FAILURE;
   }
@@ -100,10 +101,12 @@ NUS_result nus_texture_buffer_image
     .bufferOffset = 0,
     .bufferRowLength = 0,
     .bufferImageHeight = 0,
-    .imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-    .imageSubresource.mipLevel = 0,
-    .imageSubresource.baseArrayLayer = 0,
-    .imageSubresource.layerCount = 1,
+    .imageSubresource = {
+      .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+      .mipLevel = 0,
+      .baseArrayLayer = 0,
+      .layerCount = 1
+    },
     .imageOffset = {0, 0, 0},
     .imageExtent = {
       p_texture->width,

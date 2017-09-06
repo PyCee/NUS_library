@@ -34,7 +34,7 @@ SPACE=$(EMPTY) $(EMPTY)
 
 all: recompile
 
-run: shaders compile
+run: $(SHADERS) compile
 	for test in $(TEST:/=/unit_test); do ./$$test; done
 shaders: $(SHADERS)
 valgrind: $(SHADERS)
@@ -52,5 +52,6 @@ recompile: clean compile
 %.spv:
 	@touch $@
 	@glslangValidator -V $(@:.spv=$(SPACE)) -o $@
+	@echo "Compiled Shader: $@"
 clean:
-	@find . -type f \( -name 'unit_test' -o -name '*.o' \) -delete
+	@find . -type f \( -name 'unit_test' -o -name '*.o' -o -name "*.spv" \) -delete

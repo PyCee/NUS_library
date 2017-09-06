@@ -162,14 +162,13 @@ NUS_matrix nus_matrix_rotation(NUS_axes axes)
     x = NUS_quaternion_.x,
     y = NUS_quaternion_.y,
     z = NUS_quaternion_.z;
-  return nus_matrix_build(1.0 - 2.0 * (y*y-z*z), 2.0 * (x*y-z*w), 2.0 * (x*z+y*w), 0.0,
+    return nus_matrix_build(1.0 - 2.0 * (y*y-z*z), 2.0 * (x*y-z*w), 2.0 * (x*z+y*w), 0.0,
 			  2.0 * (x*y+z*w), 1.0 - 2.0 * (x*x-z*z), 2.0 * (y*z-x*w), 0.0,
 			  2.0 * (x*z-y*w), 2.0 * (y*z+x*w), 1.0 - 2.0 * (x*x-y*y), 0.0,
-			  0.0, 0.0, 0.0, 1.0);
-  */
+			  0.0, 0.0, 0.0, 1.0); */
 }
 
-NUS_matrix nus_matrix_transformation
+NUS_matrix nus_matrix_build_transformation
 (NUS_vector vector, NUS_vector scale, NUS_axes axes)
 {
   return nus_matrix_multiply(nus_matrix_multiply(nus_matrix_translation(vector),
@@ -194,7 +193,7 @@ NUS_vector nus_matrix_transform(NUS_matrix matrix, NUS_vector vector)
 			  matrix.ele[2][2] * vector.z +
 			  matrix.ele[2][3] * 1.0);
 }
-NUS_matrix nus_matrix_inverted(NUS_matrix matrix)
+NUS_matrix nus_matrix_inverse(NUS_matrix matrix)
 {
   NUS_matrix inverse;
   double inv[16], det;

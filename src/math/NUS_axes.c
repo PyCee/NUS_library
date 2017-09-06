@@ -6,6 +6,13 @@ NUS_axes nus_axes_build(NUS_vector forward, NUS_vector upward, NUS_vector right)
 {
   return (NUS_axes){forward, upward, right};
 }
+NUS_axes nus_axes_build_qua(NUS_quaternion quaternion)
+{
+  return nus_axes_global_rotation(nus_axes_build(nus_vector_build(0.0, 0.0, -1.0),
+						 nus_vector_build(0.0, 1.0, 0.0),
+						 nus_vector_build(1.0, 0.0, 0.0)),
+				  quaternion);
+}
 NUS_axes nus_axes_lerp(NUS_axes axes_0, NUS_axes axes_1, double t)
 {
   return nus_axes_build(nus_vector_lerp(axes_0.forward,

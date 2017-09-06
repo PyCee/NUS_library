@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include "../NUS_log.h"
 
 static NUS_result nus_vulkan_instance_build_instance
 (NUS_vulkan_instance *, NUS_string_group, NUS_string_group);
@@ -19,7 +20,7 @@ NUS_result nus_vulkan_instance_build
 {
   if(nus_vulkan_instance_build_instance(p_vulkan_instance,
 					extensions, layers) != NUS_SUCCESS){
-    printf("ERROR::failed to build vulkan instance instance\n");
+    NUS_LOG_ERROR("failed to build vulkan instance instance\n");
     return NUS_FAILURE;
   }
   
@@ -44,7 +45,7 @@ NUS_result nus_vulkan_instance_build
 				    &callback_create_info, NULL,
 				    &NUS_vulkan_debug_report_callback) !=
      VK_SUCCESS){
-    printf("ERROR::failed to create vulkan instance debug report\n");
+    NUS_LOG_ERROR("failed to create vulkan instance debug report\n");
     return NUS_FAILURE;
   }
   
@@ -82,11 +83,11 @@ static NUS_result nus_vulkan_instance_build_instance
   layers = tmp_layers;
 #endif
   if(nus_vulkan_instance_extension_support(extensions) != NUS_SUCCESS){
-    printf("ERROR::vulkan instance extension not supported\n");
+    NUS_LOG_ERROR("vulkan instance extension not supported\n");
     return NUS_FAILURE;
   }
   if(nus_vulkan_instance_layer_support(layers) != NUS_SUCCESS){
-    printf("ERROR::vulkan instance layer not supported\n");
+    NUS_LOG_ERROR("vulkan instance layer not supported\n");
     return NUS_FAILURE;
   }
   VkApplicationInfo application_create_info = {
@@ -112,7 +113,7 @@ static NUS_result nus_vulkan_instance_build_instance
   p_vulkan_instance->vk_instance = VK_NULL_HANDLE;
   if(vkCreateInstance(&instance_create_info, NULL,
 		      &p_vulkan_instance->vk_instance) != VK_SUCCESS){
-    printf("ERROR::unable to create vulkan instance\n");
+    NUS_LOG_ERROR("unable to create vulkan instance\n");
     return NUS_FAILURE;
   }
 
@@ -134,14 +135,14 @@ static NUS_result nus_vulkan_instance_extension_support
   if(vkEnumerateInstanceExtensionProperties(NULL, &supported_extension_count,
 					    NULL) != VK_SUCCESS ||
      supported_extension_count == 0){
-    printf("ERROR::instance extension enumeration: count=%d\n",
+    NUS_LOG_ERROR("instance extension enumeration: count=%d\n",
 	   supported_extension_count);
     return NUS_FAILURE;
   }
   VkExtensionProperties supported_extensions[supported_extension_count];
   if(vkEnumerateInstanceExtensionProperties(NULL, &supported_extension_count,
 					    supported_extensions) != VK_SUCCESS){
-    printf("ERROR::instance extension enumeration: extensions\n");
+    NUS_LOG_ERROR("instance extension enumeration: extensions\n");
     return NUS_FAILURE;
   }
 
@@ -171,7 +172,7 @@ static NUS_result nus_vulkan_instance_layer_support
   if(vkEnumerateInstanceLayerProperties(&supported_layer_count,
 					NULL) != VK_SUCCESS ||
      supported_layer_count == 0){
-    printf("ERROR::instance layer enumeration: count=%d\n",
+    NUS_LOG_ERROR("instance layer enumeration: count=%d\n",
 	   supported_layer_count);
     return NUS_FAILURE;
   }
@@ -179,7 +180,7 @@ static NUS_result nus_vulkan_instance_layer_support
   VkLayerProperties supported_layers[supported_layer_count];
   if(vkEnumerateInstanceLayerProperties(&supported_layer_count,
 					supported_layers) != VK_SUCCESS){
-    printf("ERROR::instance layer enumeration: layers\n");
+    NUS_LOG_ERROR("instance layer enumeration: layers\n");
     return NUS_FAILURE;
   }
   
@@ -209,7 +210,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL nus_vulkan_validation_callback
  const char* pMessage,
  void* pUserData)
 {
-  printf("VALIDATION::WARNING::%s\n", pMessage);
+  printf("\n");
+  NUS_LOG_WARNING("VALIDATION::%s\n\n", pMessage);
   return VK_FALSE;
 }
 #endif

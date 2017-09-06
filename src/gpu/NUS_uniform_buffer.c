@@ -2,7 +2,7 @@
 #include "../NUS_log.h"
 
 void (*nus_uniform_buffer_free)(NUS_uniform_buffer *) = nus_memory_map_free;
-NUS_result (*nus_uniform_buffer_flush)(NUS_uniform_buffer, void *) =
+NUS_result (*nus_uniform_buffer_flush)(NUS_uniform_buffer, void *, size_t) =
   nus_memory_map_flush;
 
 NUS_result nus_uniform_buffer_build

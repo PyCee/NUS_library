@@ -15,6 +15,6 @@ typedef struct NUS_memory_map{
 NUS_result nus_memory_map_build
 (size_t, VkBufferUsageFlags, VkMemoryPropertyFlags, NUS_memory_map *);
 void nus_memory_map_free(NUS_memory_map *);
-NUS_result nus_memory_map_flush(NUS_memory_map, void *);
+NUS_result nus_memory_map_flush(NUS_memory_map, void *, size_t);
 
 #endif /* NUS_MEMORY_MAP_H */

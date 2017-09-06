@@ -512,8 +512,6 @@ int main(int argc, char *argv[])
     .clearValueCount = 1,
     .pClearValues = &clear_value
   };
-  
-
   //
   
   VkImageMemoryBarrier barrier_from_undefined_to_present = {
@@ -621,7 +619,6 @@ int main(int argc, char *argv[])
   NUS_axes default_axes = nus_axes_build(nus_vector_build(0.0, 0.0, 1.0),
 					 nus_vector_build(0.0, 1.0, 0.0),
 					 nus_vector_build(1.0, 0.0, 0.0));
-  
   run = 1;
   while(run){
 
@@ -629,12 +626,13 @@ int main(int argc, char *argv[])
     
     x += dx;
     y += dy;
-    transformation = nus_matrix_transformation(nus_vector_build(x, y, 0.5),
-					       nus_vector_build(1.0, 1.0, 1.0),
-					       default_axes);
+    transformation = nus_matrix_build_transformation(nus_vector_build(x, y, 0.5),
+						     nus_vector_build(1.0, 1.0, 1.0),
+						     default_axes);
     transformation = nus_matrix_transpose(transformation);
     
-    nus_uniform_buffer_flush(world_trans_buffer, (void*)&transformation);
+    nus_uniform_buffer_flush(world_trans_buffer, (void*)&transformation,
+			     sizeof(NUS_matrix));
 
     nus_add_wait_semaphore(present.image_available, VK_PIPELINE_STAGE_TRANSFER_BIT);
     nus_add_signal_semaphore(present.image_presentable);

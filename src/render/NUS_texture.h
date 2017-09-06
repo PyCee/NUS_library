@@ -14,7 +14,7 @@ typedef struct NUS_texture{
   VkFormat format;
   VkImageAspectFlags aspect_flags;
   unsigned int width, height;
-  size_t image_size;
+  uint32_t image_size;
   NUS_binding binding;
 } NUS_texture;
 

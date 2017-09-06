@@ -18,7 +18,7 @@ typedef struct NUS_animation{
   NUS_keyframe *keyframes;
 } NUS_animation;
 
-NUS_animation nus_animation_build(struct NUS_skeleton *, void *);
+NUS_animation nus_animation_build(struct NUS_skeleton *, NUS_animation *);
 void nus_animation_free(NUS_animation *);
 
 #endif /* NUS_ANIMATION_H */

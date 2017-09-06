@@ -83,9 +83,26 @@ int main(int argc, char *argv[])
   
   NUS_model model;
   // the vertex normal represents color for this unit test
-  if(nus_model_build(nus_absolute_path_build("triangle.nusm"), &model) != NUS_SUCCESS){
+  if(nus_model_build(nus_absolute_path_build("butterfly.nusm"), &model) != NUS_SUCCESS){
     NUS_LOG_ERROR("failed to build model\n");
     return -1;
+  }
+
+  //TODO: test animation stuffs
+  NUS_LOG("animation count %d\n", model.animation_count);
+  NUS_LOG("name: %s\n", model.animations[0].name);
+  
+  /*
+  NUS_skeleton_pose pose = nus_skeleton_pose_build(&model.skeleton);
+  nus_skeleton_pose_update(&pose, model.animations[0].keyframes[8]);
+  */
+  
+  NUS_frame frame = nus_frame_build(model.animations + 0);
+  
+  
+  for(unsigned int i = 0; i < model.skeleton.joint_count; ++i){
+    //NUS_LOG("matrix %d is:\n", i);
+    //nus_matrix_print(pose.skinning_matrices[i]);
   }
 
   // code to create renderpass
@@ -214,28 +231,40 @@ int main(int argc, char *argv[])
   };
 
   VkVertexInputBindingDescription vertex_binding_description = {
-    .binding = 0,//
-    .stride = (unsigned int)sizeof(NUS_vertex),//
-    .inputRate = VK_VERTEX_INPUT_RATE_VERTEX//
+    .binding = 0,
+    .stride = sizeof(NUS_vertex),
+    .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
   };
   VkVertexInputAttributeDescription vertex_attribute_description[] = {
     {
-      .location = 0,//
-      .binding = vertex_binding_description.binding,//
-      .format = VK_FORMAT_R32G32B32_SFLOAT,//
-      .offset = sizeof(float) * 0//
+      .location = 0,
+      .binding = vertex_binding_description.binding,
+      .format = VK_FORMAT_R32G32B32_SFLOAT,
+      .offset = sizeof(float) * 0
     },
     {
-      .location = 1,//
-      .binding = vertex_binding_description.binding,//
-      .format = VK_FORMAT_R32G32B32_SFLOAT,//
-      .offset = sizeof(float) * 3//
+      .location = 1,
+      .binding = vertex_binding_description.binding,
+      .format = VK_FORMAT_R32G32B32_SFLOAT,
+      .offset = sizeof(float) * 3
     },
     {
-      .location = 2,//
-      .binding = vertex_binding_description.binding,//
-      .format = VK_FORMAT_R32G32_SFLOAT,//
-      .offset = sizeof(float) * 6//
+      .location = 2,
+      .binding = vertex_binding_description.binding,
+      .format = VK_FORMAT_R32G32_SFLOAT,
+      .offset = sizeof(float) * 6
+    },
+    {
+      .location = 3,
+      .binding = vertex_binding_description.binding,
+      .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+      .offset = sizeof(float) * 8
+    },
+    {
+      .location = 4,
+      .binding = vertex_binding_description.binding,
+      .format = VK_FORMAT_R32G32B32A32_UINT,
+      .offset = sizeof(float) * 12
     }
   };
   
@@ -245,7 +274,7 @@ int main(int argc, char *argv[])
     .flags = 0,
     .vertexBindingDescriptionCount = 1,
     .pVertexBindingDescriptions = &vertex_binding_description,
-    .vertexAttributeDescriptionCount = 3,
+    .vertexAttributeDescriptionCount = 5,
     .pVertexAttributeDescriptions = vertex_attribute_description
   };
   
@@ -288,7 +317,8 @@ int main(int argc, char *argv[])
     .depthClampEnable = VK_FALSE,//
     .rasterizerDiscardEnable = VK_FALSE,//
     .polygonMode = VK_POLYGON_MODE_FILL,//
-    .cullMode = VK_CULL_MODE_BACK_BIT,//
+    .cullMode = VK_CULL_MODE_NONE,//
+    //.cullMode = VK_CULL_MODE_BACK_BIT,//
     .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,//
     .depthBiasEnable = VK_FALSE,//
     .depthBiasConstantFactor = 0.0f,//
@@ -335,9 +365,9 @@ int main(int argc, char *argv[])
   VkDescriptorSetLayoutBinding desc_set_layout_bindings[] = {
     {
       .binding = 0,
-      .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       .descriptorCount = 1,
-      .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
       .pImmutableSamplers = NULL
     }
   };
@@ -403,7 +433,7 @@ int main(int argc, char *argv[])
   
   VkDescriptorPoolSize pool_sizes[] = {
     {
-      .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+      .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       .descriptorCount = 1
     }
   };
@@ -438,21 +468,18 @@ int main(int argc, char *argv[])
     NUS_LOG_ERROR("failed to allocate descriptor set\n");
     return -1;
   }
-
-
-  NUS_image_view texture_img_view;
-  if(nus_image_view_build(&texture_img_view, model.texture,
-			  VK_IMAGE_ASPECT_COLOR_BIT) != NUS_SUCCESS){
+  
+  NUS_uniform_buffer skinning_matrices_buffer;
+  if(nus_uniform_buffer_build(sizeof(NUS_matrix) * 32,
+			      &skinning_matrices_buffer) != NUS_SUCCESS){
+    NUS_LOG_ERROR("failed to create skinning matrices buffer\n");
     return -1;
   }
-  NUS_sampler sampler;
-  if(nus_sampler_build(&sampler, VK_FILTER_LINEAR) != NUS_SUCCESS){
-    return -1;
-  }
-  VkDescriptorImageInfo desc_image_info = {
-    .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-    .imageView = texture_img_view.vk_image_view,
-    .sampler = sampler.vk_sampler
+  
+  VkDescriptorBufferInfo desc_buffer_info = {
+    .buffer = skinning_matrices_buffer.buffer,
+    .offset = 0,
+    .range = VK_WHOLE_SIZE
   };
   
   VkWriteDescriptorSet write_desc_set = {
@@ -462,9 +489,9 @@ int main(int argc, char *argv[])
     .dstBinding = 0,
     .dstArrayElement = 0,
     .descriptorCount = 1,
-    .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-    .pImageInfo = &desc_image_info,
-    .pBufferInfo = NULL,
+    .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+    .pImageInfo = NULL,
+    .pBufferInfo = &desc_buffer_info,
     .pTexelBufferView = NULL
   };
   
@@ -602,6 +629,12 @@ int main(int argc, char *argv[])
   run = 1;
   while(run){
 
+    nus_frame_update(&frame, 0.004);
+    //skinning_matrices_buffer flush
+    nus_uniform_buffer_flush(skinning_matrices_buffer, frame.pose.skinning_matrices,
+			     sizeof(NUS_matrix) * 3);
+    // TODO replace 3 above with joint count
+
     nus_system_events_handle(win);
 
     nus_add_wait_semaphore(present.image_available, VK_PIPELINE_STAGE_TRANSFER_BIT);
@@ -628,10 +661,10 @@ int main(int argc, char *argv[])
   
   vkDestroyDescriptorPool(nus_get_bound_device(), descriptor_pool, NULL);
   vkDestroyDescriptorSetLayout(nus_get_bound_device(), desc_set_layout, NULL);
-
-  nus_sampler_free(&sampler);
-  nus_image_view_free(&texture_img_view);
   
+  nus_uniform_buffer_free(&skinning_matrices_buffer);
+  
+  nus_frame_free(&frame);
   nus_model_free(&model);
   
   nus_shader_free(&vertex_shader);

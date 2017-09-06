@@ -51,6 +51,7 @@
 #include "model/NUS_skeleton.h"
 #include "model/NUS_keyframe.h"
 #include "model/NUS_animation.h"
+#include "model/NUS_frame.h"
 #include "model/NUS_binary_model.h"
 
 #include "NUSM/NUS_load.h"

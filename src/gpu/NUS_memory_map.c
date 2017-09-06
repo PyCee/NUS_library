@@ -75,7 +75,7 @@ void nus_memory_map_free(NUS_memory_map *p_memory_map)
   nus_unbind_binding(&p_memory_map->binding);
 }
 NUS_result nus_memory_map_flush
-(NUS_memory_map memory_map, void *p_src)
+(NUS_memory_map memory_map, void *p_data, size_t data_size)
 {
   void *p_map;
   VkMappedMemoryRange memory_range;
@@ -90,7 +90,7 @@ NUS_result nus_memory_map_flush
   }
   
   // Copy data to cpu-mapped memory
-  memcpy(p_map, p_src, memory_map.size);
+  memcpy(p_map, p_data, data_size);
   
   memory_range = (VkMappedMemoryRange){
     .sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,

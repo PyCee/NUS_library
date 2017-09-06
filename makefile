@@ -27,7 +27,7 @@ MATH_SRC_FILES=NUS_vector.c NUS_octree.c NUS_matrix.c NUS_axes.c NUS_quaternion.
 MATH_DIR=math
 
 MOD_SRC_FILES=NUS_model.c NUS_vertex.c NUS_skeleton.c \
-	NUS_keyframe.c NUS_animation.c NUS_binary_model.c
+	NUS_keyframe.c NUS_animation.c NUS_binary_model.c NUS_frame.c
 MOD_DIR=model
 
 NUSM_SRC_FILES=NUS_load.c NUS_store.c NUS_read.c NUS_validate.c
