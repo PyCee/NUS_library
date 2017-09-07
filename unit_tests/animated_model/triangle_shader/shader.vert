@@ -33,4 +33,5 @@ void main()
   //frag_color = vec4(1.0, 1.0, 1.0, 0.0);
   //frag_color = vec4(skinning_matrices.transformation[0]);
   frag_color = vec4(vert_color.xyz, 1.0);
+  //frag_color = vec4(gl_Position.z, gl_Position.z, gl_Position.z, 1.0);
 }

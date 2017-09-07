@@ -52,29 +52,36 @@ void nus_skeleton_pose_update(NUS_skeleton_pose *p_pose, NUS_keyframe keyframe)
   for(i = 0; i < p_pose->p_skeleton->joint_count; ++i){
     // For each transformation
     
-    p_pose->skinning_matrices[i] = p_pose->p_skeleton->joints[i].inv_bind_pose;
+    p_pose->skinning_matrices[i] = nus_matrix_identity();
+    
     curr_joint_i = i;
     do{
-      tmp_rotation = nus_axes_build_qua(keyframe.joints[curr_joint_i].rotation);
+      tmp_rotation = nus_axes_build_default();
+      tmp_rotation = nus_axes_global_rotation(tmp_rotation,
+					      keyframe.joints[curr_joint_i].rotation);
+      tmp_rotation = nus_axes_invert(tmp_rotation);
       tmp_transformation =
 	nus_matrix_build_transformation(keyframe.joints[curr_joint_i].translation,
 					keyframe.joints[curr_joint_i].scale,
 					tmp_rotation);
+      //tmp_transformation = nus_matrix_transpose(tmp_transformation);
       p_pose->skinning_matrices[i] =
-	nus_matrix_multiply(tmp_transformation, p_pose->skinning_matrices[i]);
+	//nus_matrix_multiply(tmp_transformation, p_pose->skinning_matrices[i]);
+	nus_matrix_multiply(p_pose->skinning_matrices[i], tmp_transformation);
+      
       curr_joint_i = p_pose->p_skeleton->joints[curr_joint_i].parent_index;
       // While current joint has a parent
     } while(curr_joint_i != -1);
     
     //p_pose->skinning_matrices[i] = nus_matrix_transpose(p_pose->skinning_matrices[i]);
-    //p_pose->skinning_matrices[i] = nus_matrix_identity();
     
-    NUS_LOG("inv should be:\n");
-    nus_matrix_print(nus_matrix_inverse(p_pose->skinning_matrices[i]));
-    NUS_LOG("is:\n");
-    nus_matrix_print(nus_matrix_inverse(p_pose->p_skeleton->joints[i].inv_bind_pose));
+    p_pose->skinning_matrices[i] =
+      nus_matrix_multiply(p_pose->skinning_matrices[i],
+			  p_pose->p_skeleton->joints[i].inv_bind_pose);
+    
+    p_pose->skinning_matrices[i] = nus_matrix_transpose(p_pose->skinning_matrices[i]);
+    NUS_LOG("trans is:\n");
+    nus_matrix_print(p_pose->skinning_matrices[i]);
 
-    NUS_LOG("mult is:\n");
-    nus_matrix_print(nus_matrix_multiply(p_pose->p_skeleton->joints[i].inv_bind_pose, p_pose->skinning_matrices[i] ));
   }
 }

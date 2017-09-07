@@ -11,7 +11,7 @@
 
 #include <unistd.h>
 
-#define PROGRAM_NAME "unit_test-texture"
+#define PROGRAM_NAME "unit_test-animated_model"
 
 void close_win(void);
 

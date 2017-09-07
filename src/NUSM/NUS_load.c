@@ -145,6 +145,7 @@ NUS_result nusm_load(char * file_path, NUS_binary_model *p_binary_model)
       // Record skeleton data
       memcpy(&p_binary_model->skeleton.joints[i].inv_bind_pose,
 	     &mesh->mBones[i]->mOffsetMatrix, sizeof(mesh->mBones[i]->mOffsetMatrix));
+      nus_matrix_print(p_binary_model->skeleton.joints[i].inv_bind_pose);
 
       char parent_name[100];
       strcpy(parent_name,

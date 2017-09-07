@@ -171,9 +171,9 @@ NUS_matrix nus_matrix_rotation(NUS_axes axes)
 NUS_matrix nus_matrix_build_transformation
 (NUS_vector vector, NUS_vector scale, NUS_axes axes)
 {
-  return nus_matrix_multiply(nus_matrix_multiply(nus_matrix_translation(vector),
-						 nus_matrix_scale(scale)),
-			     nus_matrix_rotation(axes));
+  return nus_matrix_multiply(nus_matrix_translation(vector),
+			     nus_matrix_multiply(nus_matrix_rotation(axes),
+						 nus_matrix_scale(scale)));
 }
 NUS_vector nus_matrix_transform(NUS_matrix matrix, NUS_vector vector)
 {
