@@ -301,7 +301,7 @@ NUS_result nusm_load_animation
   
   frame_count = 0;
   
-  for(i = 0; i <= (int)p_ai_animation->mDuration; ++i){
+  for(i = 0; i <= (int)p_ai_animation->mDuration ; ++i){
     // For each tick
     
     if(frame_exist_tracker[i] == 0){
@@ -322,7 +322,7 @@ NUS_result nusm_load_animation
       
       // Find the pre/post times for rot, trans, and scale
       for(k = 1; k < p_channel->mNumRotationKeys; ++k){
-	if(p_channel->mRotationKeys[k].mTime > i){
+	if(p_channel->mRotationKeys[k].mTime >= i){
 	  post_index = k;
 	  pre_index = post_index - 1;
 	  break;
@@ -332,7 +332,6 @@ NUS_result nusm_load_animation
 	(p_channel->mRotationKeys[post_index].mTime -
 	 p_channel->mRotationKeys[pre_index].mTime);
       
-      // Lerp and store each transformation element
       p_animation->keyframes[frame_count].joints[j] =
 	(NUS_keyframe_joint){
 	.rotation = {
@@ -365,5 +364,6 @@ NUS_result nusm_load_animation
     }
     ++frame_count;
   }
+  
   return NUS_SUCCESS;
 }

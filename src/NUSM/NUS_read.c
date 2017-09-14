@@ -150,7 +150,7 @@ NUS_result nusm_read
       }
     }
   }
-    
+  
   fclose(input_file);
   return NUS_SUCCESS;
 }

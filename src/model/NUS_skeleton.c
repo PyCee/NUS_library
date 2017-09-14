@@ -43,7 +43,7 @@ void nus_skeleton_pose_free(NUS_skeleton_pose *p_pose)
 }
 
 void nus_skeleton_pose_update(NUS_skeleton_pose *p_pose, NUS_keyframe keyframe)
-{// TODO Check results of the function
+{
   NUS_matrix tmp_transformation;
   NUS_axes tmp_rotation;
   int i;
@@ -80,8 +80,8 @@ void nus_skeleton_pose_update(NUS_skeleton_pose *p_pose, NUS_keyframe keyframe)
 			  p_pose->p_skeleton->joints[i].inv_bind_pose);
     
     p_pose->skinning_matrices[i] = nus_matrix_transpose(p_pose->skinning_matrices[i]);
-    NUS_LOG("trans is:\n");
-    nus_matrix_print(p_pose->skinning_matrices[i]);
+    //NUS_LOG("trans is:\n");
+    //nus_matrix_print(p_pose->skinning_matrices[i]);
 
   }
 }

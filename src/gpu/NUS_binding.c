@@ -24,8 +24,6 @@ void nus_set_queue_requirements(unsigned int queue_requirements)
 }
 NUS_result nus_select_gpu(NUS_multi_gpu multi_gpu)
 {
-  // tmp until the below loop selection is implimented
-  nus_gpu_binding.p_gpu = multi_gpu.gpus + 0;
 
   // TODO impliment gpu selection, not practical with current vulkan version
   /*
@@ -34,8 +32,9 @@ NUS_result nus_select_gpu(NUS_multi_gpu multi_gpu)
       // do
     }
    */
+  // tmp until the above loop selection is implimented
+  nus_gpu_binding.p_gpu = multi_gpu.gpus + 0;
 
-  //TODO: set vulkan device-level function pointers
   nus_bind_device_vulkan_library(nus_get_bound_gpu()->functions);
 
   if(nus_select_queue_family(*nus_get_bound_gpu()) != NUS_SUCCESS){

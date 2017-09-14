@@ -22,11 +22,10 @@ SHADERS:= hello_triangle/triangle_shader/shader.vert.spv hello_triangle/triangle
 	texture/triangle_shader/shader.vert.spv texture/triangle_shader/shader.frag.spv \
 	animated_model/triangle_shader/shader.vert.spv animated_model/triangle_shader/shader.frag.spv
 
-TEST?=3d_math/ gravity_simulation/ save_file/ basic_window/ gpu_detection/ \
+TEST?=3d_math/ gravity_simulation/ save_file/ basic_window/ model_load/ gpu_detection/ \
 	vulkan_clear/ hello_triangle/ uniform_buffer/ texture/ animated_model/
 
 VALGRIND_RUN= valgrind --tool=memcheck --leak-check=yes --track-origins=yes
-
 EMPTY:= 
 SPACE=$(EMPTY) $(EMPTY)
 

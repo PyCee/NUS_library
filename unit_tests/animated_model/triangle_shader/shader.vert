@@ -27,7 +27,7 @@ void main()
   	      		vec4(vert_position, 1.0)) * vert_weights.z;
   gl_Position += (skinning_matrices.transformation[vert_weight_index.w] *
   	      		vec4(vert_position, 1.0)) * vert_weights.w;
-  gl_Position = vec4(gl_Position.xyz / 10.0, 1.0);
+  gl_Position = vec4(gl_Position.xyz / 5.0, 1.0);
   gl_Position.z += 0.7;
   //gl_Position = vec4(vert_position, 1.0);
   //frag_color = vec4(1.0, 1.0, 1.0, 0.0);

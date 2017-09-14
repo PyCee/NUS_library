@@ -88,7 +88,6 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  //TODO: test animation stuffs
   NUS_LOG("animation count %d\n", model.animation_count);
   NUS_LOG("name: %s\n", model.animations[0].name);
   
