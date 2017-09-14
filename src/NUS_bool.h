@@ -1,9 +1,9 @@
 #ifndef NUS_BOOL_H
 #define NUS_BOOL_H
 
-#define NUS_TRUE 1
-#define NUS_FALSE 0
-
-typedef unsigned char NUS_bool;
+typedef enum NUS_bool{
+  NUS_FALSE = 0,
+  NUS_TRUE = 1
+} NUS_bool;
 
 #endif /* NUS_BOOL_H */

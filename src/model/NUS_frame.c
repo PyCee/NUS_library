@@ -37,15 +37,13 @@ void nus_frame_update(NUS_frame *p_frame, float delta_s)
       break;
     }
   }
-  /*printf("frame_count = %d\n", p_frame->p_animation->frame_count);
-    printf("frame progress = %f\ni = %d\n", p_frame->progress, i);*/
   
   if(i == p_frame->p_animation->frame_count - 1){
     --i;
     NUS_LOG_ERROR("frame i not right\n");
   }
   
-  // t is the progress between the 2 frames, (0, 1)
+  // t is the progress between the 2 frames, t = (0, 1)
   t = (p_frame->progress - p_frame->p_animation->times[i]) /
     (p_frame->p_animation->times[i + 1] - p_frame->p_animation->times[i]);
 
@@ -60,4 +58,8 @@ void nus_frame_update(NUS_frame *p_frame, float delta_s)
   
   nus_skeleton_pose_update(&p_frame->pose, lerped_keyframe);
   nus_keyframe_free(&lerped_keyframe);
+}
+NUS_bool nus_frame_is_finished(NUS_frame frame)
+{
+  return ((1.0 - frame.progress) < 0.00001) ? NUS_TRUE : NUS_FALSE;
 }
