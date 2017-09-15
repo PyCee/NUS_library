@@ -6,8 +6,9 @@ NUS_frame nus_frame_build(NUS_animation *p_animation)
 {
   NUS_frame frame = {
     .p_animation = p_animation,
-      .pose = nus_skeleton_pose_build(p_animation->p_skeleton),
-      .progress = 0.0f
+    .pose = nus_skeleton_pose_build(p_animation->p_skeleton),
+    .progress = 0.0f,
+    .repeat = NUS_FALSE
   };
   nus_frame_update(&frame, 0.0f);
   return frame;
@@ -23,8 +24,12 @@ void nus_frame_update(NUS_frame *p_frame, float delta_s)
   int i;
   p_frame->progress += (delta_s / p_frame->p_animation->duration);
   if(p_frame->progress > 1.0f){
-    // Max progress to 1.0f
-    p_frame->progress = 1.0f;
+    if(p_frame->repeat){
+      p_frame->progress -= 1.0f;
+    } else {
+      // Max progress to 1.0f
+      p_frame->progress = 1.0f;
+    }
   }
   for(i = 0; i < p_frame->p_animation->frame_count - 1; ++i){
     // For each frame
@@ -58,6 +63,10 @@ void nus_frame_update(NUS_frame *p_frame, float delta_s)
   
   nus_skeleton_pose_update(&p_frame->pose, lerped_keyframe);
   nus_keyframe_free(&lerped_keyframe);
+}
+void nus_frame_set_repeat(NUS_frame *p_frame, NUS_bool repeat)
+{
+  p_frame->repeat = repeat;
 }
 NUS_bool nus_frame_is_finished(NUS_frame frame)
 {

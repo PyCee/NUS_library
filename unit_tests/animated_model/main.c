@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
   */
   
   NUS_frame frame = nus_frame_build(model.animations + 0);
-  
+  nus_frame_set_repeat(&frame, NUS_TRUE);
   
   for(unsigned int i = 0; i < model.skeleton.joint_count; ++i){
     //NUS_LOG("matrix %d is:\n", i);
@@ -631,8 +631,8 @@ int main(int argc, char *argv[])
     nus_frame_update(&frame, 0.004);
     //skinning_matrices_buffer flush
     nus_uniform_buffer_flush(skinning_matrices_buffer, frame.pose.skinning_matrices,
-			     sizeof(NUS_matrix) * 3);
-    // TODO replace 3 above with joint count
+    			     sizeof(NUS_matrix) * 3);
+    // TODO replace 3 above with joint count (to better work with other skeletons)
 
     nus_system_events_handle(win);
 
