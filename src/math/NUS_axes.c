@@ -18,7 +18,7 @@ NUS_axes nus_axes_lerp(NUS_axes axes_0, NUS_axes axes_1, double t)
 		        nus_vector_lerp(axes_0.upward, axes_1.upward, t),
 			nus_vector_lerp(axes_0.right, axes_1.right, t));
 }
-NUS_axes nus_axes_invert(NUS_axes axes)
+NUS_axes nus_axes_inverse(NUS_axes axes)
 {
   return nus_axes_build(nus_vector_scale(axes.forward, -1.0),
 			nus_vector_scale(axes.upward, -1.0),

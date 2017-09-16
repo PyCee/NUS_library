@@ -20,9 +20,9 @@ NUS_matrix nus_matrix_zero(void);
 NUS_matrix nus_matrix_transpose(NUS_matrix);
 NUS_matrix nus_matrix_multiply(NUS_matrix, NUS_matrix);
 
-NUS_matrix nus_matrix_translation(struct NUS_vector);
-NUS_matrix nus_matrix_scale(struct NUS_vector);
-NUS_matrix nus_matrix_rotation(struct NUS_axes);
+NUS_matrix nus_matrix_build_translation(struct NUS_vector);
+NUS_matrix nus_matrix_build_scale(struct NUS_vector);
+NUS_matrix nus_matrix_build_rotation(struct NUS_axes);
 
 NUS_matrix nus_matrix_build_transformation
 (struct NUS_vector, struct NUS_vector, struct NUS_axes);
