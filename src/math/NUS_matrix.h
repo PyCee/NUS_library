@@ -27,7 +27,6 @@ NUS_matrix nus_matrix_build_rotation(struct NUS_axes);
 NUS_matrix nus_matrix_build_transformation
 (struct NUS_vector, struct NUS_vector, struct NUS_axes);
 struct NUS_vector nus_matrix_transform(NUS_matrix, struct NUS_vector);
-struct NUS_vector nus_matrix_transform_rotation(NUS_matrix, struct NUS_vector);
 
 NUS_matrix nus_matrix_inverse(NUS_matrix);
 NUS_bool nus_matrix_cmp(NUS_matrix, NUS_matrix, float);

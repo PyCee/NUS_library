@@ -193,22 +193,6 @@ NUS_vector nus_matrix_transform(NUS_matrix matrix, NUS_vector vector)
 			  matrix.ele[2][2] * vector.z +
 			  matrix.ele[2][3] * 1.0);
 }
-struct NUS_vector nus_matrix_transform_rotation(NUS_matrix matrix, NUS_vector vector)
-{
-  
-  return nus_vector_build(/* x component */
-			  matrix.ele[0][0] * vector.x +
-			  matrix.ele[0][1] * vector.y +
-			  matrix.ele[0][2] * vector.z,
-			  /* y component */
-			  matrix.ele[1][0] * vector.x +
-			  matrix.ele[1][1] * vector.y +
-			  matrix.ele[1][2] * vector.z,
-			  /* z component */
-			  matrix.ele[2][0] * vector.x +
-			  matrix.ele[2][1] * vector.y +
-			  matrix.ele[2][2] * vector.z);
-}
 NUS_matrix nus_matrix_inverse(NUS_matrix matrix)
 {
   NUS_matrix inverse;
