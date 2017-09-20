@@ -73,7 +73,7 @@ NUS_quaternion nus_quaternion_lerp
 						       quaternion_0.y * b +
 						       quaternion_1.y * t,
 						       quaternion_0.z * b +
-						       quaternion_1.z* t));
+						       quaternion_1.z * t));
 }
 NUS_quaternion nus_quaternion_slerp
 (NUS_quaternion quaternion_0, NUS_quaternion quaternion_1, double t)
