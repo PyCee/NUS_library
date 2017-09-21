@@ -23,6 +23,7 @@ NUS_matrix nus_matrix_multiply(NUS_matrix, NUS_matrix);
 NUS_matrix nus_matrix_build_translation(struct NUS_vector);
 NUS_matrix nus_matrix_build_scale(struct NUS_vector);
 NUS_matrix nus_matrix_build_rotation(struct NUS_axes);
+NUS_matrix nus_matrix_build_rotation_qua(struct NUS_quaternion);
 
 NUS_matrix nus_matrix_build_transformation
 (struct NUS_vector, struct NUS_vector, struct NUS_axes);

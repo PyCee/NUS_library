@@ -1,6 +1,7 @@
 #include "NUS_matrix.h"
 #include "NUS_vector.h"
 #include "NUS_axes.h"
+#include "NUS_quaternion.h"
 #include "../NUS_log.h"
 #include <stdio.h>
 
@@ -156,16 +157,19 @@ NUS_matrix nus_matrix_build_rotation(NUS_axes axes)
 			  axes.upward.x, axes.upward.y, axes.upward.z, 0.0,
 			  axes.forward.x, axes.forward.y, axes.forward.z, 0.0,
 			  0.0, 0.0, 0.0, 1.0);
+}
+
+NUS_matrix nus_matrix_build_rotation_qua(struct NUS_quaternion quaternion){
   /* Below is a quaternion --> rotation matrix algorithm.
    a remnant of a past time */
-  /*float w = NUS_quaternion_.w,
-    x = NUS_quaternion_.x,
-    y = NUS_quaternion_.y,
-    z = NUS_quaternion_.z;
-    return nus_matrix_build(1.0 - 2.0 * (y*y-z*z), 2.0 * (x*y-z*w), 2.0 * (x*z+y*w), 0.0,
-			  2.0 * (x*y+z*w), 1.0 - 2.0 * (x*x-z*z), 2.0 * (y*z-x*w), 0.0,
-			  2.0 * (x*z-y*w), 2.0 * (y*z+x*w), 1.0 - 2.0 * (x*x-y*y), 0.0,
-			  0.0, 0.0, 0.0, 1.0); */
+  float w = quaternion.w,
+    x = quaternion.x,
+    y = quaternion.y,
+    z = quaternion.z;
+    return nus_matrix_build(1.0 - 2.0 * (y*y+z*z), 2.0 * (x*y-z*w), 2.0 * (x*z+y*w), 0.0,
+			  2.0 * (x*y+z*w), 1.0 - 2.0 * (x*x+z*z), 2.0 * (y*z-x*w), 0.0,
+			  2.0 * (x*z-y*w), 2.0 * (y*z+x*w), 1.0 - 2.0 * (x*x+y*y), 0.0,
+			  0.0, 0.0, 0.0, 1.0);
 }
 
 NUS_matrix nus_matrix_build_transformation

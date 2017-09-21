@@ -24,6 +24,12 @@ NUS_axes nus_axes_inverse(NUS_axes axes)
 			nus_vector_scale(axes.upward, -1.0),
 			nus_vector_scale(axes.right, -1.0));
 }
+NUS_axes nus_axes_normalize(NUS_axes axes){
+  axes.forward = nus_vector_normalize(axes.forward);
+  axes.upward = nus_vector_normalize(axes.upward);
+  axes.right = nus_vector_normalize(axes.right);
+  return axes;
+}
 void nus_axes_print(NUS_axes axes)
 {
   printf("forward: ");
