@@ -129,15 +129,19 @@ compile: $(NUS_OBJ)
 	@sudo cp $(addprefix $(SRC_DIR)/, $(REN_HEA)) /usr/local/include/NUS/$(REN_DIR)/
 	@sudo cp $(addprefix $(SRC_DIR)/, $(TIME_HEA)) /usr/local/include/NUS/$(TIME_DIR)/
 	@sudo cp $(addprefix $(SRC_DIR)/, $(OTH_HEA)) /usr/local/include/NUS/
-recompile: clean all
+build_clean: clean all
 	cd NUSM/; make
 .c.o:
 	@echo "Compiling File: $<"
 	@$(CC) $(CFLAGS) -c $<  -o $@
 .PHONY: clean
 
+recompile: build_clean
+	cd unit_tests/; make recompile
+
 debug: CFLAGS += -D NUS_DEBUG
-debug: recompile
+debug: build_clean
+	cd unit_tests/; make debug
 clean:
 	@find . -type f \( -name '*.o' -o -name '*~' \) -delete
 	@cd unit_tests/; make clean
